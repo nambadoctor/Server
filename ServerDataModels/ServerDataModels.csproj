@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MongoDB.Bson" Version="2.12.4" />
+    <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.19.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="Microsoft.Extensions.Caching.Memory" />
+    <None Remove="Microsoft.ApplicationInsights" />
+    <None Remove="Logging\" />
+  </ItemGroup>
+</Project>

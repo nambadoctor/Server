@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "ds-connect",
+  "private_key_id": "cea660a6d3166f7f170e49cb49c393a35513f3e9",
+  "private_key": "#{firebase_private_key}#",
+  "client_email": "firebase-adminsdk-wajdo@ds-connect.iam.gserviceaccount.com",
+  "client_id": "113806179583222844663",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-wajdo%40ds-connect.iam.gserviceaccount.com"
+}
