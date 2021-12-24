@@ -15,4 +15,8 @@
     <None Remove="Microsoft.ApplicationInsights" />
     <None Remove="Logging\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Client\Consumer\" />
+  </ItemGroup>
 </Project>

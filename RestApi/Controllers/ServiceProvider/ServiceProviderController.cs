@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using ClientDataModels.SP;
+using Microsoft.AspNetCore.Mvc;
 using NambaMiddleWare.Interfaces;
 using ServerDataModels.Local;
 using System.Threading.Tasks;
@@ -23,10 +24,12 @@ namespace NambaDoctorWebApi.Controllers.ServiceProvider
         }
 
         [HttpGet]
-        public async Task<ClientDataModels.ServiceProvider> GetServiceProviderAsync()
+        public async Task<ClientDataModels.SP.ServiceProvider> GetServiceProviderAsync()
         {
+            // When call comes with No Service providerId and OrgId assume default organisation and return profile based on that
             ndLogger.LogEvent("Start GetServiceProviderAsync");
             var serviceProvider = await serviceProviderService.GetServiceProviderAsync();
+
             ndLogger.LogEvent("End GetServiceProviderAsync");
             return serviceProvider;
         }
