@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.0.31912.275
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataModels", "ServerDataModels\DataModels.csproj", "{F09C24CB-CD22-4801-A9E3-BA7E22C82043}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataModel", "ServerDataModels\DataModel.csproj", "{F09C24CB-CD22-4801-A9E3-BA7E22C82043}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddleWare", "MiddleWare\MiddleWare.csproj", "{668627BE-56D9-4049-BDEF-B1EFAA16A623}"
 EndProject

@@ -20,7 +20,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ServerDataModels\DataModels.csproj" />
+		<ProjectReference Include="..\ServerDataModels\DataModel.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
