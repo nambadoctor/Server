@@ -18,6 +18,7 @@
 	<ItemGroup>
 		<ProjectReference Include="..\DataLayer\DataLayer.csproj" />
 		<ProjectReference Include="..\ServerDataModels\ServerDataModels.csproj" />
+		<ProjectReference Include="..\ClientDataModels\ClientDataModels.csproj" />
 		<ProjectReference Include="..\MiddleWare\MiddleWare.csproj" />
 	</ItemGroup>
 
