@@ -4,7 +4,7 @@ namespace DataModel.Shared
 {
     public class NambaDoctorContext
     {
-        public static Dictionary<string, string> ContextValues;
+        public static Dictionary<string, string> TraceContextValues;
 
         public static NDUserType ndUserType;
 

@@ -15,7 +15,7 @@ namespace DataModel.Shared
         }
         public void LogEvent(string eventMessage, SeverityLevel severityLevel)
         {
-            foreach (KeyValuePair<string, string> keyValuePair in NambaDoctorContext.ContextValues)
+            foreach (KeyValuePair<string, string> keyValuePair in NambaDoctorContext.TraceContextValues)
             {
                 try
                 {
