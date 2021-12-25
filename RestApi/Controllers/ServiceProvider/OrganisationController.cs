@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace RestApi.Controllers.ServiceProvider
+namespace RestApi.Controllers.Providers
 {
     public class OrganisationController : Controller
     {
