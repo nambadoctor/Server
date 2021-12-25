@@ -1,9 +1,9 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using ServerDataModels.Common;
+using DataModel.Mongo;
 using System.Collections.Generic;
 
-namespace ServerDataModels.Customer
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class CustomerProfile

@@ -1,10 +1,10 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using ServerDataModels.ServiceProvider;
+using DataModel.Mongo;
 using System;
 using System.Text.Json.Serialization;
 
-namespace ServerDataModels.Local
+namespace DataModel.Shared
 {
     public class GeneratedSlot
     {

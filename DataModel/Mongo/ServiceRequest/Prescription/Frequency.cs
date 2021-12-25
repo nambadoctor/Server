@@ -1,4 +1,4 @@
-﻿namespace ServerDataModels.ServiceRequest
+﻿namespace DataModel.Mongo
 {
     public enum Frequency
     {

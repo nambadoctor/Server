@@ -1,4 +1,4 @@
-﻿namespace ServerDataModels.ServiceProvider
+﻿namespace DataModel.Mongo
 {
     public enum AppointmentType
     {

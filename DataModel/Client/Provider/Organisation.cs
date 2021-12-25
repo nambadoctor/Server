@@ -1,5 +1,7 @@
 ﻿
-namespace ClientDataModels.SP
+using System.Collections.Generic;
+
+namespace DataModel.Client.Provider
 {
     public class Organisation
     {

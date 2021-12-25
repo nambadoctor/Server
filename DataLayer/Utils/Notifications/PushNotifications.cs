@@ -1,5 +1,5 @@
-﻿using ServerDataModels.Common;
-using ServerDataModels.Local;
+﻿using DataModel.Mongo;
+using DataModel.Shared;
 using System;
 using System.Threading.Tasks;
 

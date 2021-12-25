@@ -1,5 +1,6 @@
 ﻿using MongoDB.Driver;
-using ServerDataModels.Local;
+using DataModel.Mongo;
+using DataModel.Shared;
 
 namespace DataLayer
 {

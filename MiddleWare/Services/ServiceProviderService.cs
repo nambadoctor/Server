@@ -1,7 +1,7 @@
 ﻿using DataLayer;
+using DataModel.Shared;
 using NambaMiddleWare.Interfaces;
-using ServerDataModels.Local;
-using Client = ClientDataModels.SP;
+using Provider = DataModel.Client.Provider;
 
 namespace NambaMiddleWare.Services
 {
@@ -17,12 +17,13 @@ namespace NambaMiddleWare.Services
             this.datalayer = dataLayer;
             this.NDLogger = nambaDoctorContext._NDLogger;
         }
-        public async Task<Client.ServiceProvider> GetServiceProviderAsync()
+        public async Task<Provider.ServiceProvider> GetServiceProviderAsync()
         {
+            /*
             var serviceProvider = await datalayer.GetServiceProvider(NambaDoctorContext.NDUserId);
             var organisations = await datalayer.GetOrganisations(NambaDoctorContext.NDUserId);
-
-            var clientServiceProvider = new Client.ServiceProvider();
+            */
+            var clientServiceProvider = new Provider.ServiceProvider();
 
             //Buid client Object
 

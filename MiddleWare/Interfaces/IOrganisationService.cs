@@ -1,4 +1,4 @@
-﻿using ServerDataModels.Organisation;
+﻿using DataModel.Client.Provider;
 
 namespace NambaMiddleWare.Interfaces
 {

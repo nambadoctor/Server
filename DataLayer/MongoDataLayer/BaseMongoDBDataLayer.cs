@@ -1,12 +1,10 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Driver;
-using ServerDataModels.Customer;
-using ServerDataModels.Local;
-using ServerDataModels.Organisation;
-using ServerDataModels.Other;
-using ServerDataModels.ServiceProvider;
+using DataModel.Mongo;
+
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using DataModel.Shared;
 
 namespace DataLayer
 {

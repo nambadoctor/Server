@@ -3,7 +3,7 @@ using Microsoft.ApplicationInsights.DataContracts;
 using System;
 using System.Collections.Generic;
 
-namespace ServerDataModels.Local
+namespace DataModel.Shared
 {
     public class NDLogger : INDLogger
     {

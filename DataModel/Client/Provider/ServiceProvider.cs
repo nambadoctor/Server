@@ -1,4 +1,4 @@
-﻿namespace ClientDataModels.SP
+﻿namespace DataModel.Client.Provider
 {
     public class ServiceProvider
     {

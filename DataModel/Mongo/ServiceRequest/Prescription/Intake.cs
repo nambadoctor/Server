@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System.Text.Json.Serialization;
 
-namespace ServerDataModels.ServiceRequest
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class Intake

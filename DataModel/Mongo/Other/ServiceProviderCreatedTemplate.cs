@@ -1,9 +1,9 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using ServerDataModels.ServiceRequest;
+using  DataModel.Mongo;
 using System.Collections.Generic;
 
-namespace ServerDataModels.Other
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class ServiceProviderCreatedTemplate

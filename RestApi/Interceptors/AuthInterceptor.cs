@@ -1,8 +1,8 @@
 ﻿using DataLayer;
+using DataModel.Shared;
 using FirebaseAdmin.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using ServerDataModels.Local;
 using System;
 using System.Threading.Tasks;
 

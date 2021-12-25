@@ -1,12 +1,12 @@
-﻿using ClientDataModels.SP;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using NambaMiddleWare.Interfaces;
-using ServerDataModels.Local;
+using DataModel.Shared;
+using DataModel.Client.Provider;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace NambaDoctorWebApi.Controllers.ServiceProvider
+namespace NambaDoctorWebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -24,7 +24,7 @@ namespace NambaDoctorWebApi.Controllers.ServiceProvider
         }
 
         [HttpGet]
-        public async Task<ClientDataModels.SP.ServiceProvider> GetServiceProviderAsync()
+        public async Task<ServiceProvider> GetServiceProviderAsync()
         {
             // When call comes with No Service providerId and OrgId assume default organisation and return profile based on that
             ndLogger.LogEvent("Start GetServiceProviderAsync");

@@ -20,10 +20,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\ServerDataModels\DataModel.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Remove="Utils\Notifications\" />
 	</ItemGroup>
 	<ItemGroup>
@@ -34,5 +30,9 @@
 
 	<ItemGroup>
 		<Folder Include="Utils\Notifications\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
 	</ItemGroup>
 </Project>

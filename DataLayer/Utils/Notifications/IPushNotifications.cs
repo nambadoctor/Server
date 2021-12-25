@@ -1,4 +1,5 @@
-﻿using ServerDataModels.Common;
+﻿using DataModel.Mongo;
+
 using System.Threading.Tasks;
 
 namespace DataLayer.Notifications

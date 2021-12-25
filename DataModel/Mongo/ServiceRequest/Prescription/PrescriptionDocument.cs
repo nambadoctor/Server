@@ -1,8 +1,8 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using ServerDataModels.Common;
+using DataModel.Mongo;
 
-namespace ServerDataModels.ServiceRequest
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class PrescriptionDocument

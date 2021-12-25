@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ServerDataModels.Other
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class TestUser

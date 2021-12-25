@@ -5,6 +5,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Client\Consumer\**" />
+    <EmbeddedResource Remove="Client\Consumer\**" />
+    <None Remove="Client\Consumer\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="MongoDB.Bson" Version="2.12.4" />
     <PackageReference Include="Microsoft.Extensions.Caching.Memory" Version="6.0.0" />
     <PackageReference Include="Microsoft.ApplicationInsights" Version="2.19.0" />
@@ -14,9 +20,5 @@
     <None Remove="Microsoft.Extensions.Caching.Memory" />
     <None Remove="Microsoft.ApplicationInsights" />
     <None Remove="Logging\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Client\Consumer\" />
   </ItemGroup>
 </Project>

@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ServerDataModels.ServiceProvider
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class Education

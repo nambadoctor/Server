@@ -1,8 +1,9 @@
-﻿namespace ClientDataModels.SP
+﻿
+namespace DataModel.Client.Provider
 {
     public class OrganisationRole
     {
-        public String OrganisationRoleId { get; set; }
+        public string OrganisationRoleId { get; set; }
         public string Name { get; set; }   
         public string ServiceProviderId { get; set; }
         public string Description { get; set; } 

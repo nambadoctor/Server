@@ -1,7 +1,8 @@
 ﻿using DataLayer;
+using DataModel.Client.Provider;
+using DataModel.Shared;
 using NambaMiddleWare.Interfaces;
-using ServerDataModels.Local;
-using ServerDataModels.Organisation;
+
 
 namespace NambaMiddleWare.Services
 {
@@ -20,7 +21,8 @@ namespace NambaMiddleWare.Services
         public async Task<List<Organisation>> GetOrganisationsAsync()
         {
             var organisationList = await _datalayer.GetOrganisations(NambaDoctorContext.NDUserId);
-            return organisationList;
+            return null;
+           // return organisationList;
         }
     }
 }

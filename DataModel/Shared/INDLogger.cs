@@ -1,6 +1,6 @@
 ﻿using Microsoft.ApplicationInsights.DataContracts;
 
-namespace ServerDataModels.Local
+namespace DataModel.Shared
 {
     public interface INDLogger
     {

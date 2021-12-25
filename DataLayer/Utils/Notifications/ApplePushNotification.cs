@@ -1,10 +1,11 @@
 ﻿using CorePush.Apple;
 using Newtonsoft.Json;
-using ServerDataModels.Local;
+using DataModel.Mongo;
 using System;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
+using DataModel.Shared;
 
 namespace DataLayer.Notifications
 {

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ServerDataModels.Local
+namespace DataModel.Shared
 {
     public class NambaDoctorContext
     {

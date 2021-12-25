@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace ServerDataModels.ServiceProvider
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class PaymentTransaction

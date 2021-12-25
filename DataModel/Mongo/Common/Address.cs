@@ -1,7 +1,7 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 
-namespace ServerDataModels.Common
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class Address

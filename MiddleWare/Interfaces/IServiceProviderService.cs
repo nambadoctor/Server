@@ -1,4 +1,5 @@
-﻿using Client = ClientDataModels.SP;
+﻿using DataModel.Client.Provider;
+using Client = DataModel.Client.Provider;
 
 namespace NambaMiddleWare.Interfaces
 {

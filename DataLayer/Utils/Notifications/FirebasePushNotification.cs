@@ -1,10 +1,11 @@
 ﻿using Nancy.Json;
 using Newtonsoft.Json;
-using ServerDataModels.Local;
+using DataModel.Mongo;
 using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
+using DataModel.Shared;
 
 namespace DataLayer.Notifications
 {

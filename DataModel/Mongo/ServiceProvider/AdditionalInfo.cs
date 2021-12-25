@@ -2,7 +2,7 @@
 using MongoDB.Bson.Serialization.Attributes;
 using System.Collections.Generic;
 
-namespace ServerDataModels.ServiceProvider
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class AdditionalInfo

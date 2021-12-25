@@ -1,4 +1,4 @@
-﻿namespace ServerDataModels.Local
+﻿namespace DataModel.Shared
 {
     public enum NDUserType
     {

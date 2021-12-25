@@ -2,7 +2,8 @@
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
-using ServerDataModels.Local;
+using DataModel.Mongo;
+using DataModel.Shared;
 using System;
 using System.IO;
 using System.Threading.Tasks;

@@ -1,9 +1,9 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
-using ServerDataModels.Common;
+using DataModel.Mongo;
 using System.Collections.Generic;
 
-namespace ServerDataModels.Customer
+namespace DataModel.Mongo
 {
     [BsonIgnoreExtraElements]
     public class Customer
@@ -13,7 +13,7 @@ namespace ServerDataModels.Customer
         public List<CustomerProfile> Profiles { get; set; }
         public List<AuthInfo> AuthInfos { get; set; }
         public List<NotificationInfo> NotificationInfos { get; set; }
-        public List<ServiceRequest.ServiceRequest> ServiceRequests { get; set; }
+        public List<ServiceRequest> ServiceRequests { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

@@ -1,6 +1,4 @@
-﻿using ServerDataModels.Customer;
-using ServerDataModels.Organisation;
-using ServerDataModels.ServiceProvider;
+﻿using DataModel.Mongo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
