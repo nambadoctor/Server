@@ -8,6 +8,7 @@ using NambaMiddleWare;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace NambaDoctorWebApi.Interceptors
@@ -35,6 +36,8 @@ namespace NambaDoctorWebApi.Interceptors
 
             ndLogger.LogEvent("ValidateTokenAndSetContext", SeverityLevel.Information);
             await ValidateTokenAndSetContext(context);
+
+            await SetUserInfo();
 
             timer.Stop();
             ndLogger.LogEvent($"UnaryServerHandler Execution time: {timer.ElapsedMilliseconds}", SeverityLevel.Information);
@@ -207,55 +210,84 @@ namespace NambaDoctorWebApi.Interceptors
             timer.Start();
             try
             {
-                var customer = await authService.GetCustomerFromRegisteredPhoneNumber();
-
-                if (customer != null)
-                {
-                    ndLogger.LogEvent($"Setting Customer Id :{customer.CustomerId.ToString()}");
-
-                    NambaDoctorContext.NDUserId = customer.CustomerId.ToString();
-                    NambaDoctorContext.ndUserType = NDUserType.Customer;
-                    NambaDoctorContext.Designation = "Customer";
-
-                    return;
-                }
 
                 var serviceProvider = await authService.GetServiceProviderFromRegisteredPhoneNumber();
 
                 if (serviceProvider != null)
                 {
-                    ndLogger.LogEvent($"Setting serviceProvider Id :{serviceProvider.ServiceProviderId.ToString()}");
+                    ndLogger.LogEvent($"Setting serviceProvider Id :{serviceProvider.ServiceProviderId.ToString()}", SeverityLevel.Information);
+
 
                     NambaDoctorContext.NDUserId = serviceProvider.ServiceProviderId.ToString();
                     NambaDoctorContext.ndUserType = NDUserType.ServiceProvider;
-                    if (string.IsNullOrWhiteSpace(NambaDoctorContext.OrganisationId))
+
+                    if (!string.IsNullOrWhiteSpace(NambaDoctorContext.OrganisationId))
+                    {
+                        var serviceProviderProfile = serviceProvider.Profiles.Find(
+                                    profile => profile.OrganisationId == NambaDoctorContext.OrganisationId);
+
+
+                        if (serviceProviderProfile != null && serviceProviderProfile.ServiceProviderType != null)
+                        {
+                            ndLogger.LogEvent($"Setting designation: {serviceProviderProfile.ServiceProviderType}", SeverityLevel.Information);
+
+                            NambaDoctorContext.Designation = serviceProviderProfile.ServiceProviderType;
+
+
+                            //This is only to make reading log easier
+
+                            ndLogger.LogEvent($"Service Provider First Name: {serviceProviderProfile.FirstName} ," +
+                                $" LastName: {serviceProviderProfile.LastName}", SeverityLevel.Information);
+
+                        }
+                        else
+                        {
+                            ndLogger.LogEvent("Designation data not available", SeverityLevel.Error);
+
+                            throw new InvalidDataException("Designation data not available");
+                        }
+                    }
+                    else
                     {
                         ndLogger.LogEvent("SetDefaultOrganisation", SeverityLevel.Information);
                         await SetDefaultOrganisation();
                     }
-                    NambaDoctorContext.Designation = serviceProvider.Profiles.Find(
-                        profile => profile.OrganisationId == NambaDoctorContext.OrganisationId)
-                        .ServiceProviderType;
 
-                    return;
+
+                }
+                else
+                {
+                    ndLogger.LogEvent("Setting User Not registered");
+                    NambaDoctorContext.ndUserType = NDUserType.NotRegistered;
+                    NambaDoctorContext.Designation = "NotRegistered";
                 }
 
-                ndLogger.LogEvent("Setting User Not registered");
-                NambaDoctorContext.ndUserType = NDUserType.NotRegistered;
-                NambaDoctorContext.Designation = "NotRegistered";
+
             }
+
             finally
             {
                 timer.Stop();
                 ndLogger.LogEvent($"SetUserInfo Execution time: {timer.ElapsedMilliseconds.ToString()}", SeverityLevel.Information);
-
             }
 
         }
 
         private async Task SetDefaultOrganisation()
         {
-            NambaDoctorContext.OrganisationId = await authService.GetDefaultOrganisationId();
+            string organisationId = await authService.GetDefaultOrganisationId();
+
+            if (string.IsNullOrWhiteSpace(organisationId))
+            {
+                ndLogger.LogEvent("NotabletoSetDefaultOrganisation", SeverityLevel.Error);
+                throw new InvalidDataException("Missing Organisation data");
+            }
+            else
+            {
+                NambaDoctorContext.OrganisationId = organisationId;
+                ndLogger.LogEvent($"SetDefaultOrganisation: {NambaDoctorContext.OrganisationId.ToString()}", SeverityLevel.Information);
+
+            }
         }
 
     }
