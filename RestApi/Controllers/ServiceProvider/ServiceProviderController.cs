@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using NambaMiddleWare.Interfaces;
+﻿using DataModel.Client.Provider;
 using DataModel.Shared;
-using DataModel.Client.Provider;
+using Microsoft.AspNetCore.Mvc;
+using MiddleWare.Interfaces;
 using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860

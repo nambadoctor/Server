@@ -1,9 +1,10 @@
 ﻿using DataLayer;
 using DataModel.Shared;
-using NambaMiddleWare.Interfaces;
+using MiddleWare.Converters;
+using MiddleWare.Interfaces;
 using Provider = DataModel.Client.Provider;
 
-namespace NambaMiddleWare.Services
+namespace MiddleWare.Services
 {
     public class ServiceProviderService : IServiceProviderService
     {
@@ -19,14 +20,12 @@ namespace NambaMiddleWare.Services
         }
         public async Task<Provider.ServiceProvider> GetServiceProviderAsync()
         {
-            /*
             var serviceProvider = await datalayer.GetServiceProvider(NambaDoctorContext.NDUserId);
-            var organisations = await datalayer.GetOrganisations(NambaDoctorContext.NDUserId);
-            */
-            var clientServiceProvider = new Provider.ServiceProvider();
-
             //Buid client Object
-
+            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
+                serviceProvider,
+                NambaDoctorContext.OrganisationId
+                );
             return clientServiceProvider;
         }
     }

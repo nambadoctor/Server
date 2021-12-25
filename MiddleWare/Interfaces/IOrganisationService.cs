@@ -1,6 +1,6 @@
 ﻿using DataModel.Client.Provider;
 
-namespace NambaMiddleWare.Interfaces
+namespace MiddleWare.Interfaces
 {
     public interface IOrganisationService
     {

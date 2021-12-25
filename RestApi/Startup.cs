@@ -10,9 +10,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using MiddleWare.Interfaces;
+using MiddleWare.Services;
 using NambaDoctorWebApi.Interceptors;
-using NambaMiddleWare.Interfaces;
-using NambaMiddleWare.Services;
 using System;
 using System.IO;
 
@@ -61,6 +61,7 @@ namespace NambaDoctorWebApi
             //Services
             services.AddScoped<IOrganisationService, OrganisationService>();
             services.AddScoped<IServiceProviderService, ServiceProviderService>();
+            services.AddScoped<IAuthService, AuthService>();
 
             //Init datalayer with telemetry
             services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();

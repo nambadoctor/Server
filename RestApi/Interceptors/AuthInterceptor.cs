@@ -4,6 +4,7 @@ using FirebaseAdmin.Auth;
 using Microsoft.ApplicationInsights.DataContracts;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using MiddleWare.Interfaces;
 using NambaMiddleWare;
 using System;
 using System.Collections.Generic;
@@ -16,143 +17,134 @@ namespace NambaDoctorWebApi.Interceptors
     {
         private readonly RequestDelegate requestDelegate;
         private INDLogger ndLogger;
-        private IMongoDbDataLayer dataLayer; //[ToDo- Rest layer should never have reference to Dataaccess
+        private IAuthService authService;
 
-        public AuthInterceptor(IMongoDbDataLayer dataLayer, INDLogger ndLogger, RequestDelegate requestDelegate)
+        public AuthInterceptor(IAuthService authService, INDLogger ndLogger, RequestDelegate requestDelegate)
         {
-            this.dataLayer = dataLayer;
+            this.authService = authService;
             this.ndLogger = ndLogger;
             this.requestDelegate = requestDelegate;
         }
+
+        [Authorize]
+        public async Task Invoke(HttpContext context)
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
+
+            ndLogger.LogEvent("ValidateTokenAndSetContext", SeverityLevel.Information);
+            await ValidateTokenAndSetContext(context);
+
+            timer.Stop();
+            ndLogger.LogEvent($"UnaryServerHandler Execution time: {timer.ElapsedMilliseconds}", SeverityLevel.Information);
+        }
+
         private async Task ValidateTokenAndSetContext(HttpContext context)
         {
-            var authCreds = context.Request.Headers.GetValue(Constants.Auth.Header);
-            if (authCreds == null)
+            SetContextValues(context);
+
+            ndLogger.LogEvent("Context values are set", SeverityLevel.Information);
+
+            // Skip token validation for Ping API
+            if (context.Request.Path.Equals("/api/Ping"))
             {
-                ndLogger.LogEvent("Auth header does not exist", SeverityLevel.Error);
-                throw new UnauthorizedAccessException("Unauthorized access not allowed");
+                await requestDelegate.Invoke(context);
+                return;
             }
 
-            ndLogger.LogEvent($"AuthCreds: {authCreds}", SeverityLevel.Information);
+            bool isValid = false;
 
-            var authTokenParts = authCreds.Split(Constants.Auth.Spliter);
-            var authToken = string.Empty;
+            var bearerToken = context.Request.Headers["Authorization"].ToString();
 
-            if (authTokenParts.Length > 1) // [TBD] - What is the correct way here?
+            if (!string.IsNullOrWhiteSpace(bearerToken))
             {
-                authToken = authTokenParts[1];
+                var segs = bearerToken.Split(" ");
+
+                if (segs.Length == 2)
+                {
+                    var authToken = segs[1];
+
+                    try
+                    {
+                        var decodedAuthToken = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(authToken);
+                        NambaDoctorContext.FirebaseUserId = decodedAuthToken.Uid;
+
+                        ndLogger.LogEvent($"FirebaseUserId: {decodedAuthToken.Uid}", SeverityLevel.Information);
+
+                        decodedAuthToken.Claims.TryGetValue(Constants.Auth.PhoneNumber, out object phoneNumber);
+
+                        if (phoneNumber != null)
+                        {
+                            NambaDoctorContext.PhoneNumber = phoneNumber.ToString();
+                            ndLogger.LogEvent($"Authenticaed for Phone Number: {phoneNumber.ToString()}", SeverityLevel.Information);
+
+                            //[TBD] - Check for blocked users
+                            //[TBD] - Set TestUserType
+
+                        }
+                        else if (Constants.Auth.anonymousAllowList.Contains(context.GetEndpoint().DisplayName))
+                        {
+                            ndLogger.LogEvent($"Anonymous auth for valid api: {context.GetEndpoint().DisplayName}", SeverityLevel.Information);
+
+                            /*[TBD: We are getting into call flows with out phone number set. 
+                             * Will it have impact in database calls any other calls that has Phone Number depdency
+                            */
+                        }
+                        else
+                        {
+                            ndLogger.LogEvent($"Anonymous auth for invalid api: {context.GetEndpoint().DisplayName}", SeverityLevel.Error);
+                            throw new UnauthorizedAccessException("Unauthorized access not allowed");
+                        }
+
+                        ndLogger.LogEvent("SetUserInfo", SeverityLevel.Information);
+                        await SetUserInfo();
+
+                        if (!string.IsNullOrWhiteSpace(NambaDoctorContext.PhoneNumber))
+                        {
+                            isValid = true;
+                        }
+
+                        if (isValid)
+                        {
+                            await requestDelegate.Invoke(context);
+                        }
+                    }
+                    catch (FirebaseAuthException)
+                    {
+                        isValid = false;
+                    }
+                }
             }
-            else
+
+            if (isValid == false)
             {
-                authToken = authTokenParts[0];
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync("User unauthorized");
+                return;
             }
-
-            ndLogger.LogEvent($"AuthToken: {authToken}", SeverityLevel.Information);
-
-            var decoded = await FirebaseAuth.DefaultInstance.VerifyIdTokenAsync(authToken);
-            // [TBD] Do we need to log all keys for any reason?
-
-            NambaDoctorContext.FirebaseUserId = decoded.Uid;
-            ndLogger.LogEvent($"FirebaseUserId: {decoded.Uid}", SeverityLevel.Information);
-
-            decoded.Claims.TryGetValue(Constants.Auth.PhoneNumber, out object phoneNumber);
-
-            if (phoneNumber != null)
-            {
-                NambaDoctorContext.PhoneNumber = phoneNumber.ToString();
-                ndLogger.LogEvent($"Authenticaed for Phone Number: {phoneNumber.ToString()}", SeverityLevel.Information);
-
-                //[TBD] - Check for blocked users
-                //[TBD] - Set TestUserType
-
-            }
-            else if (Constants.Auth.anonymousAllowList.Contains(context.Method))
-            {
-                ndLogger.LogEvent($"Anonymous auth for valid api: {context.Method}", SeverityLevel.Information);
-
-                /*[TBD: We are getting into call flows with out phone number set. 
-                 * Will it have impact in database calls any other calls that has Phone Number depdency
-                */
-            }
-            else
-            {
-                ndLogger.LogEvent($"Anonymous auth for invalid api: {context.Method}", SeverityLevel.Error);
-                throw new UnauthorizedAccessException("Unauthorized access not allowed");
-            }
-
         }
+
         private void SetContextValues(HttpContext context)
         {
             NambaDoctorContext.ContextValues = StoreContextValues(context);
-        }
-        private async Task SetUserInfo()
-        {
-            Stopwatch timer = new Stopwatch();
-
-            try
-            {
-                var customer = await dataLayer.GetCustomerFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
-
-                if (customer != null)
-                {
-                    ndLogger.LogEvent($"Setting Customer Id :{customer.CustomerId.ToString()}");
-
-                    NambaDoctorContext.NDUserId = customer.CustomerId.ToString();
-                    NambaDoctorContext.ndUserType = NDUserType.Customer;
-                    NambaDoctorContext.Designation = "Customer";
-
-                    return;
-                }
-
-                var serviceProvider = await dataLayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
-
-                if (serviceProvider != null)
-                {
-                    ndLogger.LogEvent($"Setting serviceProvider Id :{serviceProvider.ServiceProviderId.ToString()}");
-
-                    NambaDoctorContext.NDUserId = serviceProvider.ServiceProviderId.ToString();
-                    NambaDoctorContext.ndUserType = NDUserType.ServiceProvider;
-                    NambaDoctorContext.Designation = serviceProvider.ServiceProviderType;
-
-                    return;
-                }
-
-
-                ndLogger.LogEvent("Setting User Not registered");
-                NambaDoctorContext.ndUserType = NDUserType.NotRegistered;
-                NambaDoctorContext.Designation = "NotRegistered";
-            }
-            finally
-            {
-                timer.Stop();
-                ndLogger.LogEvent($"SetUserInfo Execution time: {timer.ElapsedMilliseconds.ToString()}", SeverityLevel.Information);
-
-            }
-
-        }
-        private async Task SetIfTestUser()
-        {
-            bool isTestUser = await UtilityFunctions.IsTestPhoneNumber(NambaDoctorContext.PhoneNumber, _dataLayer);
-            ndLogger.LogEvent($"Request from test user:{isTestUser}");
-            NambaDoctorContext.IsTestUser = isTestUser;
         }
 
         private Dictionary<string, string> StoreContextValues(HttpContext context)
         {
             var traceDictionary = new Dictionary<string, string>();
 
-            if(context.Request.Headers.TryGetValue("userid", out var userId))
+            if (context.Request.Headers.TryGetValue("userid", out var userId))
             {
                 traceDictionary.Add("UserId", userId);
             }
 
-            if(context.Request.Headers.TryGetValue("usertype", out var userType))
+            if (context.Request.Headers.TryGetValue("usertype", out var userType))
             {
                 traceDictionary.Add("UserType", userType);
 
             }
 
-            if(context.Request.Headers.TryGetValue("eventdatetime", out var eventDateTime))
+            if (context.Request.Headers.TryGetValue("eventdatetime", out var eventDateTime))
             {
                 traceDictionary.Add("EventDateTime", eventDateTime);
 
@@ -171,109 +163,91 @@ namespace NambaDoctorWebApi.Interceptors
 
 
 
-            if (organisationId != null)
+            if (!string.IsNullOrWhiteSpace(organisationId))
             {
                 traceDictionary.Add("OrganisationId", organisationId);
                 NambaDoctorContext.OrganisationId = organisationId;
             }
-            if (eventDateTime != null)
-            if (appointmentId != null)
+            if (!string.IsNullOrWhiteSpace(appointmentId))
                 traceDictionary.Add("AppointmentId", appointmentId);
-            if (sessionId != null)
+            if (!string.IsNullOrWhiteSpace(sessionId))
                 traceDictionary.Add("SessionId", sessionId);
-            if (correlationId != null)
+            if (!string.IsNullOrWhiteSpace(correlationId))
                 traceDictionary.Add("CorrelationId", correlationId);
-            if (appVersion != null)
+            if (!string.IsNullOrWhiteSpace(appVersion))
                 traceDictionary.Add("AppVersion", appVersion);
-            if (eventMessage != null)
+            if (!string.IsNullOrWhiteSpace(eventMessage))
                 traceDictionary.Add("EventMessage", eventMessage);
-            if (logLevel != null)
+            if (!string.IsNullOrWhiteSpace(logLevel))
                 traceDictionary.Add("LogLevel", logLevel);
-            if (isProduction != null)
+            if (!string.IsNullOrWhiteSpace(isProduction))
                 traceDictionary.Add("IsProduction", isProduction);
-            if (deviceInfo != null)
+            if (!string.IsNullOrWhiteSpace(deviceInfo))
                 traceDictionary.Add("DeviceInfo", deviceInfo);
-            if (eventType != null)
+            if (!string.IsNullOrWhiteSpace(eventType))
                 traceDictionary.Add("EventType", eventType);
-            if (notificationMessageId != null)
+            if (!string.IsNullOrWhiteSpace(notificationMessageId))
                 traceDictionary.Add("NotificationMessageId", notificationMessageId);
 
             return traceDictionary;
         }
-       
-        [Authorize]
-        public async Task Invoke(HttpContext context)
-        { 
-            Stopwatch timer = new Stopwatch();
 
+        private async Task SetUserInfo()
+        {
+            Stopwatch timer = new Stopwatch();
+            timer.Start();
             try
             {
-                SetContextValues(context);
+                var customer = await authService.GetCustomerFromRegisteredPhoneNumber();
 
-                ndLogger.LogEvent("Context values are set", SeverityLevel.Information);
+                if (customer != null)
+                {
+                    ndLogger.LogEvent($"Setting Customer Id :{customer.CustomerId.ToString()}");
 
-                ndLogger.LogEvent("ValidateTokenAndSetContext", SeverityLevel.Information);
-                await ValidateTokenAndSetContext(context);
+                    NambaDoctorContext.NDUserId = customer.CustomerId.ToString();
+                    NambaDoctorContext.ndUserType = NDUserType.Customer;
+                    NambaDoctorContext.Designation = "Customer";
 
-                ndLogger.LogEvent("SetUserInfo", SeverityLevel.Information);
-                await SetUserInfo();
+                    return;
+                }
 
-                ndLogger.LogEvent("SetUserIsTest", SeverityLevel.Information);
-                await SetIfTestUser();
+                var serviceProvider = await authService.GetServiceProviderFromRegisteredPhoneNumber();
 
-                ndLogger.LogEvent("Continuation UnaryServerHandler", SeverityLevel.Information);
-            }
-            catch (Exception ex)
-            {
-                ndLogger.LogEvent($"Exception in UnaryServerHandler: {ex.ToString()}", SeverityLevel.Error);
-                //[ToDo]throw new RpcException(Status.DefaultCancelled, ex.Message);
+                if (serviceProvider != null)
+                {
+                    ndLogger.LogEvent($"Setting serviceProvider Id :{serviceProvider.ServiceProviderId.ToString()}");
+
+                    NambaDoctorContext.NDUserId = serviceProvider.ServiceProviderId.ToString();
+                    NambaDoctorContext.ndUserType = NDUserType.ServiceProvider;
+                    if (string.IsNullOrWhiteSpace(NambaDoctorContext.OrganisationId))
+                    {
+                        ndLogger.LogEvent("SetDefaultOrganisation", SeverityLevel.Information);
+                        await SetDefaultOrganisation();
+                    }
+                    NambaDoctorContext.Designation = serviceProvider.Profiles.Find(
+                        profile => profile.OrganisationId == NambaDoctorContext.OrganisationId)
+                        .ServiceProviderType;
+
+                    return;
+                }
+
+                ndLogger.LogEvent("Setting User Not registered");
+                NambaDoctorContext.ndUserType = NDUserType.NotRegistered;
+                NambaDoctorContext.Designation = "NotRegistered";
             }
             finally
             {
                 timer.Stop();
-                ndLogger.LogEvent($"UnaryServerHandler Execution time: {timer.ElapsedMilliseconds.ToString()}", SeverityLevel.Information);
+                ndLogger.LogEvent($"SetUserInfo Execution time: {timer.ElapsedMilliseconds.ToString()}", SeverityLevel.Information);
 
             }
+
         }
 
-
-        private void InitializeNDContext(FirebaseToken firebaseToken)
+        private async Task SetDefaultOrganisation()
         {
-            foreach (var claim in firebaseToken.Claims)
-            {
-                if (claim.Key.Equals("phone_number", StringComparison.OrdinalIgnoreCase))
-                {
-                    NambaDoctorContext.PhoneNumber = claim.Value.ToString();
-                    break;
-                }
-            }
+            NambaDoctorContext.OrganisationId = await authService.GetDefaultOrganisationId();
         }
 
-        private async Task InitializeUserIdFromDb()
-        {
-            ndLogger.LogEvent("Getting user info from Db");
-
-            var userInfo = await dataLayer.GetUserTypeFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
-            if (userInfo == null || userInfo == "NotRegistered")
-            {
-                ndLogger.LogEvent("User does not exist in Db");
-            }
-            else
-            {
-                string[] userTypeAndId = userInfo.Split(",");
-                string userType = userTypeAndId[0];
-                string userId = userTypeAndId[1];
-                NambaDoctorContext.NDUserId = userId;
-
-                if (userType.Contains("ServiceProvider"))
-                {
-                    NambaDoctorContext.ndUserType = NDUserType.ServiceProvider;
-                }
-                else if (userType.Contains("Customer"))
-                {
-                    NambaDoctorContext.ndUserType = NDUserType.Customer;
-                }
-            }
-        }
     }
 }
