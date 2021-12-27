@@ -1,7 +1,5 @@
 using DataLayer;
 using DataModel.Shared;
-using FirebaseAdmin;
-using Google.Apis.Auth.OAuth2;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -12,7 +10,6 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MiddleWare.Interfaces;
 using MiddleWare.Services;
-using NambaDoctorWebApi.Interceptors;
 using RestApi.Middlewares;
 using System;
 using System.IO;
