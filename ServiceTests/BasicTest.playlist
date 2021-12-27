@@ -1,0 +1,48 @@
+<Playlist Version="2.0">
+  <Rule Name="Includes" Match="Any">
+    <Rule Match="All">
+      <Property Name="Solution" />
+      <Rule Match="Any">
+        <Rule Match="All">
+          <Property Name="Project" Value="NambaDoctorServiceTests" />
+          <Rule Match="Any">
+            <Rule Match="All">
+              <Property Name="Namespace" Value="NambaDoctorServiceTests.Services.v1.ScenarioTests.Web" />
+              <Rule Match="Any">
+                <Rule Match="All">
+                  <Property Name="Class" Value="BasicWebScenario" />
+                  <Rule Match="Any">
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="NambaDoctorServiceTests.Services.v1.ScenarioTests.Web.BasicWebScenario.GetOrganisationList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="GetOrganisationList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="NambaDoctorServiceTests.Services.v1.ScenarioTests.Web.BasicWebScenario.GetServiceProvider" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="GetServiceProvider" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="NambaDoctorServiceTests.Services.v1.ScenarioTests.Web.BasicWebScenario.GetAppointmentList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="GetAppointmentList" />
+                      </Rule>
+                    </Rule>
+                    <Rule Match="All">
+                      <Property Name="TestWithNormalizedFullyQualifiedName" Value="NambaDoctorServiceTests.Services.v1.ScenarioTests.Web.BasicWebScenario.GetCustomerList" />
+                      <Rule Match="Any">
+                        <Property Name="DisplayName" Value="GetCustomerList" />
+                      </Rule>
+                    </Rule>
+                  </Rule>
+                </Rule>
+              </Rule>
+            </Rule>
+          </Rule>
+        </Rule>
+      </Rule>
+    </Rule>
+  </Rule>
+</Playlist>

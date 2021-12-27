@@ -13,6 +13,7 @@ using Microsoft.OpenApi.Models;
 using MiddleWare.Interfaces;
 using MiddleWare.Services;
 using NambaDoctorWebApi.Interceptors;
+using RestApi.Middlewares;
 using System;
 using System.IO;
 
@@ -32,12 +33,13 @@ namespace NambaDoctorWebApi
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
+            /*
             AppOptions appOptions = new AppOptions();
             appOptions.Credential = GoogleCredential.FromFile("firebase_auth.json");
             FirebaseApp.Create(appOptions);
 
             ReadSecretsFromMount();
-
+            */
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              .AddJwtBearer(options =>
              {
@@ -51,6 +53,7 @@ namespace NambaDoctorWebApi
                      ValidateLifetime = true
                  };
              });
+            
 
             services.AddApplicationInsightsTelemetry();
 
@@ -64,7 +67,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<IAuthService, AuthService>();
 
             //Init datalayer with telemetry
-            services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();
+            services.AddScoped<IMongoDbDataLayer, BaseMongoDBDataLayer>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -142,7 +145,7 @@ namespace NambaDoctorWebApi
                 app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "NambaDoctorWebApi v1"));
             }
 
-            app.ValidateToken();
+            app.UseLogContextSet();
 
             app.UseHttpsRedirection();
 
@@ -152,10 +155,14 @@ namespace NambaDoctorWebApi
 
             app.UseAuthorization();
 
+            app.UseUserContextSet();
+
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapControllers();
             });
+
+
         }
     }
 }

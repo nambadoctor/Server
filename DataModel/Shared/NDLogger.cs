@@ -15,29 +15,32 @@ namespace DataModel.Shared
         }
         public void LogEvent(string eventMessage, SeverityLevel severityLevel)
         {
-            foreach (KeyValuePair<string, string> keyValuePair in NambaDoctorContext.TraceContextValues)
+            if (NambaDoctorContext.TraceContextValues != null)
             {
-                try
+
+                foreach (KeyValuePair<string, string> keyValuePair in NambaDoctorContext.TraceContextValues)
                 {
-                    if (_telemetryClient.Context.GlobalProperties.ContainsKey(keyValuePair.Key))
+                    try
                     {
-                        _telemetryClient.Context.GlobalProperties[keyValuePair.Key] = (keyValuePair.Value);
+                        if (_telemetryClient.Context.GlobalProperties.ContainsKey(keyValuePair.Key))
+                        {
+                            _telemetryClient.Context.GlobalProperties[keyValuePair.Key] = (keyValuePair.Value);
+                        }
+                        else
+                        {
+                            _telemetryClient.Context.GlobalProperties.Add(keyValuePair);
+                        }
                     }
-                    else
+                    catch (Exception e)
                     {
-                        _telemetryClient.Context.GlobalProperties.Add(keyValuePair);
+                        _telemetryClient.TrackTrace(
+                            $"Error:{e}, " +
+                            $"trace key:{keyValuePair.Key}{keyValuePair.Value}",
+                            SeverityLevel.Error);
                     }
-                }
-                catch (Exception e)
-                {
-                    _telemetryClient.TrackTrace(
-                        $"Error:{e}, " +
-                        $"trace key:{keyValuePair.Key}{keyValuePair.Value}",
-                        SeverityLevel.Error);
                 }
             }
             _telemetryClient.TrackTrace(eventMessage, severityLevel);
-
         }
 
         public void LogEvent(string eventMessage, string severityLevel = null)
