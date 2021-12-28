@@ -1,13 +1,16 @@
-﻿namespace MiddleWare.Converters
+﻿using ClientModel = DataModel.Client.Provider;
+using ServerModel = DataModel.Mongo;
+
+namespace MiddleWare.Converters
 {
     public static class ServiceProviderConverter
     {
-        public static DataModel.Client.Provider.ServiceProviderBasic ConvertToClientServiceProviderBasic(DataModel.Mongo.ServiceProvider mongoServiceProvider, List<DataModel.Mongo.Organisation> organisationList, DataModel.Mongo.Organisation defaultOrganisation)
+        public static ClientModel.ServiceProviderBasic ConvertToClientServiceProviderBasic(ServerModel.ServiceProvider mongoServiceProvider, List<ServerModel.Organisation> organisationList, ServerModel.Organisation defaultOrganisation)
         {
-            var serviceProviderBasic = new DataModel.Client.Provider.ServiceProviderBasic();
+            var serviceProviderBasic = new ClientModel.ServiceProviderBasic();
 
             serviceProviderBasic.ServieProviderId = mongoServiceProvider.ServiceProviderId.ToString();
-            serviceProviderBasic.Organsiations = new List<DataModel.Client.Provider.OrgansiationBasic>();
+            serviceProviderBasic.Organsiations = new List<ClientModel.OrgansiationBasic>();
 
             foreach (var organisation in organisationList)
             {
@@ -22,9 +25,9 @@
             return serviceProviderBasic;
         }
 
-        public static DataModel.Client.Provider.OrgansiationBasic ConvertOrganisationToOrganisationBasic(DataModel.Mongo.Organisation organisation, bool isDefault)
+        public static ClientModel.OrgansiationBasic ConvertOrganisationToOrganisationBasic(ServerModel.Organisation organisation, bool isDefault)
         {
-            var organisationBasic = new DataModel.Client.Provider.OrgansiationBasic();
+            var organisationBasic = new ClientModel.OrgansiationBasic();
 
             organisationBasic.Name = organisation.Name;
             organisationBasic.Logo = organisation.Logo;
@@ -34,43 +37,31 @@
 
             return organisationBasic;
         }
-        public static DataModel.Client.Provider.ServiceProvider ConvertToClientServiceProvider(DataModel.Mongo.ServiceProvider mongoServiceProvider, DataModel.Mongo.Organisation organisation)
+        public static ClientModel.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProvider mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member, ServerModel.ServiceProviderProfile mongoSpProfile)
         {
-            var clientSp = new DataModel.Client.Provider.ServiceProvider();
+            var clientSp = new ClientModel.ServiceProvider();
 
             clientSp.ServiceProviderId = mongoServiceProvider.ServiceProviderId.ToString();
             clientSp.OrganisationId = organisation.OrganisationId.ToString();
 
-            //Find role in org
-            var role = organisation.Members.Find(member => member.ServiceProviderId == mongoServiceProvider.ServiceProviderId.ToString());
-            if (role == null)
-            {
-                throw new Exception("No role found for this service provider in organisation");
-            }
-            clientSp.Roles.Add(role.Role);
-
-            //Find profile to map
-            var mongoProfile = mongoServiceProvider.Profiles.Find(profile => profile.OrganisationId == organisation.OrganisationId.ToString());
-            if (mongoProfile == null)
-            {
-                throw new Exception("No profile found with mathcing organisation id in ConvertToClientServiceProvider");
-            }
+            clientSp.Roles = new List<string>();
+            clientSp.Roles.Add(member.Role);
 
             //Set profile values
-            var clientSpProfile = new DataModel.Client.Provider.ServiceProviderProfile();
-            clientSpProfile.FirstName = mongoProfile.FirstName;
-            clientSpProfile.LastName = mongoProfile.LastName;
-            clientSpProfile.ProfilePictureUrl = mongoProfile.ProfilePictureUrl;
-            clientSpProfile.Type = mongoProfile.ServiceProviderType;
+            var clientSpProfile = new ClientModel.ServiceProviderProfile();
+            clientSpProfile.FirstName = mongoSpProfile.FirstName;
+            clientSpProfile.LastName = mongoSpProfile.LastName;
+            clientSpProfile.ProfilePictureUrl = mongoSpProfile.ProfilePictureUrl;
+            clientSpProfile.Type = mongoSpProfile.ServiceProviderType;
 
             clientSp.ServiceProviderProfile = clientSpProfile;
 
             return clientSp;
         }
 
-        public static DataModel.Client.Provider.ServiceProviderProfile ConvertToClientServiceProviderProfile(DataModel.Mongo.ServiceProviderProfile mongoServiceProviderProfile, string serviceProviderId, string organisationId)
+        public static ClientModel.ServiceProviderProfile ConvertToClientServiceProviderProfile(ServerModel.ServiceProviderProfile mongoServiceProviderProfile, string serviceProviderId, string organisationId)
         {
-            var clientSp = new DataModel.Client.Provider.ServiceProviderProfile();
+            var clientSp = new ClientModel.ServiceProviderProfile();
 
             clientSp.ServiceProviderId = serviceProviderId;
             clientSp.OrganisationId = organisationId;

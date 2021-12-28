@@ -1,7 +1,9 @@
 ﻿using DataModel.Client.Provider;
 using DataModel.Shared;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiddleWare.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -24,10 +26,16 @@ namespace NambaDoctorWebApi.Controllers.Providers
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{organisationId}")]
+        [Authorize]
         public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
             ndLogger.LogEvent("Start GetOrganisations");
+
+            if (string.IsNullOrWhiteSpace(OrganisationId))
+            {
+                throw new ArgumentException("Organisation Id was null");
+            }
 
             var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
 

@@ -1,5 +1,4 @@
 ﻿using DataLayer;
-using DataModel.Client.Provider;
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
@@ -25,7 +24,7 @@ namespace MiddleWare.Services
 
             if (serviceProvider == null)
             {
-                throw new Exception($"Serviceprovider not found with phone: {NambaDoctorContext.PhoneNumber}");
+                throw new KeyNotFoundException($"Serviceprovider not found with phone: {NambaDoctorContext.PhoneNumber}");
             }
 
             var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
@@ -34,7 +33,7 @@ namespace MiddleWare.Services
 
             if (defaultOrganisation == null)
             {
-                throw new Exception("Serviceprovider not part of any organisation in {}");
+                throw new KeyNotFoundException($"Serviceprovider :{serviceProvider.ServiceProviderId},{NambaDoctorContext.PhoneNumber} not part of any organisation");
             }
 
             //Buid client Object
@@ -52,20 +51,35 @@ namespace MiddleWare.Services
 
             if (serviceProvider == null)
             {
-                throw new Exception($"Serviceprovider not found with id: {ServiceProviderId}");
+                throw new KeyNotFoundException($"Serviceprovider not found with id: {ServiceProviderId}");
             }
 
             var organisation = await datalayer.GetOrganisation(OrganisationId);
 
             if (organisation == null)
             {
-                throw new Exception($"Organisation not found with id: {OrganisationId}");
+                throw new KeyNotFoundException($"Organisation not found with id: {OrganisationId}");
             }
 
+            //Find role in org
+            var role = organisation.Members.Find(member => member.ServiceProviderId == serviceProvider.ServiceProviderId.ToString());
+            if (role == null)
+            {
+                throw new KeyNotFoundException($"No role found for this service provider({serviceProvider.ServiceProviderId}) in organisation with id: {OrganisationId}");
+            }
+
+            //Find profile to map
+            var spProfile = serviceProvider.Profiles.Find(profile => profile.OrganisationId == organisation.OrganisationId.ToString());
+            if (spProfile == null)
+            {
+                throw new KeyNotFoundException($"No profile for service provider: ({serviceProvider.ServiceProviderId}) found with mathcing organisation id : {OrganisationId}");
+            }
             //Buid client Object
             var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
                 serviceProvider,
-                organisation
+                organisation,
+                role,
+                spProfile
                 );
 
             return clientServiceProvider;

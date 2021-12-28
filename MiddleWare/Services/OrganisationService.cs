@@ -24,14 +24,14 @@ namespace MiddleWare.Services
         {
             var organisation = await datalayer.GetOrganisation(OrganisationId);
 
-            if(organisation == null)
+            if (organisation == null)
             {
-                throw new Exception($"Organisation not found for id: {OrganisationId}");
+                throw new KeyNotFoundException($"Organisation not found for id: {OrganisationId}");
             }
 
             var listOfServiceProviderIds = new List<string>();
 
-            if(organisation.Members != null)
+            if (organisation.Members != null)
             {
                 foreach (var member in organisation.Members)
                 {
@@ -39,9 +39,9 @@ namespace MiddleWare.Services
                 }
             }
 
-            if(listOfServiceProviderIds.Count == 0)
+            if (listOfServiceProviderIds.Count == 0)
             {
-                NDLogger.LogEvent("No members for this organisation", Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Warning);
+                throw new KeyNotFoundException($"No members for this organisation id:{OrganisationId}");
             }
 
             var serviceProviders = await datalayer.GetServiceProviders(listOfServiceProviderIds);
