@@ -62,6 +62,28 @@ namespace DataLayer
             return result;
         }
 
+        public async Task<List<ServiceProvider>> GetServiceProviders(List<string> serviceProviderIds)
+        {
+            _NDLogger.LogEvent("Start GetServiceProviders with matching Ids");
+            var objectIdList = new List<ObjectId>();
+            foreach (var spId in serviceProviderIds)
+            {
+                objectIdList.Add(new ObjectId(spId));
+            }
+            var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, objectIdList);
+            var result = await this.serviceProviderCollection.Find(filter).ToListAsync();
+            _NDLogger.LogEvent("End GetServiceProviders with matching Ids");
+            return result;
+        }
+
+        public async Task<Organisation> GetOrganisation(string organisationId)
+        {
+            _NDLogger.LogEvent($"Start GetOrganisation : {organisationId}");
+            var orgFilter = Builders<Organisation>.Filter.Eq(org => org.OrganisationId, new ObjectId(organisationId));
+            var result = await this.organisationCollection.Find(orgFilter).FirstOrDefaultAsync();
+            _NDLogger.LogEvent($"End GetOrganisation : {organisationId}");
+            return result;
+        }
         public async Task<List<Organisation>> GetOrganisations(string serviceProviderId)
         {
             _NDLogger.LogEvent("Start GetOrganisations");

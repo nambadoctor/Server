@@ -4,6 +4,10 @@ namespace MiddleWare.Interfaces
 {
     public interface IOrganisationService
     {
-        public Task<List<Organisation>> GetOrganisationsAsync();
+        /// <summary>
+        /// Get organisation based on Id
+        /// </summary>
+        /// <returns></returns>
+        public Task<Organisation> GetOrganisationAsync(string OrganisationId);
     }
 }

@@ -23,12 +23,23 @@ namespace NambaDoctorWebApi.Controllers.Providers
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
-        [HttpGet]
-        public async Task<ServiceProvider> GetServiceProviderAsync()
+        [HttpGet("{serviceProviderId}/{organisationId}")]
+        public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            // When call comes with No Service providerId and OrgId assume default organisation and return profile based on that
             ndLogger.LogEvent("Start GetServiceProviderAsync");
-            var serviceProvider = await serviceProviderService.GetServiceProviderAsync();
+
+            var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
+
+            ndLogger.LogEvent("End GetServiceProviderAsync");
+            return serviceProvider;
+        }
+
+        [HttpGet]
+        public async Task<ServiceProviderBasic> GetServiceProviderWithOrganisationsAsync()
+        {
+            ndLogger.LogEvent("Start GetServiceProviderAsync");
+
+            var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationsAsync();
 
             ndLogger.LogEvent("End GetServiceProviderAsync");
             return serviceProvider;

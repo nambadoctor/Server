@@ -9,6 +9,6 @@ namespace DataModel.Mongo
         [BsonId]
         public ObjectId MemberId { get; set; }
         public string ServiceProviderId { get; set; }
-        public string Role { get; set; }
+        public string Role { get; set; }//Admin, Sp, Secretary
     }
 }

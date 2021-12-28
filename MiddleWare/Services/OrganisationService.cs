@@ -20,13 +20,36 @@ namespace MiddleWare.Services
             NDLogger = nambaDoctorContext._NDLogger;
         }
 
-        public async Task<List<Organisation>> GetOrganisationsAsync()
+        public async Task<Organisation> GetOrganisationAsync(string OrganisationId)
         {
-            var organisationList = await datalayer.GetOrganisations(NambaDoctorContext.NDUserId);
+            var organisation = await datalayer.GetOrganisation(OrganisationId);
 
-            var clientOrganisationList = OrganisationConverter.ConvertToClientOrganisationList(organisationList);
+            if (organisation == null)
+            {
+                throw new KeyNotFoundException($"Organisation not found for id: {OrganisationId}");
+            }
 
-            return clientOrganisationList;
+            var listOfServiceProviderIds = new List<string>();
+
+            if (organisation.Members != null)
+            {
+                foreach (var member in organisation.Members)
+                {
+                    listOfServiceProviderIds.Add(member.ServiceProviderId);
+                }
+            }
+
+            if (listOfServiceProviderIds.Count == 0)
+            {
+                throw new KeyNotFoundException($"No members for this organisation id:{OrganisationId}");
+            }
+
+            var serviceProviders = await datalayer.GetServiceProviders(listOfServiceProviderIds);
+
+            var clientOrganisation = OrganisationConverter.ConvertToClientOrganisation(
+                organisation, serviceProviders);
+
+            return clientOrganisation;
         }
     }
 }
