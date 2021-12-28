@@ -1,0 +1,37 @@
+﻿using DataModel.Client.Provider;
+using DataModel.Shared;
+using Microsoft.AspNetCore.Mvc;
+using MiddleWare.Interfaces;
+using System.Threading.Tasks;
+
+// For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+
+namespace NambaDoctorWebApi.Controllers.Providers
+{
+    [Route("api/[controller]")]
+    [ApiController]
+    public class OrganisationController : ControllerBase
+    {
+        private NambaDoctorContext nambaDoctorContext;
+        private INDLogger ndLogger;
+        private IServiceProviderService serviceProviderService;
+
+        public OrganisationController(NambaDoctorContext nambaDoctorContext, IServiceProviderService serviceProviderService)
+        {
+            this.nambaDoctorContext = nambaDoctorContext;
+            this.serviceProviderService = serviceProviderService;
+            ndLogger = this.nambaDoctorContext._NDLogger;
+        }
+
+        [HttpGet]
+        public async Task<ServiceProvider> GetServiceProviderAsync()
+        {
+            // When call comes with No Service providerId and OrgId assume default organisation and return profile based on that
+            ndLogger.LogEvent("Start GetServiceProviderAsync");
+            var serviceProvider = await serviceProviderService.GetServiceProviderAsync();
+
+            ndLogger.LogEvent("End GetServiceProviderAsync");
+            return serviceProvider;
+        }
+    }
+}

@@ -1,8 +1,9 @@
 ﻿using DataLayer;
+using DataModel.Client.Provider;
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
-using Provider = DataModel.Client.Provider;
+using Client = DataModel.Client.Provider;
 
 namespace MiddleWare.Services
 {
@@ -18,7 +19,17 @@ namespace MiddleWare.Services
             this.datalayer = dataLayer;
             this.NDLogger = nambaDoctorContext._NDLogger;
         }
-        public async Task<Provider.ServiceProvider> GetServiceProviderAsync()
+        public async Task<List<Client.OrganisationBasic>> GetServiceProviderOrganisations()
+        {
+            var serviceProvider = await datalayer.GetServiceProvider(NambaDoctorContext.NDUserId);
+            //Buid client Object
+            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
+                serviceProvider,
+                NambaDoctorContext.OrganisationId
+                );
+            return null;
+        }
+        public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             var serviceProvider = await datalayer.GetServiceProvider(NambaDoctorContext.NDUserId);
             //Buid client Object
@@ -28,5 +39,6 @@ namespace MiddleWare.Services
                 );
             return clientServiceProvider;
         }
+
     }
 }

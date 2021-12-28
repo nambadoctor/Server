@@ -4,16 +4,17 @@ using System.Text;
 
 namespace DataModel.Client.Provider
 {
-    public class Organisation
+    /// <summary>
+    /// This is only for disaply purpose for user to select and switch org
+    /// </summary>
+    public class OrganisationBasic
     {
+        public string ServieProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public string Logo { get; set; }
+        public bool IsDefault { get; set; }
 
-        /// <summary>
-        /// This will be list of all service providers based on caller permission
-        /// </summary>
-        public List<ServiceProviderProfile> Profiles { get; set; }
     }
 }

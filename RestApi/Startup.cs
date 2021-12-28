@@ -31,12 +31,9 @@ namespace NambaDoctorWebApi
         public void ConfigureServices(IServiceCollection services)
         {
             /*
-            AppOptions appOptions = new AppOptions();
-            appOptions.Credential = GoogleCredential.FromFile("firebase_auth.json");
-            FirebaseApp.Create(appOptions);
-
             ReadSecretsFromMount();
             */
+
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
              .AddJwtBearer(options =>
              {
