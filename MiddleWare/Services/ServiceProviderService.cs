@@ -19,13 +19,13 @@ namespace MiddleWare.Services
             this.datalayer = dataLayer;
             this.NDLogger = nambaDoctorContext._NDLogger;
         }
-        public async Task<Client.ServiceProvider> GetServiceProviderOrganisationsAsync()
+        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationsAsync()
         {
             var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
 
             if (serviceProvider == null)
             {
-                throw new Exception("Serviceprovider not found");
+                throw new Exception($"Serviceprovider not found with phone: {NambaDoctorContext.PhoneNumber}");
             }
 
             var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
@@ -34,12 +34,13 @@ namespace MiddleWare.Services
 
             if (defaultOrganisation == null)
             {
-                throw new Exception("Serviceprovider not part of any organiosation");
+                throw new Exception("Serviceprovider not part of any organisation in {}");
             }
 
             //Buid client Object
-            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
+            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProviderBasic(
                 serviceProvider,
+                organisationList,
                 defaultOrganisation
                 );
 
@@ -49,7 +50,17 @@ namespace MiddleWare.Services
         {
             var serviceProvider = await datalayer.GetServiceProvider(ServiceProviderId);
 
+            if (serviceProvider == null)
+            {
+                throw new Exception($"Serviceprovider not found with id: {ServiceProviderId}");
+            }
+
             var organisation = await datalayer.GetOrganisation(OrganisationId);
+
+            if (organisation == null)
+            {
+                throw new Exception($"Organisation not found with id: {OrganisationId}");
+            }
 
             //Buid client Object
             var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(

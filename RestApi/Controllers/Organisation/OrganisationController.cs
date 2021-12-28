@@ -24,12 +24,12 @@ namespace NambaDoctorWebApi.Controllers.Providers
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
-        [HttpGet]
-        public async Task<List<Organisation>> GetOrganisations()
+        [HttpGet("{id}")]
+        public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
             ndLogger.LogEvent("Start GetOrganisations");
 
-            var organisations = await organisationService.GetOrganisationsAsync();
+            var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
 
             ndLogger.LogEvent("End GetOrganisations");
             return organisations;

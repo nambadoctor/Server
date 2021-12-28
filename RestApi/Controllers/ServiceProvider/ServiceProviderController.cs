@@ -23,7 +23,7 @@ namespace NambaDoctorWebApi.Controllers.Providers
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
-        [HttpGet]
+        [HttpGet("{serviceProviderId}/{organisationId}")]
         public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             ndLogger.LogEvent("Start GetServiceProviderAsync");
@@ -35,7 +35,7 @@ namespace NambaDoctorWebApi.Controllers.Providers
         }
 
         [HttpGet]
-        public async Task<ServiceProvider> GetServiceProviderWithOrganisationsAsync()
+        public async Task<ServiceProviderBasic> GetServiceProviderWithOrganisationsAsync()
         {
             ndLogger.LogEvent("Start GetServiceProviderAsync");
 

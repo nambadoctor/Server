@@ -20,15 +20,18 @@ namespace MiddleWare.Services
             NDLogger = nambaDoctorContext._NDLogger;
         }
 
-        public async Task<List<Organisation>> GetOrganisationsAsync()
+        public async Task<Organisation> GetOrganisationAsync(string OrganisationId)
         {
-            var sp = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
+            var organisation = await datalayer.GetOrganisation(OrganisationId);
 
-            var organisationList = await datalayer.GetOrganisations(sp.ServiceProviderId.ToString());
+            if(organisation == null)
+            {
+                throw new Exception($"Organisation not found for id: {OrganisationId}");
+            }
 
             var listOfServiceProviderIds = new List<string>();
 
-            foreach (var organisation in organisationList)
+            if(organisation.Members != null)
             {
                 foreach (var member in organisation.Members)
                 {
@@ -36,12 +39,17 @@ namespace MiddleWare.Services
                 }
             }
 
+            if(listOfServiceProviderIds.Count == 0)
+            {
+                NDLogger.LogEvent("No members for this organisation", Microsoft.ApplicationInsights.DataContracts.SeverityLevel.Warning);
+            }
+
             var serviceProviders = await datalayer.GetServiceProviders(listOfServiceProviderIds);
 
-            var clientOrganisationList = OrganisationConverter.ConvertToClientOrganisationList(
-                organisationList, serviceProviders);
+            var clientOrganisation = OrganisationConverter.ConvertToClientOrganisation(
+                organisation, serviceProviders);
 
-            return clientOrganisationList;
+            return clientOrganisation;
         }
     }
 }
