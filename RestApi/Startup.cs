@@ -47,7 +47,7 @@ namespace NambaDoctorWebApi
                      ValidateLifetime = true
                  };
              });
-            
+
 
             services.AddApplicationInsightsTelemetry();
 
@@ -58,7 +58,6 @@ namespace NambaDoctorWebApi
             //Services
             services.AddScoped<IOrganisationService, OrganisationService>();
             services.AddScoped<IServiceProviderService, ServiceProviderService>();
-            services.AddScoped<IAuthService, AuthService>();
 
             //Init datalayer with telemetry
             services.AddScoped<IMongoDbDataLayer, BaseMongoDBDataLayer>();

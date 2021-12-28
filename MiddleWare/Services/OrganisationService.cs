@@ -22,9 +22,24 @@ namespace MiddleWare.Services
 
         public async Task<List<Organisation>> GetOrganisationsAsync()
         {
-            var organisationList = await datalayer.GetOrganisations(NambaDoctorContext.NDUserId);
+            var sp = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
 
-            var clientOrganisationList = OrganisationConverter.ConvertToClientOrganisationList(organisationList);
+            var organisationList = await datalayer.GetOrganisations(sp.ServiceProviderId.ToString());
+
+            var listOfServiceProviderIds = new List<string>();
+
+            foreach (var organisation in organisationList)
+            {
+                foreach (var member in organisation.Members)
+                {
+                    listOfServiceProviderIds.Add(member.ServiceProviderId);
+                }
+            }
+
+            var serviceProviders = await datalayer.GetServiceProviders(listOfServiceProviderIds);
+
+            var clientOrganisationList = OrganisationConverter.ConvertToClientOrganisationList(
+                organisationList, serviceProviders);
 
             return clientOrganisationList;
         }
