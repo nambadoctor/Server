@@ -127,7 +127,10 @@ namespace DataLayer
         {
             var organisationFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => profile.OrganisationId == organisationId);
 
-            var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => serviceProviderIds.Contains(profile.ServiceProviderId));
+            var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(
+                cust => cust.Profiles,
+                profile => serviceProviderIds.Contains(profile.ServiceProviderId) //Dont know if this will work
+                );
 
             FilterDefinition<Customer> combinedFilter;
             if (serviceProviderIds.Count == 0)
@@ -194,12 +197,12 @@ namespace DataLayer
 
             var serviceRequestFilter = Builders<Customer>.Filter.ElemMatch(
                 cust => cust.ServiceRequests,
-                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId)
+                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId) //Dont know if this will work
                 );
 
             var project = Builders<Customer>.Projection.ElemMatch(
                 cust => cust.ServiceRequests,
-                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId)
+                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId) //Dont know if this will work
                 );
 
             serviceRequests.AddRange(
