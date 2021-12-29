@@ -6,12 +6,14 @@
 		<DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
 	</PropertyGroup>
 
+	<PropertyGroup Condition=" '$(RunConfiguration)' == 'NambaDoctorWebApi' " />
 	<ItemGroup>
 		<PackageReference Include="FirebaseAdmin" Version="2.2.0" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.14.0" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+		<PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
 	</ItemGroup>
 
 
@@ -26,4 +28,7 @@
 	  <Folder Include="Controllers\ServiceProvider\" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Remove="Microsoft.AspNetCore.Cors" />
+	</ItemGroup>
 </Project>
