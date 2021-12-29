@@ -1,5 +1,6 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NambaDoctorServiceTests.Services.Auth;
+using System;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -25,6 +26,17 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
             using (var request = new HttpRequestMessage(HttpMethod.Get, url))
             {
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", GetAuthToken());
+                request.Headers.Add("traceparent", Guid.NewGuid().ToString());
+
+                //This will be set as OperationparentId for request log
+                // For all traces need to get OperationId from above and get traces for all OperationId
+                request.Headers.Add("sessionid",Guid.NewGuid().ToString());
+
+                // We can use the above for tracking a call E2E from client
+
+
+                request.Headers.Add("correlationid", Guid.NewGuid().ToString());
+
                 var response = await client.SendAsync(request);
             }
             string str = string.Empty;
