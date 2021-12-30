@@ -16,7 +16,6 @@ namespace NambaDoctorWebApi.Controllers.Providers
     public class OrganisationController : ControllerBase
     {
         private NambaDoctorContext nambaDoctorContext;
-        private INDLogger ndLogger;
         private IOrganisationService organisationService;
         private IAppointmentService appointmentService;
         private ICustomerService customerService;
@@ -34,7 +33,6 @@ namespace NambaDoctorWebApi.Controllers.Providers
         [Authorize]
         public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
-            ndLogger.LogEvent("Start GetOrganisations");
 
             if (string.IsNullOrWhiteSpace(OrganisationId))
             {
@@ -42,9 +40,7 @@ namespace NambaDoctorWebApi.Controllers.Providers
             }
 
             var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
-
-            ndLogger.LogEvent("End GetOrganisations");
-
+            
             return organisations;
         }
 

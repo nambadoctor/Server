@@ -10,38 +10,32 @@ namespace RestApi.Middlewares
     public class ExceptionLoggingMiddleware
     {
         private readonly RequestDelegate _next;
-        private INDLogger ndLogger;
 
         public ExceptionLoggingMiddleware(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, INDLogger ndLogger)
+        public async Task InvokeAsync(HttpContext context)
         {
-            this.ndLogger = ndLogger;
             try
             {
                 await _next(context);
             }
             catch (ArgumentException ex)
             {
-                ndLogger.LogEvent($"Invalid parameters passed: {ex.Message} {ex.StackTrace}", SeverityLevel.Error);
                 throw new BadHttpRequestException(ex.Message, 401);
             }
             catch (KeyNotFoundException ex)
             {
-                ndLogger.LogEvent($"No object found in collection: {ex.Message} {ex.StackTrace}", SeverityLevel.Error);
                 throw new BadHttpRequestException(ex.Message, 404);
             }
             catch (NullReferenceException ex)
             {
-                ndLogger.LogEvent($"Operation on null object: {ex.Message} {ex.StackTrace}", SeverityLevel.Error);
                 throw new BadHttpRequestException(ex.Message, 404);
             }
             catch (Exception ex)
             {
-                ndLogger.LogEvent($"Uncaught error: {ex.Message} {ex.StackTrace}", SeverityLevel.Error);
                 throw new BadHttpRequestException(ex.Message, 500); ;
             }
         }

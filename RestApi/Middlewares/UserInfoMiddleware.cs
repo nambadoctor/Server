@@ -8,15 +8,13 @@ namespace RestApi.Middlewares
     public class UserinfoMiddleware
     {
         private readonly RequestDelegate _next;
-        private INDLogger ndLogger;
         public UserinfoMiddleware(RequestDelegate next)
         {
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context, INDLogger ndLogger)
+        public async Task InvokeAsync(HttpContext context)
         {
-            this.ndLogger = ndLogger;
 
             foreach (Claim claim in context.User.Claims)
             {

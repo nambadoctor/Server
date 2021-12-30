@@ -52,7 +52,6 @@ namespace NambaDoctorWebApi
             services.AddApplicationInsightsTelemetry();
 
             //Init Logging
-            services.AddScoped<INDLogger, NDLogger>();
             services.AddScoped<NambaDoctorContext>();
 
             //Services
