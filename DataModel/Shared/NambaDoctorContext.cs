@@ -8,11 +8,9 @@ namespace DataModel.Shared
 
         public static string PhoneNumber;
 
-        public INDLogger _NDLogger;
 
-        public NambaDoctorContext(INDLogger NDLogger)
+        public NambaDoctorContext()
         {
-            _NDLogger = NDLogger;
         }
     }
 }

@@ -24,7 +24,6 @@ namespace DataLayer
 
 
         public NambaDoctorContext _nambaDoctorContext;
-        public INDLogger _NDLogger;
 
         public IMongoDatabase DbInstance
         {
@@ -50,21 +49,17 @@ namespace DataLayer
             this.serviceProviderCreatedTemplatesCollection = dbInstance.GetCollection<ServiceProviderCreatedTemplate>(ConnectionConfiguration.ServiceProviderCreatedTemplatesCollection);
 
             this._nambaDoctorContext = nambaDoctorContext;
-            this._NDLogger = nambaDoctorContext._NDLogger;
         }
 
         public async Task<ServiceProvider> GetServiceProvider(string serviceProviderId)
         {
-            _NDLogger.LogEvent("Start GetServiceProvider");
             var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
             var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
-            _NDLogger.LogEvent("End GetServiceProvider");
             return result;
         }
 
         public async Task<List<ServiceProvider>> GetServiceProviders(List<string> serviceProviderIds)
         {
-            _NDLogger.LogEvent("Start GetServiceProviders with matching Ids");
             var objectIdList = new List<ObjectId>();
             foreach (var spId in serviceProviderIds)
             {
@@ -72,24 +67,19 @@ namespace DataLayer
             }
             var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, objectIdList);
             var result = await this.serviceProviderCollection.Find(filter).ToListAsync();
-            _NDLogger.LogEvent("End GetServiceProviders with matching Ids");
             return result;
         }
 
         public async Task<Organisation> GetOrganisation(string organisationId)
         {
-            _NDLogger.LogEvent($"Start GetOrganisation : {organisationId}");
             var orgFilter = Builders<Organisation>.Filter.Eq(org => org.OrganisationId, new ObjectId(organisationId));
             var result = await this.organisationCollection.Find(orgFilter).FirstOrDefaultAsync();
-            _NDLogger.LogEvent($"End GetOrganisation : {organisationId}");
             return result;
         }
         public async Task<List<Organisation>> GetOrganisations(string serviceProviderId)
         {
-            _NDLogger.LogEvent("Start GetOrganisations");
             var orgFilter = Builders<Organisation>.Filter.ElemMatch(org => org.Members, member => member.ServiceProviderId == serviceProviderId);
             var result = await this.organisationCollection.Find(orgFilter).ToListAsync();
-            _NDLogger.LogEvent("End GetOrganisations");
             return result;
         }
 

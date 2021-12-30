@@ -13,35 +13,29 @@ namespace NambaDoctorWebApi.Controllers.Providers
     public class ServiceProviderController : ControllerBase
     {
         private NambaDoctorContext nambaDoctorContext;
-        private INDLogger ndLogger;
         private IServiceProviderService serviceProviderService;
 
         public ServiceProviderController(NambaDoctorContext nambaDoctorContext, IServiceProviderService serviceProviderService)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.serviceProviderService = serviceProviderService;
-            ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
         [HttpGet("{serviceProviderId}/{organisationId}")]
         public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            ndLogger.LogEvent("Start GetServiceProviderAsync");
 
             var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
 
-            ndLogger.LogEvent("End GetServiceProviderAsync");
             return serviceProvider;
         }
 
         [HttpGet]
         public async Task<ServiceProviderBasic> GetServiceProviderWithOrganisationsAsync()
         {
-            ndLogger.LogEvent("Start GetServiceProviderAsync");
 
             var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationsAsync();
 
-            ndLogger.LogEvent("End GetServiceProviderAsync");
             return serviceProvider;
         }
     }

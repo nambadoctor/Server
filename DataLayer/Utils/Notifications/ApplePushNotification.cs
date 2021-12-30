@@ -70,12 +70,9 @@ namespace DataLayer.Notifications
         private ApnServerType apnServerType = ApnServerType.Development;
         private static readonly HttpClient http = new HttpClient();
 
-        private INDLogger _NDLogger;
 
-        public ApplePushNotification(INDLogger NDLogger)
+        public ApplePushNotification()
         {
-
-            _NDLogger = NDLogger;
 
             this.apnBundleId = ConnectionConfiguration.ApnBundleId;
             this.apnP8PrivateKey = ConnectionConfiguration.ApnP8PrivateKey;
@@ -87,7 +84,6 @@ namespace DataLayer.Notifications
         public async Task<bool> SendApnNotificationAsync(string deviceToken, string title, string body, string notifType, string appointmentId)
         {
 
-            _NDLogger.LogEvent($"APNS SERVICE TYPE {apnServerType}");
 
             var settings = new ApnSettings
             {
@@ -112,7 +108,6 @@ namespace DataLayer.Notifications
 
             if (response.Error != null)
             {
-                _NDLogger.LogEvent($"APNS NOTIFICATION ERROR RESPONSE: {response.Error.Reason}");
             }
 
             return response.IsSuccess;

@@ -16,11 +16,9 @@ namespace DataLayer.Utils
 
         private BlobContainerClient containerClient;
 
-        private INDLogger _NDLogger;
 
-        public MediaContainer(INDLogger NDLogger)
+        public MediaContainer()
         {
-            _NDLogger = NDLogger;
             blobServiceClient = new BlobServiceClient(ConnectionConfiguration.BlobStorageConnectionString);
             containerClient = blobServiceClient.GetBlobContainerClient(ConnectionConfiguration.BlobContainerName);
         }
@@ -68,7 +66,6 @@ namespace DataLayer.Utils
             }
             catch (Exception ex)
             {
-                _NDLogger.LogEvent($"error saving {ex}");
                 return null;
             }
         }
@@ -99,15 +96,12 @@ namespace DataLayer.Utils
                 }
 
                 Uri sasUri = blobClient.GenerateSasUri(sasBuilder);
-                _NDLogger.LogEvent($"SAS URI for blob is: {sasUri}");
                 Console.WriteLine();
 
                 return Task.FromResult(sasUri);
             }
             else
             {
-                _NDLogger.LogEvent(@"BlobClient must be authorized with Shared Key 
-                          credentials to create a service SAS.");
                 return null;
             }
         }
