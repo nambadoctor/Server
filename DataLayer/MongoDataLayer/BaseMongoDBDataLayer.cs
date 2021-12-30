@@ -89,6 +89,99 @@ namespace DataLayer
             return result;
         }
 
+        /// <inheritdoc />
+        public async Task<ServiceProviderProfile> GetServiceProviderProfile(string serviceProviderId, string organisationId)
+        {
+            var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+
+            var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                sp => sp.Profiles,
+                profile => profile.OrganisationId == organisationId
+                );
+
+            var result = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProviderProfile>(project).FirstOrDefaultAsync();
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<ServiceProviderProfile>> GetServiceProviderProfiles(List<string> serviceProviderIds, string organisationId)
+        {
+            var serviceProviderIdList = new List<ObjectId>();
+
+            foreach (var serviceProviderId in serviceProviderIds)
+            {
+                serviceProviderIdList.Add(new ObjectId(serviceProviderId));
+            }
+
+            var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, serviceProviderIdList);
+
+            var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                sp => sp.Profiles,
+                profile => profile.OrganisationId == organisationId
+                );
+
+            var profiles = await this.serviceProviderCollection.Find(filter).Project<ServiceProviderProfile>(project).ToListAsync();
+
+            return profiles;
+        }
+
+        /// <inheritdoc />
+        public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
+        {
+            var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+
+            var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                sp => sp.Appointments,
+                appointment => appointment.AppointmentId == new ObjectId(appointmentId)
+                );
+
+            var appointment = await this.serviceProviderCollection.Find(serviceProviderFilter).Project<Appointment>(project).FirstOrDefaultAsync();
+
+
+            return appointment;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<Appointment>> GetAppointmentsForServiceProvider(string organisationId, List<string> serviceProviderIds)
+        {
+            var serviceProviderIdList = new List<ObjectId>();
+            foreach (var spId in serviceProviderIds)
+            {
+                serviceProviderIdList.Add(new ObjectId(spId));
+            }
+
+            //Filter according to org and service provider
+
+            var organisationAppointmentFilter = Builders<ServiceProvider>.Filter.ElemMatch(
+                sp => sp.Appointments,
+                appointment => appointment.OrganisationId == organisationId
+                );
+
+            var serviceProviderFilter = Builders<ServiceProvider>.Filter.In(
+                sp => sp.ServiceProviderId,
+                serviceProviderIdList
+                );
+
+            FilterDefinition<ServiceProvider> combinedFilter;
+            if (serviceProviderIds.Count == 0)
+            {
+                combinedFilter = organisationAppointmentFilter;
+            }
+            else
+            {
+                combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
+            }
+
+            var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                sp => sp.Appointments,
+                appointment => appointment.OrganisationId == organisationId);
+
+            var appointments = await this.serviceProviderCollection.Find(combinedFilter).Project<Appointment>(project).ToListAsync();
+
+            return appointments;
+        }
+
         #endregion ServiceProvider
 
         #region Customer
@@ -147,19 +240,85 @@ namespace DataLayer
         }
 
         /// <inheritdoc />
-        public async Task<ServiceRequest> GetServiceRequest(string serviceRequestId)
+        public async Task<CustomerProfile> GetCustomerProfile(string customerId, string organisationId)
+        {
+            var filter = Builders<Customer>.Filter.Eq(cust => cust.CustomerId, new ObjectId(customerId));
+
+            var project = Builders<Customer>.Projection.ElemMatch(
+                cust => cust.Profiles,
+                profile => profile.OrganisationId.Equals(organisationId));
+
+            var profile = await this.customerCollection.Find(filter).Project<CustomerProfile>(project).FirstOrDefaultAsync();
+
+            return profile;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<CustomerProfile>> GetCustomerProfiles(List<string> customerIds, string organisationId)
+        {
+
+            var customerIdList = new List<ObjectId>();
+
+            foreach (var customerId in customerIds)
+            {
+                customerIdList.Add(new ObjectId(customerId));
+            }
+
+            var filter = Builders<Customer>.Filter.In(cust => cust.CustomerId, customerIdList);
+
+            var project = Builders<Customer>.Projection.ElemMatch(
+                cust => cust.Profiles,
+                profile => profile.OrganisationId.Equals(organisationId));
+
+            var profiles = await this.customerCollection.Find(filter).Project<CustomerProfile>(project).ToListAsync();
+
+            return profiles;
+        }
+
+        /// <inheritdoc />
+        public async Task<List<CustomerProfile>> GetCustomerProfilesAddedByOrganisation(string organisationId, List<string> serviceProviderIds)
+        {
+            var organisationFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => profile.OrganisationId == organisationId);
+
+            var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(
+                cust => cust.Profiles,
+                profile => serviceProviderIds.Contains(profile.ServiceProviderId) //Dont know if this will work
+                );
+
+            FilterDefinition<Customer> combinedFilter;
+            if (serviceProviderIds.Count == 0)
+            {
+                combinedFilter = organisationFilter;
+            }
+            else
+            {
+                combinedFilter = organisationFilter & serviceProviderFilter;
+            }
+
+            var project = Builders<Customer>.Projection.ElemMatch(
+                cust => cust.Profiles,
+                profile => profile.OrganisationId == organisationId
+                );
+
+            var result = await this.customerCollection.Find(combinedFilter).Project<CustomerProfile>(project).ToListAsync();
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<ServiceRequest> GetServiceRequest(string appointmentId)
         {
 
             ServiceRequest serviceRequest = new ServiceRequest();
 
             var serviceRequestFilter = Builders<Customer>.Filter.ElemMatch(
                 cust => cust.ServiceRequests,
-                serviceRequest => serviceRequest.ServiceRequestId == new ObjectId(serviceRequestId)
+                serviceRequest => serviceRequest.AppointmentId == appointmentId
                 );
 
             var project = Builders<Customer>.Projection.ElemMatch(
                 cust => cust.ServiceRequests,
-                sr => sr.ServiceRequestId == new ObjectId(serviceRequestId)
+                sr => sr.AppointmentId == appointmentId
                 );
 
             var result = await this.customerCollection.Find(serviceRequestFilter).Project<ServiceRequest>(project).FirstOrDefaultAsync();
@@ -269,96 +428,6 @@ namespace DataLayer
 
             return "NotRegistered";
 
-        }
-
-        //Dont use. Testing
-
-        /// <inheritdoc />
-        public async Task<(ServiceProvider, Appointment, Customer, ServiceRequest)> GetAppointmentData(string serviceProviderId, string appointmentId)
-        {
-            var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
-            var serviceProvider = await this.serviceProviderCollection.Find(serviceProviderFilter).FirstOrDefaultAsync();
-
-            var appointment = (from app in serviceProvider.Appointments
-                               where app.AppointmentId == new ObjectId(appointmentId)
-                               select app).FirstOrDefault();
-
-            var customerFilter = Builders<Customer>.Filter.Eq(cust => cust.CustomerId, new ObjectId(appointment.CustomerId));
-            var customer = await this.customerCollection.Find(customerFilter).FirstOrDefaultAsync();
-
-            var serviceRequest = (from sr in customer.ServiceRequests
-                                  where sr.AppointmentId == appointmentId
-                                  select sr).FirstOrDefault();
-
-            return (serviceProvider, appointment, customer, serviceRequest);
-        }
-
-        /// <inheritdoc />
-        public async Task<List<(ServiceProvider, Appointment, Customer, ServiceRequest)>> GetAppointmentsForServiceProvider(string organisationId, List<string> serviceProviderIds)
-        {
-            var objectIdList = new List<ObjectId>();
-            foreach (var spId in serviceProviderIds)
-            {
-                objectIdList.Add(new ObjectId(spId));
-            }
-
-            //Filter according to org and service provider
-            var appointmentDataList = new List<(ServiceProvider, Appointment, Customer, ServiceRequest)>();
-
-            var organisationAppointmentFilter = Builders<ServiceProvider>.Filter.ElemMatch(
-                sp => sp.Appointments,
-                appointment => appointment.OrganisationId == organisationId
-                );
-
-            var serviceProviderFilter = Builders<ServiceProvider>.Filter.In(
-                sp => sp.ServiceProviderId,
-                objectIdList
-                );
-
-            FilterDefinition<ServiceProvider> combinedFilter;
-            if (serviceProviderIds.Count == 0)
-            {
-                combinedFilter = organisationAppointmentFilter;
-            }
-            else
-            {
-                combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
-            }
-
-            var serviceProviders = await this.serviceProviderCollection.Find(combinedFilter).ToListAsync();
-
-            //Get customer ids to fetch from appointment list
-            var customerIds = new List<string>();
-
-            foreach (var serviceProvider in serviceProviders)
-            {
-                if (serviceProvider.Appointments != null)
-                    foreach (var appointment in serviceProvider.Appointments)
-                    {
-                        customerIds.Add(appointment.CustomerId);
-                    }
-            }
-
-            var customers = await GetCustomers(customerIds);
-
-            foreach (var serviceProvider in serviceProviders)
-            {
-                if (serviceProvider.Appointments != null)
-                    foreach (var appointment in serviceProvider.Appointments)
-                    {
-                        var customer = (from cust in customers
-                                        where cust.CustomerId == new ObjectId(appointment.CustomerId)
-                                        select cust).FirstOrDefault();
-
-                        var serviceRequest = (from sr in customer.ServiceRequests
-                                              where sr.AppointmentId == appointment.AppointmentId.ToString()
-                                              select sr).FirstOrDefault();
-
-                        appointmentDataList.Add((serviceProvider, appointment, customer, serviceRequest));
-                    }
-            }
-
-            return appointmentDataList;
         }
 
         #endregion CrossDocument

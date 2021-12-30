@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace NambaDoctorWebApi.Controllers.Providers
 {
-    [Route("api/[controller]")]
+    [Route("api/serviceprovider")]
     [ApiController]
     public class ServiceProviderController : ControllerBase
     {
@@ -23,7 +23,7 @@ namespace NambaDoctorWebApi.Controllers.Providers
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
-        [HttpGet("{serviceProviderId}/{organisationId}")]
+        [HttpGet("{serviceProviderId}/organisation/{organisationId}")]
         public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             ndLogger.LogEvent("Start GetServiceProviderAsync");

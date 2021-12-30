@@ -11,18 +11,22 @@ using System.Threading.Tasks;
 
 namespace NambaDoctorWebApi.Controllers.Providers
 {
-    [Route("api/[controller]")]
+    [Route("api/organisation")]
     [ApiController]
     public class OrganisationController : ControllerBase
     {
         private NambaDoctorContext nambaDoctorContext;
         private INDLogger ndLogger;
         private IOrganisationService organisationService;
+        private IAppointmentService appointmentService;
+        private ICustomerService customerService;
 
-        public OrganisationController(NambaDoctorContext nambaDoctorContext, IOrganisationService organisationService)
+        public OrganisationController(NambaDoctorContext nambaDoctorContext, IOrganisationService organisationService, IAppointmentService appointmentService, ICustomerService customerService)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.organisationService = organisationService;
+            this.appointmentService = appointmentService;
+            this.customerService = customerService;
             ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
@@ -40,7 +44,36 @@ namespace NambaDoctorWebApi.Controllers.Providers
             var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
 
             ndLogger.LogEvent("End GetOrganisations");
+
             return organisations;
+        }
+
+        [HttpGet("{organisationId}/appointments")]
+        [Authorize]
+        public async Task<List<Appointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        {
+            if (string.IsNullOrWhiteSpace(OrganisationId))
+            {
+                throw new ArgumentException("Organisation Id was null");
+            }
+
+            var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
+
+            return appointments;
+        }
+
+        [HttpGet("{organisationId}/customers")]
+        [Authorize]
+        public async Task<List<CustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        {
+            if (string.IsNullOrWhiteSpace(OrganisationId))
+            {
+                throw new ArgumentException("Organisation Id was null");
+            }
+
+            var customers = await customerService.GetCustomers(OrganisationId, ServiceProviderIds);
+
+            return customers;
         }
     }
 }

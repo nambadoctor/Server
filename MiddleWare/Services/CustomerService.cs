@@ -3,7 +3,6 @@ using DataModel.Client.Provider;
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
-using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Services
 {
@@ -21,41 +20,25 @@ namespace MiddleWare.Services
         }
         public async Task<CustomerProfile> GetCustomer(string customerId, string organisationId)
         {
-            var customer = await datalayer.GetCustomer(customerId);
+            var customerProfile = await datalayer.GetCustomerProfile(customerId, organisationId);
 
-            var clientCustomer = GetCustomerProfileObject(customer, organisationId);
+            var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
 
             return clientCustomer;
         }
 
         public async Task<List<CustomerProfile>> GetCustomers(string organsiationId, List<string> serviceProviderIds)
         {
-            var customers = await datalayer.GetCustomersAddedByOrganisation(organsiationId, serviceProviderIds);
+            var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
 
             var clientCustomers = new List<CustomerProfile>();
 
-            foreach (var customer in customers)
+            foreach (var customer in customerProfiles)
             {
-                clientCustomers.Add(GetCustomerProfileObject(customer, organsiationId));
+                clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
             }
 
             return clientCustomers;
-        }
-
-        private CustomerProfile GetCustomerProfileObject(Mongo.Customer customer, string organisationId)
-        {
-            var customerProfile = (from cp in customer.Profiles
-                                   where cp.OrganisationId == organisationId
-                                   select cp).FirstOrDefault();
-
-            if (customerProfile == null)
-            {
-                throw new KeyNotFoundException($"Customer profile id:{customer.CustomerId} not found for organisation id: {organisationId}");
-            }
-
-            var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customer.CustomerId.ToString(), customerProfile);
-
-            return clientCustomer;
         }
     }
 }

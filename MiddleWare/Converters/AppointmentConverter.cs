@@ -5,31 +5,26 @@ namespace MiddleWare.Converters
 {
     public static class AppointmentConverter
     {
-        public static Client.AppointmentData ConvertToClientAppointmentData(
-            string serviceProviderId,
+        public static Client.Appointment ConvertToClientAppointmentData(
             Mongo.ServiceProviderProfile serviceProviderProfile,
             Mongo.Appointment appointment,
-            string customerId,
-            Mongo.CustomerProfile customerProfile,
-            Mongo.ServiceRequest serviceRequest)
+            Mongo.CustomerProfile customerProfile)
         {
-            var appointmentData = new Client.AppointmentData();
+            var appointmentData = new Client.Appointment();
 
-            appointmentData.ServiceProviderId = serviceProviderId;
+            appointmentData.ServiceProviderId = serviceProviderProfile.ServiceProviderId;
             appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
-            appointmentData.CustomerId = customerId;
+            appointmentData.CustomerId = customerProfile.CustomerId;
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
-            appointmentData.AppointmentType = appointment.AppointmentType;
-            appointmentData.Status = appointment.Status;
+            appointmentData.AppointmentType = appointment.AppointmentType.ToString();
+            appointmentData.Status = appointment.Status.ToString();
             appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
-
-            appointmentData.ServiceRequest = serviceRequest;
 
             return appointmentData;
         }

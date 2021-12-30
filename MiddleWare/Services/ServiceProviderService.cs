@@ -47,9 +47,9 @@ namespace MiddleWare.Services
         }
         public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            var serviceProvider = await datalayer.GetServiceProvider(ServiceProviderId);
+            var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
 
-            if (serviceProvider == null)
+            if (serviceProviderProfile == null)
             {
                 throw new KeyNotFoundException($"Serviceprovider not found with id: {ServiceProviderId}");
             }
@@ -62,24 +62,17 @@ namespace MiddleWare.Services
             }
 
             //Find role in org
-            var role = organisation.Members.Find(member => member.ServiceProviderId == serviceProvider.ServiceProviderId.ToString());
+            var role = organisation.Members.Find(member => member.ServiceProviderId == ServiceProviderId);
             if (role == null)
             {
-                throw new KeyNotFoundException($"No role found for this service provider({serviceProvider.ServiceProviderId}) in organisation with id: {OrganisationId}");
+                throw new KeyNotFoundException($"No role found for this service provider({ServiceProviderId}) in organisation with id: {OrganisationId}");
             }
 
-            //Find profile to map
-            var spProfile = serviceProvider.Profiles.Find(profile => profile.OrganisationId == organisation.OrganisationId.ToString());
-            if (spProfile == null)
-            {
-                throw new KeyNotFoundException($"No profile for service provider: ({serviceProvider.ServiceProviderId}) found with mathcing organisation id : {OrganisationId}");
-            }
             //Buid client Object
             var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
-                serviceProvider,
+                serviceProviderProfile,
                 organisation,
-                role,
-                spProfile
+                role
                 );
 
             return clientServiceProvider;

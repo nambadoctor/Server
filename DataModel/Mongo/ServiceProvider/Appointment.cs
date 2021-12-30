@@ -1,7 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace DataModel.Mongo
@@ -11,6 +10,7 @@ namespace DataModel.Mongo
     {
         [BsonId]
         public ObjectId AppointmentId { get; set; }
+        public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string CustomerId { get; set; }
 

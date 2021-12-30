@@ -14,11 +14,26 @@ namespace DataLayer
         public Task<ServiceProvider> GetServiceProvider(string serviceProviderId);
 
         /// <summary>
+        /// Get service provider profile by id for organisation
+        /// </summary>
+        /// <param name="serviceProviderId"></param>
+        /// <returns></returns>
+        public Task<ServiceProviderProfile> GetServiceProviderProfile(string serviceProviderId, string organisationId);
+
+        /// <summary>
         /// Get service providers from list of IDs passed
         /// </summary>
         /// <param name="serviceProviderIds"></param>
         /// <returns></returns>
         public Task<List<ServiceProvider>> GetServiceProviders(List<string> serviceProviderIds);
+
+        /// <summary>
+        /// Get service provider profiles from list of IDs passed
+        /// Organisation id is mandatory
+        /// </summary>
+        /// <param name="serviceProviderIds"></param>
+        /// <returns></returns>
+        public Task<List<ServiceProviderProfile>> GetServiceProviderProfiles(List<string> serviceProviderIds, string organisationId);
 
         /// <summary>
         /// Get service provider document from phone number in format +[CCode][10-digit number] with no spaces
@@ -69,6 +84,21 @@ namespace DataLayer
         public Task<Customer> GetCustomer(string customerId);
 
         /// <summary>
+        /// Get customer profile by id
+        /// </summary>
+        /// <param name="customerId"></param>
+        /// <returns></returns>
+        public Task<CustomerProfile> GetCustomerProfile(string customerId, string organisationId);
+
+        /// <summary>
+        /// Get list of customer profiles matching list of customer ids and organisation id
+        /// </summary>
+        /// <param name="customerIds"></param>
+        /// <param name="organisationId"></param>
+        /// <returns></returns>
+        public Task<List<CustomerProfile>> GetCustomerProfiles(List<string> customerIds, string organisationId);
+
+        /// <summary>
         /// Get customers from list of IDs passed
         /// </summary>
         /// <param name="customerIds"></param>
@@ -85,11 +115,20 @@ namespace DataLayer
         public Task<List<Customer>> GetCustomersAddedByOrganisation(string organisationId, List<string> serviceProviderIds);
 
         /// <summary>
-        /// Get service request matching Id
+        /// Here serviceprovider list can be empty if only filter by org is needed.
+        /// Org id is mandatory.
+        /// </summary>
+        /// <param name="organisationId"></param>
+        /// <param name="serviceProviderId"></param>
+        /// <returns></returns>
+        public Task<List<CustomerProfile>> GetCustomerProfilesAddedByOrganisation(string organisationId, List<string> serviceProviderIds);
+
+        /// <summary>
+        /// Get service request matching appointment Id
         /// </summary>
         /// <param name="serviceRequestId"></param>
         /// <returns></returns>
-        public Task<ServiceRequest> GetServiceRequest(string serviceRequestId);
+        public Task<ServiceRequest> GetServiceRequest(string appointmentId);
 
         /// <summary>
         /// Get list of all service requests owned by customer
@@ -111,7 +150,7 @@ namespace DataLayer
         /// <param name="serviceProviderId"></param>
         /// <param name="appointmentId"></param>
         /// <returns></returns>
-        public Task<(ServiceProvider, Appointment, Customer, ServiceRequest)> GetAppointmentData(string serviceProviderId, string appointmentId);
+        public Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId);
 
         /// <summary>
         /// Get list of appointment data for organisation and fitler with list of service providers. 
@@ -120,6 +159,6 @@ namespace DataLayer
         /// <param name="organisationId"></param>
         /// <param name="serviceProviderIds"></param>
         /// <returns></returns>
-        public Task<List<(ServiceProvider, Appointment, Customer, ServiceRequest)>> GetAppointmentsForServiceProvider(string organisationId, List<string> serviceProviderIds);
+        public Task<List<Appointment>> GetAppointmentsForServiceProvider(string organisationId, List<string> serviceProviderIds);
     }
 }

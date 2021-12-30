@@ -37,11 +37,11 @@ namespace MiddleWare.Converters
 
             return organisationBasic;
         }
-        public static ClientModel.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProvider mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member, ServerModel.ServiceProviderProfile mongoSpProfile)
+        public static ClientModel.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProviderProfile mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member)
         {
             var clientSp = new ClientModel.ServiceProvider();
 
-            clientSp.ServiceProviderId = mongoServiceProvider.ServiceProviderId.ToString();
+            clientSp.ServiceProviderId = mongoServiceProvider.ServiceProviderId;
             clientSp.OrganisationId = organisation.OrganisationId.ToString();
 
             clientSp.Roles = new List<string>();
@@ -49,10 +49,10 @@ namespace MiddleWare.Converters
 
             //Set profile values
             var clientSpProfile = new ClientModel.ServiceProviderProfile();
-            clientSpProfile.FirstName = mongoSpProfile.FirstName;
-            clientSpProfile.LastName = mongoSpProfile.LastName;
-            clientSpProfile.ProfilePictureUrl = mongoSpProfile.ProfilePictureUrl;
-            clientSpProfile.Type = mongoSpProfile.ServiceProviderType;
+            clientSpProfile.FirstName = mongoServiceProvider.FirstName;
+            clientSpProfile.LastName = mongoServiceProvider.LastName;
+            clientSpProfile.ProfilePictureUrl = mongoServiceProvider.ProfilePictureUrl;
+            clientSpProfile.Type = mongoServiceProvider.ServiceProviderType;
 
             clientSp.ServiceProviderProfile = clientSpProfile;
 
