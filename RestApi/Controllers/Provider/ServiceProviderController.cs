@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
 
-namespace NambaDoctorWebApi.Controllers.Providers
+namespace RestApi.Controllers.Provider
 {
-    [Route("api/serviceprovider")]
+    [Route("api/provider/serviceprovider")]
     [ApiController]
     public class ServiceProviderController : ControllerBase
     {

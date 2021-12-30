@@ -24,7 +24,7 @@
 
 
 	<ItemGroup>
-	  <Folder Include="Controllers\ServiceProvider\" />
+	  <Folder Include="Controllers\Consumer\" />
 	</ItemGroup>
 
 	<ItemGroup>
