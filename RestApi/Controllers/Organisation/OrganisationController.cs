@@ -26,7 +26,6 @@ namespace NambaDoctorWebApi.Controllers.Providers
             this.organisationService = organisationService;
             this.appointmentService = appointmentService;
             this.customerService = customerService;
-            ndLogger = this.nambaDoctorContext._NDLogger;
         }
 
         [HttpGet("{organisationId}")]
@@ -40,7 +39,7 @@ namespace NambaDoctorWebApi.Controllers.Providers
             }
 
             var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
-            
+
             return organisations;
         }
 

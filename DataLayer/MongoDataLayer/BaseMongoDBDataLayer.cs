@@ -392,9 +392,7 @@ namespace DataLayer
         /// <inheritdoc />
         public async Task<List<Organisation>> GetOrganisations()
         {
-            _NDLogger.LogEvent("Start GetOrganisations");
             var result = await this.organisationCollection.Find(_ => true).ToListAsync();
-            _NDLogger.LogEvent($"End GetOrganisations. Returned {result.Count} organisations");
             return result;
         }
 

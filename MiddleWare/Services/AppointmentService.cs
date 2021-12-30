@@ -10,13 +10,11 @@ namespace MiddleWare.Services
     {
         private IMongoDbDataLayer datalayer;
         private NambaDoctorContext nambaDoctorContext;
-        private INDLogger NDLogger;
 
         public AppointmentService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext)
         {
             this.datalayer = dataLayer;
             this.nambaDoctorContext = nambaDoctorContext;
-            NDLogger = nambaDoctorContext._NDLogger;
         }
         public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
