@@ -21,7 +21,7 @@ namespace RestApi.Middlewares
         }
         private void StoreValuesFromContext(HttpContext context)
         {
-            var traceDictionary = new Dictionary<string, string>();
+            var traceDictionary = new Dictionary<string, object>();
 
             if (context.Request.Headers.TryGetValue("phn", out var phonenumber))
             {

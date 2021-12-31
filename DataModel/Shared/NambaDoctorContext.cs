@@ -4,7 +4,7 @@ namespace DataModel.Shared
 {
     public class NambaDoctorContext
     {
-        public static Dictionary<string, string> TraceContextValues;
+        public static Dictionary<string, object> TraceContextValues;
 
         public static string PhoneNumber;
 

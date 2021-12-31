@@ -44,20 +44,22 @@ namespace RestApi.Controllers.Provider
         [HttpGet]
         public async Task<ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
-
-            try
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                logger.LogInformation("Request Start: GetServiceProviderOrganisationMemeberships" );
+                try
+                {
+                    logger.LogInformation("Start: GetServiceProviderOrganisationMemeberships");
 
-                var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemeberships();
 
-                return serviceProvider;
+                    var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemeberships();
+
+                    return serviceProvider;
+                }
+                finally
+                {
+                    logger.LogInformation(" End: GetServiceProviderOrganisationMemeberships");
+                }
             }
-            finally
-            { 
-                logger.LogInformation("Request End: GetServiceProviderOrganisationMemeberships");
-            }
-
         }
     }
 }
