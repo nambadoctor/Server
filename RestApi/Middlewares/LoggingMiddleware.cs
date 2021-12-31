@@ -23,57 +23,34 @@ namespace RestApi.Middlewares
         {
             var traceDictionary = new Dictionary<string, string>();
 
-            if (context.Request.Headers.TryGetValue("userid", out var userId))
+            if (context.Request.Headers.TryGetValue("phn", out var phonenumber))
             {
-                traceDictionary.Add("UserId", userId);
+                traceDictionary.Add("phonenumber", phonenumber);
             }
 
-            if (context.Request.Headers.TryGetValue("usertype", out var userType))
+            if (context.Request.Headers.TryGetValue("orgId", out var orgId))
             {
-                traceDictionary.Add("UserType", userType);
-
+                traceDictionary.Add("OrganisationId", orgId);
             }
 
-            if (context.Request.Headers.TryGetValue("eventdatetime", out var eventDateTime))
+            if (context.Request.Headers.TryGetValue("spid", out var spid))
             {
-                traceDictionary.Add("EventDateTime", eventDateTime);
+                traceDictionary.Add("ServiceProviderId", spid);
             }
 
-            if (context.Request.Headers.TryGetValue("appointmentid", out var appointmentId))
+            if (context.Request.Headers.TryGetValue("sptype", out var sptype))
             {
-                traceDictionary.Add("AppointmentId", appointmentId);
+                traceDictionary.Add("ServiceProviderType", sptype);
             }
 
-            if (context.Request.Headers.TryGetValue("sessionid", out var sessionId))
+            if (context.Request.Headers.TryGetValue("spname", out var spname))
             {
-                traceDictionary.Add("sessionid", sessionId);
-
+                traceDictionary.Add("ServiceProviderName", spname);
             }
 
-            if (context.Request.Headers.TryGetValue("correlationid", out var correlationId))
+            if (context.Request.Headers.TryGetValue("cv", out var appversion))
             {
-                traceDictionary.Add("correlationid", correlationId);
-
-            }
-
-            if (context.Request.Headers.TryGetValue("appversion", out var appversion))
-            {
-                traceDictionary.Add("appversion", appversion);
-            }
-
-            if (context.Request.Headers.TryGetValue("eventmessage", out var eventMessage))
-            {
-                traceDictionary.Add("eventmessage", eventMessage);
-            }
-
-            if (context.Request.Headers.TryGetValue("loglevel", out var logLevel))
-            {
-                traceDictionary.Add("loglevel", logLevel);
-            }
-
-            if (context.Request.Headers.TryGetValue("isproduction", out var isProduction))
-            {
-                traceDictionary.Add("isproduction", isProduction);
+                traceDictionary.Add("clientVersion", appversion);
             }
 
             if (context.Request.Headers.TryGetValue("deviceinfo", out var deviceInfo))
@@ -81,20 +58,7 @@ namespace RestApi.Middlewares
                 traceDictionary.Add("deviceinfo", deviceInfo);
             }
 
-            if (context.Request.Headers.TryGetValue("eventtype", out var eventType))
-            {
-                traceDictionary.Add("eventtype", eventType);
-            }
 
-            if (context.Request.Headers.TryGetValue("notificationmessageid", out var notificationMessageId))
-            {
-                traceDictionary.Add("notificationmessageid", notificationMessageId);
-            }
-
-            if (context.Request.Headers.TryGetValue("organisationid", out var organisationId))
-            {
-                traceDictionary.Add("OrganisationId", organisationId);
-            }
 
             NambaDoctorContext.TraceContextValues = traceDictionary;
 

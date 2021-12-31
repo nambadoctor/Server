@@ -10,7 +10,7 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
     [TestClass]
     public  class LoginTests
     {
-        private string url = "https://localhost:44307/api/ServiceProvider";
+        private string url = "https://localhost:44307/api/provider/serviceprovider";
 
         private string GetAuthToken()
         {
@@ -30,12 +30,14 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
 
                 //This will be set as OperationparentId for request log
                 // For all traces need to get OperationId from above and get traces for all OperationId
-                request.Headers.Add("sessionid",Guid.NewGuid().ToString());
+                request.Headers.Add("phn", "+919999999999");
 
                 // We can use the above for tracking a call E2E from client
 
 
-                request.Headers.Add("correlationid", Guid.NewGuid().ToString());
+                request.Headers.Add("spname", "+Manivannan Sengodan");
+                request.Headers.Add("cv", "1.0");
+
 
                 var response = await client.SendAsync(request);
             }

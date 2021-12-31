@@ -7,6 +7,13 @@
 	</PropertyGroup>
 
 	<PropertyGroup Condition=" '$(RunConfiguration)' == 'NambaDoctorWebApi' " />
+
+	<ItemGroup>
+	  <Compile Remove="Controllers\Consumer\**" />
+	  <Content Remove="Controllers\Consumer\**" />
+	  <EmbeddedResource Remove="Controllers\Consumer\**" />
+	  <None Remove="Controllers\Consumer\**" />
+	</ItemGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.20.0" />
 		<PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="6.0.1" />
@@ -20,11 +27,6 @@
 		<ProjectReference Include="..\DataLayer\DataLayer.csproj" />
 		<ProjectReference Include="..\DataModel\DataModel.csproj" />
 		<ProjectReference Include="..\MiddleWare\MiddleWare.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <Folder Include="Controllers\Consumer\" />
 	</ItemGroup>
 
 	<ItemGroup>

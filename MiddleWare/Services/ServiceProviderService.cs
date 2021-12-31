@@ -16,7 +16,7 @@ namespace MiddleWare.Services
             this.nambaDoctorContext = nambaDoctorContext;
             this.datalayer = dataLayer;
         }
-        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationsAsync()
+        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
             var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
 
