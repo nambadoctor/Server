@@ -1,7 +1,7 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFramework>net6.0</TargetFramework>
 		<UserSecretsId>03da655a-760a-4c3c-a8bd-bfe4e9bd9433</UserSecretsId>
 		<RootNamespace>ND.DataLayer</RootNamespace>
 	</PropertyGroup>

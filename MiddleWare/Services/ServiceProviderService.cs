@@ -1,5 +1,6 @@
 ﻿using DataLayer;
 using DataModel.Shared;
+using Microsoft.VisualBasic;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using Client = DataModel.Client.Provider;
@@ -10,44 +11,81 @@ namespace MiddleWare.Services
     {
         private IMongoDbDataLayer datalayer;
         private NambaDoctorContext nambaDoctorContext;
+        private ILogger logger;
 
-        public ServiceProviderService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext)
+        public ServiceProviderService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext, ILogger<ServiceProviderService> logger)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.datalayer = dataLayer;
+            this.logger = logger;
         }
-        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationsAsync()
+        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
-            var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
-
-            if (serviceProvider == null)
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderOrganisationMemeberships"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new KeyNotFoundException($"Serviceprovider not found with phone: {NambaDoctorContext.PhoneNumber}");
+                try
+                {
+                    var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
+
+                    if (serviceProvider == null)
+                    {
+                        logger.LogError("Service provider does not exist for the phonumber: {0}", 
+                            NambaDoctorContext.PhoneNumber);
+
+                        throw new ServiceProviderDoesnotExistsException
+                            (string.Format("Service provider does not exist for phone number {0}", NambaDoctorContext.PhoneNumber));
+
+                    }
+
+                    logger.LogInformation ("Found service provider id {0}" , serviceProvider.ServiceProviderId);
+
+                    var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
+
+                    if (organisationList == null )
+                    {
+                        logger.LogError("No organisation found for service providerId: {0}",
+                            serviceProvider.ServiceProviderId);
+
+                        throw new ServiceProviderOrgsDoesnotExistsException
+                            (string.Format("Service provider {0} is not part of any organisations", serviceProvider.ServiceProviderId));
+                    }
+
+                    var defaultOrganisation = organisationList.FirstOrDefault();
+
+
+                    if(defaultOrganisation == null)
+                    {
+                        throw new ServiceProviderOrgsDoesnotExistsException
+                            (string.Format("Service provider {0} does not have default organisation", serviceProvider.ServiceProviderId));
+
+                    }
+
+                    logger.LogInformation("Set default organisation Name: {0} Id : {1}", defaultOrganisation.Name, defaultOrganisation.OrganisationId);
+
+                    //Buid client Object
+
+                    var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProviderBasic(
+                        serviceProvider,
+                        organisationList,
+                        defaultOrganisation
+                        );
+
+                    logger.LogInformation("converted to ConvertToClientServiceProviderBasic");
+                    return clientServiceProvider;
+                }
+                finally
+                {
+
+                }
             }
-
-            var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
-
-            var defaultOrganisation = organisationList.FirstOrDefault();
-
-            if (defaultOrganisation == null)
-            {
-                throw new KeyNotFoundException($"Serviceprovider :{serviceProvider.ServiceProviderId},{NambaDoctorContext.PhoneNumber} not part of any organisation");
-            }
-
-            //Buid client Object
-            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProviderBasic(
-                serviceProvider,
-                organisationList,
-                defaultOrganisation
-                );
-
-            return clientServiceProvider;
+            
         }
         public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            var serviceProvider = await datalayer.GetServiceProvider(ServiceProviderId);
+            var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
 
-            if (serviceProvider == null)
+            if (serviceProviderProfile == null)
             {
                 throw new KeyNotFoundException($"Serviceprovider not found with id: {ServiceProviderId}");
             }
@@ -60,24 +98,17 @@ namespace MiddleWare.Services
             }
 
             //Find role in org
-            var role = organisation.Members.Find(member => member.ServiceProviderId == serviceProvider.ServiceProviderId.ToString());
+            var role = organisation.Members.Find(member => member.ServiceProviderId == ServiceProviderId);
             if (role == null)
             {
-                throw new KeyNotFoundException($"No role found for this service provider({serviceProvider.ServiceProviderId}) in organisation with id: {OrganisationId}");
+                throw new KeyNotFoundException($"No role found for this service provider({ServiceProviderId}) in organisation with id: {OrganisationId}");
             }
 
-            //Find profile to map
-            var spProfile = serviceProvider.Profiles.Find(profile => profile.OrganisationId == organisation.OrganisationId.ToString());
-            if (spProfile == null)
-            {
-                throw new KeyNotFoundException($"No profile for service provider: ({serviceProvider.ServiceProviderId}) found with mathcing organisation id : {OrganisationId}");
-            }
             //Buid client Object
             var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
-                serviceProvider,
+                serviceProviderProfile,
                 organisation,
-                role,
-                spProfile
+                role
                 );
 
             return clientServiceProvider;

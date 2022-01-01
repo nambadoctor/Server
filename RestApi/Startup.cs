@@ -57,6 +57,8 @@ namespace NambaDoctorWebApi
             //Services
             services.AddScoped<IOrganisationService, OrganisationService>();
             services.AddScoped<IServiceProviderService, ServiceProviderService>();
+            services.AddScoped<ICustomerService, CustomerService>();
+            services.AddScoped<IAppointmentService, AppointmentService>();
 
             //Init datalayer with telemetry
             services.AddScoped<IMongoDbDataLayer, BaseMongoDBDataLayer>();
@@ -159,7 +161,7 @@ namespace NambaDoctorWebApi
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
-        {           
+        {
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();

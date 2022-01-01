@@ -21,6 +21,7 @@ namespace RestApi.Middlewares
                 if (claim.Type == "phone_number")
                 {
                     NambaDoctorContext.PhoneNumber = claim.Value;
+                    NambaDoctorContext.AddTraceContext("phoneNumber", claim.Value);
                 }
             }
             await _next(context);

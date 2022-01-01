@@ -16,7 +16,7 @@
         public static string MongoDatabaseName = "NambaDoctorDb";
 
         //Production secrets
-        public static string MongoConnectionString = "mongodb://nambadoctorppedb:jDqohESaSsmpS9aDusWioPZZpuJThfDSptQooRacoSB8GC6hLBnx1CwsxuYozN17bXpTgoUPdCO317OH7eur7w==@nambadoctorppedb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@nambadoctorppedb@";
+        public static string MongoConnectionString = "mongodb://nambadoctorprodcosmosdb:au1uE9iDIPwPjFpokVN2Lg1NmIAYh5Xr3cvmxntZ0kGxTzvPJbWMjJH1hRKXoXEid0PpeQd3rvaYbuFrIEVSXg==@nambadoctorprodcosmosdb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@nambadoctorprodcosmosdb@";
         public static string BlobStorageConnectionString = "DefaultEndpointsProtocol=https;AccountName=grpctestcloudstore;AccountKey=u4a/w33QeNsoqjTNVZfiaJqHYMFBo3tti/780iHXKVAgu5wqHtLmKJg3BI7j5y0i5kRXCSSKQCk4K2QIEcV89Q==;EndpointSuffix=core.windows.net";
         public static string TwilioAccountSid = "ACf19d6ac6b8674474fb57038e79d1f452";
         public static string TwilioApiKey = "SKc4ce5414cb51748d8a59d9a41a28b92d";
