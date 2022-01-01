@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MiddleWare.Interfaces;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Twilio.TwiML.Voice;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
@@ -42,22 +43,26 @@ namespace RestApi.Controllers.Provider
         /// </summary>
         /// <returns></returns>
         [HttpGet]
+        [Authorize]
         public async Task<ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderOrganisationMemeberships"))
+
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
                     logger.LogInformation("Start: GetServiceProviderOrganisationMemeberships");
 
-
                     var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemeberships();
+
+                    logger.LogInformation("SP Exists: Ctrl:GetServiceProviderOrganisationMemeberships");
 
                     return serviceProvider;
                 }
                 finally
                 {
-                    logger.LogInformation(" End: GetServiceProviderOrganisationMemeberships");
+                    logger.LogInformation("End: Ctrl:GetServiceProviderOrganisationMemeberships");
                 }
             }
         }
