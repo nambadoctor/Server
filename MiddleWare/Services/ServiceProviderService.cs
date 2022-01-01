@@ -87,14 +87,14 @@ namespace MiddleWare.Services
 
             if (serviceProviderProfile == null)
             {
-                throw new KeyNotFoundException($"Serviceprovider not found with id: {ServiceProviderId}");
+                throw new ServiceProviderDoesnotExistsException($"Serviceprovider not found with id: {ServiceProviderId}");
             }
 
             var organisation = await datalayer.GetOrganisation(OrganisationId);
 
             if (organisation == null)
             {
-                throw new KeyNotFoundException($"Organisation not found with id: {OrganisationId}");
+                throw new ServiceProviderOrgsDoesnotExistsException($"Organisation not found with id: {OrganisationId}");
             }
 
             //Find role in org

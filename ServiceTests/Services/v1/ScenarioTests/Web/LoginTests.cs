@@ -19,6 +19,35 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
             return token;
         }
 
+
+        [TestMethod]
+        public async Task GetServiceProvider()
+        {
+            HttpClient client = new HttpClient();
+            string spUrl = "https://localhost:44307/api/provider/serviceprovider/12345678/organisation/987654321";
+
+            using (var request = new HttpRequestMessage(HttpMethod.Get, spUrl))
+            {
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", GetAuthToken());
+                request.Headers.Add("traceparent", Guid.NewGuid().ToString());
+
+                //This will be set as OperationparentId for request log
+                // For all traces need to get OperationId from above and get traces for all OperationId
+                request.Headers.Add("phn", "+919999999999");
+
+                // We can use the above for tracking a call E2E from client
+
+
+                request.Headers.Add("spname", "+Manivannan Sengodan");
+                request.Headers.Add("cv", "1.0");
+
+
+                var response = await client.SendAsync(request);
+            }
+            string str = string.Empty;
+
+        }
+
         [TestMethod]
         public async Task GetOrganisationList()
         {

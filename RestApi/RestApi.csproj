@@ -22,14 +22,13 @@
 		<PackageReference Include="Microsoft.AspNetCore.Cors" Version="2.2.0" />
 	</ItemGroup>
 
-
 	<ItemGroup>
-		<ProjectReference Include="..\DataLayer\DataLayer.csproj" />
-		<ProjectReference Include="..\DataModel\DataModel.csproj" />
-		<ProjectReference Include="..\MiddleWare\MiddleWare.csproj" />
+	  <None Remove="Microsoft.AspNetCore.Cors" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Remove="Microsoft.AspNetCore.Cors" />
+	  <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
+	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
+	  <ProjectReference Include="..\MiddleWare\MiddleWare.csproj" />
 	</ItemGroup>
 </Project>

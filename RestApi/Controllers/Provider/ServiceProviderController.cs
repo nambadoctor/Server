@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MiddleWare.Interfaces;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Twilio.TwiML.Voice;
@@ -32,10 +33,41 @@ namespace RestApi.Controllers.Provider
         [HttpGet("{serviceProviderId}/organisation/{organisationId}")]
         public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderAsync"))
 
-            var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                try
+                {
+                    logger.LogInformation("Starting null check");
 
-            return serviceProvider;
+                    if(string.IsNullOrWhiteSpace(OrganisationId))
+                    {
+                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync OrganisationId is null");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(ServiceProviderId))
+                    {
+                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync ServiceProviderId is null");
+                    }
+                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
+
+                    logger.LogInformation("Start GetServiceProviderAsync");
+
+                    var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
+
+                    logger.LogInformation("End GetServiceProviderAsync");
+
+                    return serviceProvider;
+                }
+                finally
+                {
+                    logger.LogInformation("Finally GetServiceProviderAsync");
+
+                }
+            }
+
         }
 
         /// <summary>

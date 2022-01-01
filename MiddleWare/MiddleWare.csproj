@@ -16,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\DataLayer\DataLayer.csproj" />
-		<ProjectReference Include="..\DataModel\DataModel.csproj" />
+	  <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
+	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
 	</ItemGroup>
 </Project>
