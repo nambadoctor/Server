@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -101,6 +102,8 @@ namespace DataLayer
         /// <inheritdoc />
         public async Task<ServiceProviderProfile> GetServiceProviderProfile(string serviceProviderId, string organisationId)
         {
+            ServiceProviderProfile serviceProviderProfile = null;
+
             var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
 
             var project = Builders<ServiceProvider>.Projection.ElemMatch(
@@ -110,7 +113,12 @@ namespace DataLayer
 
             var serviceProvider = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
 
-            return serviceProvider.Profiles.FirstOrDefault();
+            if(serviceProvider == null && serviceProvider.Profiles != null)
+            {
+                serviceProviderProfile =  serviceProvider.Profiles.FirstOrDefault();
+            }
+
+            return serviceProviderProfile;
         }
 
         /// <inheritdoc />
