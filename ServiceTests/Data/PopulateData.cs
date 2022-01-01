@@ -30,7 +30,7 @@ namespace ServiceTests.Data
             database = mongoClient.GetDatabase("NambaDoctorDbPpe");
 
             this.serviceProviderCollection = database.GetCollection<ServiceProvider>("ServiceProviders");
-            this.customerCollection = database.GetCollection<Customer>("Customer");
+            this.customerCollection = database.GetCollection<Customer>("Customers");
             this.organisationCollection = database.GetCollection<Organisation>("Organisations");
 
         }
