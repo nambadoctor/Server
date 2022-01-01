@@ -9,7 +9,7 @@ namespace MiddleWare.Converters
         {
             var serviceProviderBasic = new ClientModel.ServiceProviderBasic();
 
-            serviceProviderBasic.ServieProviderId = mongoServiceProvider.ServiceProviderId.ToString();
+            serviceProviderBasic.ServiceProviderId = mongoServiceProvider.ServiceProviderId.ToString();
             serviceProviderBasic.Organsiations = new List<ClientModel.OrgansiationBasic>();
 
             foreach (var organisation in organisationList)
@@ -53,6 +53,9 @@ namespace MiddleWare.Converters
             clientSpProfile.LastName = mongoServiceProvider.LastName;
             clientSpProfile.ProfilePictureUrl = mongoServiceProvider.ProfilePictureUrl;
             clientSpProfile.Type = mongoServiceProvider.ServiceProviderType;
+            clientSpProfile.ServiceProviderId = mongoServiceProvider.ServiceProviderId;
+            clientSpProfile.OrganisationId = mongoServiceProvider.OrganisationId;
+            clientSpProfile.ServiceProviderProfileId = mongoServiceProvider.ServiceProviderProfileId.ToString();
 
             clientSp.ServiceProviderProfile = clientSpProfile;
 

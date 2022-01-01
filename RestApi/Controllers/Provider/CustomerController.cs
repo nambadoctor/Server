@@ -21,7 +21,7 @@ namespace RestApi.Controllers.Provider
             this.customerService = customerService;
         }
 
-        [HttpGet("{customerid}/{organisationid}")]
+        [HttpGet("{Customerid}/{Organisationid}")]
         [Authorize]
         public async Task<CustomerProfile> GetOrganisation(string CustomerId, string OrganisationId)
         {

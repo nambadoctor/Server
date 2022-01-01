@@ -28,7 +28,7 @@ namespace RestApi.Controllers.Provider
             this.customerService = customerService;
         }
 
-        [HttpGet("{organisationId}")]
+        [HttpGet("{OrganisationId}")]
         [Authorize]
         public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
@@ -43,7 +43,7 @@ namespace RestApi.Controllers.Provider
             return organisations;
         }
 
-        [HttpGet("{organisationId}/appointments")]
+        [HttpGet("{OrganisationId}/appointments")]
         [Authorize]
         public async Task<List<Appointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
@@ -57,7 +57,7 @@ namespace RestApi.Controllers.Provider
             return appointments;
         }
 
-        [HttpGet("{organisationId}/customers")]
+        [HttpGet("{OrganisationId}/customers")]
         [Authorize]
         public async Task<List<CustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {

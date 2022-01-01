@@ -30,7 +30,7 @@ namespace RestApi.Controllers.Provider
             this.logger = logger;
         }
 
-        [HttpGet("{serviceProviderId}/organisation/{organisationId}")]
+        [HttpGet("{ServiceProviderId}/organisation/{OrganisationId}")]
         public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderAsync"))

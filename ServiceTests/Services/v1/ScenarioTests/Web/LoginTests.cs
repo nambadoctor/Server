@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
 {
     [TestClass]
-    public  class LoginTests
+    public class LoginTests
     {
         private string url = "https://localhost:44307/api/provider/serviceprovider";
 
@@ -46,6 +46,14 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
             }
             string str = string.Empty;
 
+        }
+
+        [TestMethod]
+        public void TestAuthToken()
+        {
+            FirebaseAuthProvider provider = new FirebaseAuthProvider();
+            var token = provider.GetFBToken("+919999999999", "123456").Result;
+            Assert.IsNotNull(token);
         }
 
         [TestMethod]
