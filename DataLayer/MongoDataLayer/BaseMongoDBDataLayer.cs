@@ -1,16 +1,16 @@
-﻿using MongoDB.Bson;
+﻿using DataModel.Mongo;
+using DataModel.Shared;
+using Microsoft.Extensions.Logging;
+using MongoDB.Bson;
 using MongoDB.Driver;
-using DataModel.Mongo;
-
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using DataModel.Shared;
-using System.Linq;
 
 namespace DataLayer
 {
     public class BaseMongoDBDataLayer : IMongoDbDataLayer
     {
+       
         public IMongoDatabase dbInstance;
         public IMongoCollection<ServiceProvider> serviceProviderCollection;
         public IMongoCollection<Customer> customerCollection;
@@ -26,6 +26,8 @@ namespace DataLayer
 
         public NambaDoctorContext _nambaDoctorContext;
 
+        private  ILogger logger;
+
         public IMongoDatabase DbInstance
         {
             get
@@ -34,7 +36,7 @@ namespace DataLayer
             }
         }
 
-        public BaseMongoDBDataLayer(NambaDoctorContext nambaDoctorContext)
+        public BaseMongoDBDataLayer(NambaDoctorContext nambaDoctorContext, ILogger<BaseMongoDBDataLayer> logger)
         {
             var mongoDBInstance = new MongoDBInstance();
 
@@ -50,6 +52,8 @@ namespace DataLayer
             this.serviceProviderCreatedTemplatesCollection = dbInstance.GetCollection<ServiceProviderCreatedTemplate>(ConnectionConfiguration.ServiceProviderCreatedTemplatesCollection);
 
             this._nambaDoctorContext = nambaDoctorContext;
+
+            this.logger = logger;
         }
 
         #region ServiceProvider
@@ -78,9 +82,18 @@ namespace DataLayer
         /// <inheritdoc />
         public async Task<ServiceProvider> GetServiceProviderFromRegisteredPhoneNumber(string phoneNumber)
         {
-            var spFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
-            var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
-            return result;
+            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderFromRegisteredPhoneNumber"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                var spFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
+                
+                logger.LogInformation("Calling DB to get Service provider from registerd phone number");
+                var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
+                
+                logger.LogInformation("Calling DB to get Service provider from registerd phone number");
+
+                return result;
+            }
         }
 
         /// <inheritdoc />
