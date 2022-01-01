@@ -21,7 +21,7 @@ namespace RestApi.Controllers.Provider
             this.appointmentService = appointmentService;
         }
 
-        [HttpGet("{appointmentId}/{serviceproviderid}")]
+        [HttpGet("{AppointmentId}/{Serviceproviderid}")]
         [Authorize]
         public async Task<Appointment> GetOrganisation(string AppointmentId, string ServiceProviderId)
         {

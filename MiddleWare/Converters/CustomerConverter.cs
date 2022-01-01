@@ -13,11 +13,15 @@ namespace MiddleWare.Converters
             clientCustomerProfile.FirstName = customerProfile.FirstName;
             clientCustomerProfile.LastName = customerProfile.LastName;
             clientCustomerProfile.Gender = customerProfile.Gender;
-            clientCustomerProfile.DateOfBirth = $"{customerProfile.DateOfBirth.Day}/{customerProfile.DateOfBirth.Month}{customerProfile.DateOfBirth.Year}";
+            if (customerProfile.DateOfBirth != null)
+                clientCustomerProfile.DateOfBirth = $"{customerProfile.DateOfBirth.Day}/{customerProfile.DateOfBirth.Month}{customerProfile.DateOfBirth.Year}";
 
-            var phone = customerProfile.PhoneNumbers.FirstOrDefault();
-            if (phone != null)
-                clientCustomerProfile.PhoneNumber = phone.CountryCode + phone.Number;
+            if (customerProfile.PhoneNumbers != null)
+            {
+                var phone = customerProfile.PhoneNumbers.FirstOrDefault();
+                if (phone != null)
+                    clientCustomerProfile.PhoneNumber = phone.CountryCode + phone.Number;
+            }
 
             return clientCustomerProfile;
         }

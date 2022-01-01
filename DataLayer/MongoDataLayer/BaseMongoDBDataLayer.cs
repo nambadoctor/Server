@@ -2,15 +2,17 @@
 using DataModel.Shared;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DataLayer
 {
     public class BaseMongoDBDataLayer : IMongoDbDataLayer
     {
-       
+
         public IMongoDatabase dbInstance;
         public IMongoCollection<ServiceProvider> serviceProviderCollection;
         public IMongoCollection<Customer> customerCollection;
@@ -26,7 +28,7 @@ namespace DataLayer
 
         public NambaDoctorContext _nambaDoctorContext;
 
-        private  ILogger logger;
+        private ILogger logger;
 
         public IMongoDatabase DbInstance
         {
@@ -86,10 +88,10 @@ namespace DataLayer
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 var spFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
-                
+
                 logger.LogInformation("Calling DB to get Service provider from registerd phone number");
                 var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
-                
+
                 logger.LogInformation("Calling DB to get Service provider from registerd phone number");
 
                 return result;
@@ -106,9 +108,9 @@ namespace DataLayer
                 profile => profile.OrganisationId == organisationId
                 );
 
-            var result = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProviderProfile>(project).FirstOrDefaultAsync();
+            var serviceProvider = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
 
-            return result;
+            return serviceProvider.Profiles.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -128,9 +130,16 @@ namespace DataLayer
                 profile => profile.OrganisationId == organisationId
                 );
 
-            var profiles = await this.serviceProviderCollection.Find(filter).Project<ServiceProviderProfile>(project).ToListAsync();
+            var serviceProviders = await this.serviceProviderCollection.Find(filter).Project<ServiceProvider>(project).ToListAsync();
 
-            return profiles;
+            var listOfProfiles = new List<ServiceProviderProfile>();
+
+            foreach (var sp in serviceProviders)
+            {
+                listOfProfiles.Add(sp.Profiles.FirstOrDefault());
+            }
+
+            return listOfProfiles;
         }
 
         /// <inheritdoc />
@@ -143,10 +152,10 @@ namespace DataLayer
                 appointment => appointment.AppointmentId == new ObjectId(appointmentId)
                 );
 
-            var appointment = await this.serviceProviderCollection.Find(serviceProviderFilter).Project<Appointment>(project).FirstOrDefaultAsync();
+            var serviceProvider = await this.serviceProviderCollection.Find(serviceProviderFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
 
 
-            return appointment;
+            return serviceProvider.Appointments.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -184,7 +193,14 @@ namespace DataLayer
                 sp => sp.Appointments,
                 appointment => appointment.OrganisationId == organisationId);
 
-            var appointments = await this.serviceProviderCollection.Find(combinedFilter).Project<Appointment>(project).ToListAsync();
+            var serviceProviders = await this.serviceProviderCollection.Find(combinedFilter).Project<ServiceProvider>(project).ToListAsync();
+
+            var appointments = new List<Appointment>();
+
+            foreach (var serviceProvider in serviceProviders)
+            {
+                appointments.AddRange(serviceProvider.Appointments);
+            }
 
             return appointments;
         }
@@ -227,9 +243,11 @@ namespace DataLayer
         {
             var organisationFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => profile.OrganisationId == organisationId);
 
+            var spFilter = Builders<CustomerProfile>.Filter.In(cust => cust.ServiceProviderId, serviceProviderIds);
+
             var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(
                 cust => cust.Profiles,
-                profile => serviceProviderIds.Contains(profile.ServiceProviderId) //Dont know if this will work
+                spFilter
                 );
 
             FilterDefinition<Customer> combinedFilter;
@@ -242,8 +260,9 @@ namespace DataLayer
                 combinedFilter = organisationFilter & serviceProviderFilter;
             }
 
-            var result = await this.customerCollection.Find(combinedFilter).ToListAsync();
-            return result;
+            var customers = await this.customerCollection.Find(combinedFilter).ToListAsync();
+
+            return customers;
         }
 
         /// <inheritdoc />
@@ -255,9 +274,9 @@ namespace DataLayer
                 cust => cust.Profiles,
                 profile => profile.OrganisationId.Equals(organisationId));
 
-            var profile = await this.customerCollection.Find(filter).Project<CustomerProfile>(project).FirstOrDefaultAsync();
+            var customer = await this.customerCollection.Find(filter).Project<Customer>(project).FirstOrDefaultAsync();
 
-            return profile;
+            return customer.Profiles.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -277,7 +296,14 @@ namespace DataLayer
                 cust => cust.Profiles,
                 profile => profile.OrganisationId.Equals(organisationId));
 
-            var profiles = await this.customerCollection.Find(filter).Project<CustomerProfile>(project).ToListAsync();
+            var customers = await this.customerCollection.Find(filter).Project<Customer>(project).ToListAsync();
+
+            var profiles = new List<CustomerProfile>();
+
+            foreach (var cust in customers)
+            {
+                profiles.Add(cust.Profiles.FirstOrDefault());
+            }
 
             return profiles;
         }
@@ -287,9 +313,11 @@ namespace DataLayer
         {
             var organisationFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => profile.OrganisationId == organisationId);
 
+            var spFilter = Builders<CustomerProfile>.Filter.In(custProfile => custProfile.ServiceProviderId, serviceProviderIds);
+
             var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(
                 cust => cust.Profiles,
-                profile => serviceProviderIds.Contains(profile.ServiceProviderId) //Dont know if this will work
+                spFilter
                 );
 
             FilterDefinition<Customer> combinedFilter;
@@ -307,9 +335,16 @@ namespace DataLayer
                 profile => profile.OrganisationId == organisationId
                 );
 
-            var result = await this.customerCollection.Find(combinedFilter).Project<CustomerProfile>(project).ToListAsync();
+            var customers = await this.customerCollection.Find(combinedFilter).Project<Customer>(project).ToListAsync();
 
-            return result;
+            var profiles = new List<CustomerProfile>();
+
+            foreach (var cust in customers)
+            {
+                profiles.Add(cust.Profiles.FirstOrDefault());
+            }
+
+            return profiles;
         }
 
         /// <inheritdoc />
@@ -328,9 +363,9 @@ namespace DataLayer
                 sr => sr.AppointmentId == appointmentId
                 );
 
-            var result = await this.customerCollection.Find(serviceRequestFilter).Project<ServiceRequest>(project).FirstOrDefaultAsync();
+            var customer = await this.customerCollection.Find(serviceRequestFilter).Project<Customer>(project).FirstOrDefaultAsync();
 
-            return serviceRequest;
+            return customer.ServiceRequests.FirstOrDefault();
         }
 
         /// <inheritdoc />
@@ -342,43 +377,12 @@ namespace DataLayer
 
             var project = Builders<Customer>.Projection.Include(_ => true);
 
-            var result = await this.customerCollection
+            var customer = await this.customerCollection
                 .Find(custFilter)
-                .Project<ServiceRequest>(project)
-                .ToListAsync();
+                .Project<Customer>(project)
+                .FirstOrDefaultAsync();
 
-            return result;
-        }
-
-        /// <inheritdoc />
-        public async Task<List<ServiceRequest>> GetServiceRequests(List<string> serviceRequestIds)
-        {
-            List<ServiceRequest> serviceRequests = new List<ServiceRequest>();
-
-            var objectIdList = new List<ObjectId>();
-            foreach (var srId in serviceRequestIds)
-            {
-                objectIdList.Add(new ObjectId(srId));
-            }
-
-            var serviceRequestFilter = Builders<Customer>.Filter.ElemMatch(
-                cust => cust.ServiceRequests,
-                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId) //Dont know if this will work
-                );
-
-            var project = Builders<Customer>.Projection.ElemMatch(
-                cust => cust.ServiceRequests,
-                serviceRequest => objectIdList.Contains(serviceRequest.ServiceRequestId) //Dont know if this will work
-                );
-
-            serviceRequests.AddRange(
-                await this.customerCollection
-                .Find(serviceRequestFilter)
-                .Project<ServiceRequest>(project)
-                .ToListAsync()
-                );
-
-            return serviceRequests;
+            return customer.ServiceRequests;
         }
 
 
