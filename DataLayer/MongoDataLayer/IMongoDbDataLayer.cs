@@ -138,13 +138,6 @@ namespace DataLayer
         public Task<List<ServiceRequest>> GetServiceRequestsOfCustomer(string customerId);
 
         /// <summary>
-        /// Get all service requests matching Ids
-        /// </summary>
-        /// <param name="serviceRequestIds"></param>
-        /// <returns></returns>
-        public Task<List<ServiceRequest>> GetServiceRequests(List<string> serviceRequestIds);
-
-        /// <summary>
         /// Get single appointment data from Id
         /// </summary>
         /// <param name="serviceProviderId"></param>
