@@ -2,6 +2,7 @@
 using DataModel.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using MiddleWare.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -15,32 +16,43 @@ namespace RestApi.Controllers.Provider
     [ApiController]
     public class OrganisationController : ControllerBase
     {
-        private NambaDoctorContext nambaDoctorContext;
         private IOrganisationService organisationService;
         private IAppointmentService appointmentService;
         private ICustomerService customerService;
-
-        public OrganisationController(NambaDoctorContext nambaDoctorContext, IOrganisationService organisationService, IAppointmentService appointmentService, ICustomerService customerService)
+        private ILogger logger;
+        
+        public OrganisationController(IOrganisationService organisationService, 
+                                        IAppointmentService appointmentService, 
+                                        ICustomerService customerService,
+                                        ILogger<OrganisationController> logger)
         {
-            this.nambaDoctorContext = nambaDoctorContext;
             this.organisationService = organisationService;
             this.appointmentService = appointmentService;
             this.customerService = customerService;
+            this.logger = logger;
         }
 
         [HttpGet("{OrganisationId}")]
         [Authorize]
         public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
+            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
 
-            if (string.IsNullOrWhiteSpace(OrganisationId))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new ArgumentException("Organisation Id was null");
+                try
+                {
+                    logger.LogInformation("Start GetOrganisation");
+
+                    var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
+
+                    return organisations;
+                }
+                finally
+                {
+                    logger.LogInformation("End GetOrganisation");
+                }
             }
-
-            var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
-
-            return organisations;
         }
 
         [HttpGet("{OrganisationId}/appointments")]
