@@ -10,12 +10,10 @@ namespace MiddleWare.Services
     public class OrganisationService : IOrganisationService
     {
         private IMongoDbDataLayer datalayer;
-        private NambaDoctorContext nambaDoctorContext;
 
-        public OrganisationService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext)
+        public OrganisationService(IMongoDbDataLayer dataLayer)
         {
             this.datalayer = dataLayer;
-            this.nambaDoctorContext = nambaDoctorContext;
         }
 
         public async Task<Organisation> GetOrganisationAsync(string OrganisationId)

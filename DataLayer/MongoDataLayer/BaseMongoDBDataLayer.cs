@@ -39,7 +39,7 @@ namespace DataLayer
             }
         }
 
-        public BaseMongoDBDataLayer(NambaDoctorContext nambaDoctorContext, ILogger<BaseMongoDBDataLayer> logger)
+        public BaseMongoDBDataLayer(ILogger<BaseMongoDBDataLayer> logger)
         {
             var mongoDBInstance = new MongoDBInstance();
 
@@ -53,8 +53,6 @@ namespace DataLayer
             this.testUserCollection = dbInstance.GetCollection<TestUser>(ConnectionConfiguration.TestUsersCollection);
             this.organisationCollection = dbInstance.GetCollection<Organisation>(ConnectionConfiguration.OrganisationCollection);
             this.serviceProviderCreatedTemplatesCollection = dbInstance.GetCollection<ServiceProviderCreatedTemplate>(ConnectionConfiguration.ServiceProviderCreatedTemplatesCollection);
-
-            this._nambaDoctorContext = nambaDoctorContext;
 
             this.logger = logger;
         }

@@ -61,7 +61,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<IAppointmentService, AppointmentService>();
 
             //Init datalayer with telemetry
-            services.AddScoped<IMongoDbDataLayer, BaseMongoDBDataLayer>();
+            services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

@@ -9,12 +9,10 @@ namespace MiddleWare.Services
     public class CustomerService : ICustomerService
     {
         private IMongoDbDataLayer datalayer;
-        private NambaDoctorContext nambaDoctorContext;
 
-        public CustomerService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext)
+        public CustomerService(IMongoDbDataLayer dataLayer)
         {
             this.datalayer = dataLayer;
-            this.nambaDoctorContext = nambaDoctorContext;
         }
         public async Task<CustomerProfile> GetCustomer(string customerId, string organisationId)
         {

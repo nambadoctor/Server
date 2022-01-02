@@ -11,12 +11,10 @@ namespace MiddleWare.Services
     public class ServiceProviderService : IServiceProviderService
     {
         private IMongoDbDataLayer datalayer;
-        private NambaDoctorContext nambaDoctorContext;
         private ILogger logger;
 
-        public ServiceProviderService(IMongoDbDataLayer dataLayer, NambaDoctorContext nambaDoctorContext, ILogger<ServiceProviderService> logger)
+        public ServiceProviderService(IMongoDbDataLayer dataLayer, ILogger<ServiceProviderService> logger)
         {
-            this.nambaDoctorContext = nambaDoctorContext;
             this.datalayer = dataLayer;
             this.logger = logger;
         }
