@@ -40,20 +40,6 @@ namespace RestApi.Controllers.Provider
             {
                 try
                 {
-                    logger.LogInformation("Starting null check");
-
-                    if(string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid ))
-                    {
-                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync ServiceProviderId is null");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
-                    {
-                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync OrganisationId is null");
-                    }
-                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
-                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
-
                     logger.LogInformation("Start GetServiceProviderAsync");
 
                     var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);

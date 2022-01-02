@@ -3,6 +3,7 @@ using DataModel.Shared;
 using Microsoft.VisualBasic;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
+using MongoDB.Bson;
 using Client = DataModel.Client.Provider;
 
 namespace MiddleWare.Services
@@ -83,6 +84,20 @@ namespace MiddleWare.Services
         }
         public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
+            logger.LogInformation("Starting null check");
+
+            if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
+            {
+                throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
+            }
+
+            if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
+            {
+                throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
+            }
+
+            NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+            NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
             var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
 
             if (serviceProviderProfile == null)
