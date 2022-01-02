@@ -88,37 +88,69 @@ namespace DataLayer
             using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderFromRegisteredPhoneNumber"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                var spFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
+                try
+                {
+                    logger.LogInformation("DB Execution start");
 
-                logger.LogInformation("Calling DB to get Service provider from registerd phone number");
-                var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
+                    var spFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
 
-                logger.LogInformation("Calling DB to get Service provider from registerd phone number");
+                    var result = await this.serviceProviderCollection.Find(spFilter).FirstOrDefaultAsync();
 
-                return result;
+                    return result;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation("DB execution end with Exception: {0}", ex.ToString());
+
+                    throw;
+                }
+                finally
+                {
+                    logger.LogInformation("DB Execution end");
+                }
             }
         }
 
         /// <inheritdoc />
         public async Task<ServiceProviderProfile> GetServiceProviderProfile(string serviceProviderId, string organisationId)
         {
-            ServiceProviderProfile serviceProviderProfile = null;
-
-            var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
-
-            var project = Builders<ServiceProvider>.Projection.ElemMatch(
-                sp => sp.Profiles,
-                profile => profile.OrganisationId == organisationId
-                );
-
-            var serviceProvider = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
-
-            if(serviceProvider == null && serviceProvider.Profiles != null)
+            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderProfile"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                serviceProviderProfile =  serviceProvider.Profiles.FirstOrDefault();
+                try
+                {
+                    logger.LogInformation("DB Execution start");
+
+                    ServiceProviderProfile serviceProviderProfile = null;
+
+                    var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+
+                    var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                        sp => sp.Profiles,
+                        profile => profile.OrganisationId == organisationId
+                        );
+
+                    var serviceProvider = await this.serviceProviderCollection.Find(spFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
+
+                    if (serviceProvider != null && serviceProvider.Profiles != null)
+                    {
+                        serviceProviderProfile = serviceProvider.Profiles.FirstOrDefault();
+                    }
+
+                    return serviceProviderProfile;
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation("DB execution end with Exception: {0}", ex.ToString());
+
+                    throw;
+                }
+                finally
+                {
+                    logger.LogInformation("DB Execution end");
+                }
             }
 
-            return serviceProviderProfile;
         }
 
         /// <inheritdoc />

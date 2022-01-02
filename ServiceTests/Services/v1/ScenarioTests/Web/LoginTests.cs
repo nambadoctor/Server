@@ -1,4 +1,5 @@
 ﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+using MongoDB.Bson;
 using NambaDoctorServiceTests.Services.Auth;
 using System;
 using System.Net.Http;
@@ -24,7 +25,10 @@ namespace NambaDoctorServiceTests.Services.v1.ScenarioTests.Web
         public async Task GetServiceProvider()
         {
             HttpClient client = new HttpClient();
-            string spUrl = "https://localhost:44307/api/provider/serviceprovider/12345678/organisation/987654321";
+            var spId = ObjectId.GenerateNewId().ToString();
+            var orgId = ObjectId.GenerateNewId().ToString();
+
+            string spUrl = String.Format("https://localhost:44307/api/provider/serviceprovider/{0}/organisation/{1}",spId,orgId);
 
             using (var request = new HttpRequestMessage(HttpMethod.Get, spUrl))
             {

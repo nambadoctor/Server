@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MiddleWare.Interfaces;
+using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -41,14 +42,14 @@ namespace RestApi.Controllers.Provider
                 {
                     logger.LogInformation("Starting null check");
 
-                    if(string.IsNullOrWhiteSpace(OrganisationId))
-                    {
-                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync OrganisationId is null");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(ServiceProviderId))
+                    if(string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid ))
                     {
                         throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync ServiceProviderId is null");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
+                    {
+                        throw new ArgumentNullException("ServiceProviderController:GetServiceProviderAsync OrganisationId is null");
                     }
                     NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
                     NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
