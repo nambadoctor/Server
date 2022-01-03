@@ -10,6 +10,8 @@ namespace DataModel.Mongo
     {
         [BsonId]
         public ObjectId AppointmentId { get; set; }
+        public string ServiceRequestId { get; set; }
+
         public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string CustomerId { get; set; }
