@@ -1,6 +1,5 @@
 ﻿using DataLayer;
 using DataModel.Client.Provider;
-using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 
@@ -36,6 +35,20 @@ namespace MiddleWare.Services
             }
 
             return clientCustomers;
+        }
+
+        public async Task<CustomerProfile> SetCustomerProfile(CustomerProfile customerProfile)
+        {
+            if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
+            {
+                throw new InvalidDataException("No valid phone number passed");
+            }
+
+            var generatedCustomerProfile = await datalayer.SetCustomerProfile(CustomerConverter.ConvertToMongoCustomerProfile(customerProfile));
+
+            var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile);
+
+            return clientCustomerProfile;
         }
     }
 }

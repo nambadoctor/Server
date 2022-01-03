@@ -1,8 +1,9 @@
 ﻿using DataLayer;
-using DataModel.Client.Provider;
-using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
+using MongoDB.Bson;
+using Client = DataModel.Client.Provider;
+using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Services
 {
@@ -14,8 +15,18 @@ namespace MiddleWare.Services
         {
             this.datalayer = dataLayer;
         }
-        public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
+        public async Task<Client.Appointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
+            if (string.IsNullOrWhiteSpace(serviceProviderId) || ObjectId.TryParse(serviceProviderId, out ObjectId spId) == false)
+            {
+                throw new ArgumentException("Service provider Id was invalid");
+            }
+
+            if (string.IsNullOrWhiteSpace(appointmentId) || ObjectId.TryParse(appointmentId, out ObjectId appId) == false)
+            {
+                throw new ArgumentException("Appointment Id was invalid");
+            }
+
             var appointment = await datalayer.GetAppointment(serviceProviderId, appointmentId);
 
             var serviceProviderProfile = await datalayer.GetServiceProviderProfile(serviceProviderId, appointment.OrganisationId);
@@ -27,11 +38,11 @@ namespace MiddleWare.Services
             return appointmentData;
         }
 
-        public async Task<List<Appointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
+        public async Task<List<Client.Appointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
         {
-            if (string.IsNullOrWhiteSpace(organsiationId))
+            if (string.IsNullOrWhiteSpace(organsiationId) || ObjectId.TryParse(organsiationId, out ObjectId orgId) == false)
             {
-                throw new ArgumentException("Organisation Id was null");
+                throw new ArgumentException("Organisation Id was invalid");
             }
 
             var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
@@ -51,7 +62,7 @@ namespace MiddleWare.Services
 
             //Piece together all the objects
 
-            var listToReturn = new List<Appointment>();
+            var listToReturn = new List<Client.Appointment>();
 
             foreach (var appointment in appointments)
             {
@@ -74,5 +85,61 @@ namespace MiddleWare.Services
             return listToReturn;
         }
 
+        public async Task<Client.Appointment> SetAppointment(Client.Appointment appointment)
+        {
+            //Do validations here for cust, org and service provider id
+            if (string.IsNullOrWhiteSpace(appointment.OrganisationId) || ObjectId.TryParse(appointment.OrganisationId, out ObjectId orgId) == false)
+            {
+                throw new ArgumentException("Organisation Id was invalid");
+            }
+
+            if (string.IsNullOrWhiteSpace(appointment.ServiceProviderId) || ObjectId.TryParse(appointment.ServiceProviderId, out ObjectId spId) == false)
+            {
+                throw new ArgumentException("Service provider Id was invalid");
+            }
+
+            if (string.IsNullOrWhiteSpace(appointment.CustomerId) || ObjectId.TryParse(appointment.CustomerId, out ObjectId custId) == false)
+            {
+                throw new ArgumentException("Customer Id was invalid");
+            }
+            //Here appointment id is allowed to be null but if not then throw error if invalid id
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
+            {
+                throw new ArgumentException("Appointment Id was invalid");
+            }
+            //New appointment
+            if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
+            {
+                var serviceRequest = new Mongo.ServiceRequest();
+
+                //Service request and appointment both need Ids
+                var appointmentId = ObjectId.GenerateNewId();
+                var serviceRequestId = ObjectId.GenerateNewId();
+
+                appointment.AppointmentId = appointmentId.ToString();
+                appointment.ServiceRequestId = serviceRequestId.ToString();
+
+                serviceRequest.ServiceRequestId = serviceRequestId;
+                serviceRequest.AppointmentId = appointmentId.ToString();
+
+                var generatedAppointment = await datalayer.SetAppointmentWithServiceRequest(
+                    AppointmentConverter.ConvertToMongoAppointmentData(appointment),
+                    serviceRequest
+                    );
+
+                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(appointment.ServiceProviderName, generatedAppointment, appointment.CustomerName);
+
+                return clientAppointment;
+            }
+            else
+            {
+                //Existing appointment update
+                var generatedAppointment = await datalayer.SetAppointment(AppointmentConverter.ConvertToMongoAppointmentData(appointment));
+
+                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(appointment.ServiceProviderName, generatedAppointment, appointment.CustomerName);
+
+                return clientAppointment;
+            }
+        }
     }
 }

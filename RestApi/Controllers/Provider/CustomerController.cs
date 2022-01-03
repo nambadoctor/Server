@@ -23,7 +23,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{Customerid}/{Organisationid}")]
         [Authorize]
-        public async Task<CustomerProfile> GetOrganisation(string CustomerId, string OrganisationId)
+        public async Task<CustomerProfile> GetCustomerProfile(string CustomerId, string OrganisationId)
         {
 
             if (string.IsNullOrWhiteSpace(CustomerId))
@@ -34,6 +34,15 @@ namespace RestApi.Controllers.Provider
             var customerProfile = await customerService.GetCustomer(CustomerId, OrganisationId);
 
             return customerProfile;
+        }
+
+        [HttpPut()]
+        [Authorize]
+        public async Task<CustomerProfile> SetCustomerProfile([FromBody] CustomerProfile customerProfile)
+        {
+            var customerProfileToReturn = await customerService.SetCustomerProfile(customerProfile);
+
+            return customerProfileToReturn;
         }
     }
 }

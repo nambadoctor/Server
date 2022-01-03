@@ -5,6 +5,8 @@ namespace DataModel.Client.Provider
     public class Appointment
     {
         public string AppointmentId { get; set; }
+        public string OrganisationId { get; set; }
+        public string ServiceRequestId { get; set; }
         public string ServiceProviderId { get; set; }
         public string ServiceProviderName { get; set; }
         public string CustomerId { get; set; }

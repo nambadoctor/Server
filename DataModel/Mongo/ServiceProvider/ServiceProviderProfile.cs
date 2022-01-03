@@ -25,5 +25,6 @@ namespace DataModel.Mongo
         public List<Education> Educations { get; set; }
         public List<WorkExperience> WorkExperiences { get; set; }
         public string RegistrationNumber { get; set; }
+        public int AppointmentDuration { get; set; }
     }
 }

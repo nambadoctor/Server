@@ -1,5 +1,6 @@
 ﻿using DataModel.Mongo;
 using DataModel.Shared;
+using DataModel.Shared.Exceptions;
 using Microsoft.Extensions.Logging;
 using MongoDB.Bson;
 using MongoDB.Bson.Serialization;
@@ -15,19 +16,15 @@ namespace DataLayer
     {
 
         public IMongoDatabase dbInstance;
+
         public IMongoCollection<ServiceProvider> serviceProviderCollection;
         public IMongoCollection<Customer> customerCollection;
-        public IMongoCollection<AutofillMedicine> autoFillMedicineCollection;
-
-        public IMongoCollection<Category> serviceProviderCategoriesCollection;
-        public IMongoCollection<BlockedUser> blockedUsersCollection;
-        public IMongoCollection<TestUser> testUserCollection;
-
         public IMongoCollection<Organisation> organisationCollection;
-        public IMongoCollection<ServiceProviderCreatedTemplate> serviceProviderCreatedTemplatesCollection;
 
 
         public NambaDoctorContext _nambaDoctorContext;
+
+        private MongoClient mongoClient;
 
         private ILogger logger;
 
@@ -44,15 +41,11 @@ namespace DataLayer
             var mongoDBInstance = new MongoDBInstance();
 
             dbInstance = mongoDBInstance.GetMongoDB();
+            mongoClient = mongoDBInstance.GetMongoClient();
 
             this.serviceProviderCollection = dbInstance.GetCollection<ServiceProvider>(ConnectionConfiguration.ServiceProvideCollection);
             this.customerCollection = dbInstance.GetCollection<Customer>(ConnectionConfiguration.CustomerCollection);
-            this.autoFillMedicineCollection = dbInstance.GetCollection<AutofillMedicine>(ConnectionConfiguration.MedicineAutoFillCollection);
-            this.serviceProviderCategoriesCollection = dbInstance.GetCollection<Category>(ConnectionConfiguration.ServiceProviderCategoriesCollection);
-            this.blockedUsersCollection = dbInstance.GetCollection<BlockedUser>(ConnectionConfiguration.BlockedUsersCollection);
-            this.testUserCollection = dbInstance.GetCollection<TestUser>(ConnectionConfiguration.TestUsersCollection);
             this.organisationCollection = dbInstance.GetCollection<Organisation>(ConnectionConfiguration.OrganisationCollection);
-            this.serviceProviderCreatedTemplatesCollection = dbInstance.GetCollection<ServiceProviderCreatedTemplate>(ConnectionConfiguration.ServiceProviderCreatedTemplatesCollection);
 
             this.logger = logger;
         }
@@ -176,6 +169,21 @@ namespace DataLayer
         }
 
         /// <inheritdoc />
+        public async Task<List<ServiceProviderAvailability>> GetServiceProviderAvailabilities(string serviceProviderId, string organisationId)
+        {
+            var filter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+            var availabilityProject = Builders<ServiceProvider>.Projection.ElemMatch(sp => sp.Availabilities, availability => availability.OrganisationId == organisationId);
+
+            var serviceProvider = await this.serviceProviderCollection.Find(filter).Project<ServiceProvider>(availabilityProject).FirstOrDefaultAsync();
+
+            var availabilities = new List<ServiceProviderAvailability>();
+
+            availabilities.AddRange(serviceProvider.Availabilities);
+
+            return availabilities;
+        }
+
+        /// <inheritdoc />
         public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
             var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
@@ -236,6 +244,94 @@ namespace DataLayer
             }
 
             return appointments;
+        }
+
+        public async Task<Appointment> SetAppointment(Appointment appointment)
+        {
+            if (appointment.AppointmentId == ObjectId.Empty)
+            {
+                appointment.AppointmentId = ObjectId.GenerateNewId();
+            }
+
+            var filter = Builders<ServiceProvider>.Filter;
+
+            var nestedFilter = Builders<ServiceProvider>.Filter.And(
+                filter.Eq(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId)),
+                filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId)));
+
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+
+            if (appointment.ServiceRequestId != null)
+            {
+                update = update.Set("Appointments.$.ServiceRequestId", appointment.ServiceRequestId);
+            }
+
+            if (appointment.CustomerId != null)
+            {
+                update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
+            }
+
+            if (appointment.CustomerProfileId != null)
+            {
+                update = update.Set("Appointments.$.CustomerProfileId", appointment.CustomerProfileId);
+            }
+
+            if (appointment.OrganisationId != null)
+            {
+                update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
+            }
+
+            if (appointment.Status != null)
+            {
+                update = update.Set("Appointments.$.Status", appointment.Status);
+            }
+
+            if (appointment.AppointmentType != null)
+            {
+                update = update.Set("Appointments.$.AppointmentType", appointment.AppointmentType);
+            }
+
+            if (appointment.PaymentDetail != null)
+            {
+                update = update.Set("Appointments.$.PaymentDetail", appointment.PaymentDetail);
+            }
+
+            if (appointment.AddressId != null)
+            {
+                update = update.Set("Appointments.$.AddressId", appointment.AddressId);
+            }
+
+            if (appointment.ScheduledAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);
+            }
+
+            if (appointment.ScheduledAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
+            }
+
+            if (appointment.ActualAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentStartTime", appointment.ActualAppointmentStartTime);
+            }
+
+            if (appointment.ActualAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
+            }
+
+            if (appointment.Cancellation != null)
+            {
+                appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
+                update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
+            }
+
+
+
+            var result = await this.serviceProviderCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return appointment;
         }
 
         #endregion ServiceProvider
@@ -381,6 +477,105 @@ namespace DataLayer
         }
 
         /// <inheritdoc />
+        public async Task<CustomerProfile> SetCustomerProfile(CustomerProfile customerProfile)
+        {
+            ObjectId customerId;
+            if (string.IsNullOrWhiteSpace(customerProfile.CustomerId))
+            {
+                customerId = ObjectId.GenerateNewId();
+                customerProfile.CustomerId = customerId.ToString();
+                await SetCustomerWithAuthInfo(customerId, customerProfile.PhoneNumbers.FirstOrDefault());
+            }
+            else
+            {
+                customerId = new ObjectId(customerProfile.CustomerId);
+            }
+
+            if (customerProfile.CustomerProfileId == ObjectId.Empty)
+            {
+                customerProfile.CustomerProfileId = ObjectId.GenerateNewId();
+            }
+
+            var filter = Builders<Customer>.Filter;
+
+            var nestedFilter = filter.And(
+                filter.Eq(cust => cust.CustomerId, customerId),
+                filter.ElemMatch(cust => cust.Profiles, profile => profile.CustomerProfileId == customerProfile.CustomerProfileId));
+
+            var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, customerId);
+
+            if (customerProfile.CustomerId != null)
+            {
+                update = update.Set("Profiles.$.CustomerId", customerProfile.CustomerId);
+            }
+
+            if (customerProfile.FirstName != null)
+            {
+                update = update.Set("Profiles.$.FirstName", customerProfile.FirstName);
+            }
+
+            if (customerProfile.LastName != null)
+            {
+                update = update.Set("Profiles.$.LastName", customerProfile.LastName);
+            }
+
+            if (customerProfile.Gender != null)
+            {
+                update = update.Set("Profiles.$.Gender", customerProfile.Gender);
+            }
+
+            if (customerProfile.DateOfBirth != null)
+            {
+                update = update.Set("Profiles.$.DateOfBirth", customerProfile.DateOfBirth);
+            }
+
+            if (customerProfile.PhoneNumbers != null)
+            {
+                update = update.Set("Profiles.$.PhoneNumbers", customerProfile.PhoneNumbers);
+            }
+
+            if (customerProfile.Addresses != null)
+            {
+                update = update.Set("Profiles.$.Addresses", customerProfile.Addresses);
+            }
+
+            if (customerProfile.EmailAddress != null)
+            {
+                update = update.Set("Profiles.$.EmailAddress", customerProfile.EmailAddress);
+            }
+
+            if (customerProfile.OrganisationId != null)
+            {
+                update = update.Set("Profiles.$.OrganisationId", customerProfile.OrganisationId);
+            }
+
+            if (customerProfile.ServiceProviderId != null)
+            {
+                update = update.Set("Profiles.$.ServiceProviderId", customerProfile.ServiceProviderId);
+            }
+
+            var result = await this.customerCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return customerProfile;
+        }
+
+        private async Task SetCustomerWithAuthInfo(ObjectId customerId, PhoneNumber phoneNumber)
+        {
+            var customer = new Customer();
+
+            customer.CustomerId = customerId;
+            customer.AuthInfos = new List<AuthInfo>();
+
+            var authInfo = new AuthInfo();
+            authInfo.AuthId = phoneNumber.CountryCode + phoneNumber.Number;
+            authInfo.AuthType = "PhoneNumber";
+
+            customer.AuthInfos.Add(authInfo);
+
+            await this.customerCollection.InsertOneAsync(customer);
+        }
+
+        /// <inheritdoc />
         public async Task<ServiceRequest> GetServiceRequest(string appointmentId)
         {
 
@@ -416,6 +611,93 @@ namespace DataLayer
                 .FirstOrDefaultAsync();
 
             return customer.ServiceRequests;
+        }
+
+        /// <inheritdoc />
+        public async Task<ServiceRequest> SetServiceRequest(ServiceRequest serviceRequest)
+        {
+            ObjectId customerId;
+            if (string.IsNullOrWhiteSpace(serviceRequest.CustomerId))
+            {
+                customerId = ObjectId.GenerateNewId();
+                serviceRequest.CustomerId = customerId.ToString();
+            }
+            else
+            {
+                customerId = new ObjectId(serviceRequest.CustomerId);
+            }
+
+            if (serviceRequest.ServiceRequestId == ObjectId.Empty)
+            {
+                serviceRequest.ServiceRequestId = ObjectId.GenerateNewId();
+            }
+
+            var filter = Builders<Customer>.Filter;
+
+            var nestedFilter = filter.And(
+                filter.Eq(cust => cust.CustomerId, customerId),
+                filter.ElemMatch(cust => cust.ServiceRequests, sr => sr.ServiceRequestId == serviceRequest.ServiceRequestId));
+
+            var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, customerId);
+
+            if (serviceRequest.CustomerId != null)
+            {
+                update = update.Set("ServiceRequests.$.CustomerId", serviceRequest.CustomerId);
+            }
+
+            if (serviceRequest.ServiceProviderId != null)
+            {
+                update = update.Set("ServiceRequests.$.ServiceProviderId", serviceRequest.ServiceProviderId);
+            }
+
+            if (serviceRequest.AppointmentId != null)
+            {
+                update = update.Set("ServiceRequests.$.AppointmentId", serviceRequest.AppointmentId);
+            }
+
+            if (serviceRequest.Reason != null)
+            {
+                update = update.Set("ServiceRequests.$.Reason", serviceRequest.Reason);
+            }
+
+            if (serviceRequest.Examination != null)
+            {
+                update = update.Set("ServiceRequests.$.Examination", serviceRequest.Examination);
+            }
+
+            if (serviceRequest.Allergies != null)
+            {
+                update = update.Set("ServiceRequests.$.Allergies", serviceRequest.Allergies);
+            }
+
+            if (serviceRequest.Histories != null)
+            {
+                update = update.Set("ServiceRequests.$.Histories", serviceRequest.Histories);
+            }
+
+            if (serviceRequest.Diagnosis != null)
+            {
+                update = update.Set("ServiceRequests.$.Diagnosis", serviceRequest.Diagnosis);
+            }
+
+            if (serviceRequest.Vitals != null)
+            {
+                update = update.Set("ServiceRequests.$.Vitals", serviceRequest.Vitals);
+            }
+
+            if (serviceRequest.AdditionalDetails != null)
+            {
+                update = update.Set("ServiceRequests.$.AdditionalDetails", serviceRequest.AdditionalDetails);
+            }
+
+            if (serviceRequest.Advices != null)
+            {
+                update = update.Set("ServiceRequests.$.Advices", serviceRequest.Advices);
+            }
+
+            var result = await this.customerCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return serviceRequest;
         }
 
 
@@ -468,7 +750,192 @@ namespace DataLayer
 
         }
 
+        /// <inheritdoc />
+        public async Task<Appointment> SetAppointmentWithServiceRequest(Appointment appointment, ServiceRequest serviceRequest)
+        {
+            var session = await mongoClient.StartSessionAsync();
+
+            var transactionOptions = new TransactionOptions(
+                                                    readConcern: ReadConcern.Snapshot,
+                                                    writeConcern: WriteConcern.WMajority);
+            session.StartTransaction(transactionOptions);
+
+            try
+            {
+
+                //When session is passed, it gets used as a write option parameter and to set collection config 
+                await SetAppointmentWithSession(session, appointment);
+                await SetServiceRequestWithSession(session, serviceRequest);
+
+                session.CommitTransaction();
+
+                return appointment;
+            }
+            catch (Exception ex)
+            {
+                session.AbortTransaction();
+                throw new MongoTransactionException(ex.Message, ex.InnerException);
+            }
+
+        }
+
+        private async Task<bool> SetServiceRequestWithSession(IClientSessionHandle session, ServiceRequest serviceRequest)
+        {
+            var customerCollection = session.Client.GetDatabase(ConnectionConfiguration.MongoDatabaseName).GetCollection<Customer>(ConnectionConfiguration.CustomerCollection);
+
+            var filter = Builders<Customer>.Filter;
+
+            var nestedFilter = filter.And(
+                filter.Eq(cust => cust.CustomerId, new ObjectId(serviceRequest.CustomerId)),
+                filter.ElemMatch(cust => cust.ServiceRequests, sr => sr.ServiceRequestId == serviceRequest.ServiceRequestId));
+
+            var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, new ObjectId(serviceRequest.CustomerId));
+
+            if (serviceRequest.CustomerId != null)
+            {
+                update = update.Set("ServiceRequests.$.CustomerId", serviceRequest.CustomerId);
+            }
+
+            if (serviceRequest.ServiceProviderId != null)
+            {
+                update = update.Set("ServiceRequests.$.ServiceProviderId", serviceRequest.ServiceProviderId);
+            }
+
+            if (serviceRequest.AppointmentId != null)
+            {
+                update = update.Set("ServiceRequests.$.AppointmentId", serviceRequest.AppointmentId);
+            }
+
+            if (serviceRequest.Reason != null)
+            {
+                update = update.Set("ServiceRequests.$.Reason", serviceRequest.Reason);
+            }
+
+            if (serviceRequest.Examination != null)
+            {
+                update = update.Set("ServiceRequests.$.Examination", serviceRequest.Examination);
+            }
+
+            if (serviceRequest.Allergies != null)
+            {
+                update = update.Set("ServiceRequests.$.Allergies", serviceRequest.Allergies);
+            }
+
+            if (serviceRequest.Histories != null)
+            {
+                update = update.Set("ServiceRequests.$.Histories", serviceRequest.Histories);
+            }
+
+            if (serviceRequest.Diagnosis != null)
+            {
+                update = update.Set("ServiceRequests.$.Diagnosis", serviceRequest.Diagnosis);
+            }
+
+            if (serviceRequest.Vitals != null)
+            {
+                update = update.Set("ServiceRequests.$.Vitals", serviceRequest.Vitals);
+            }
+
+            if (serviceRequest.AdditionalDetails != null)
+            {
+                update = update.Set("ServiceRequests.$.AdditionalDetails", serviceRequest.AdditionalDetails);
+            }
+
+            if (serviceRequest.Advices != null)
+            {
+                update = update.Set("ServiceRequests.$.Advices", serviceRequest.Advices);
+            }
+
+            var srResult = await customerCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return srResult.IsAcknowledged;
+        }
+
+        private async Task<bool> SetAppointmentWithSession(IClientSessionHandle session, Appointment appointment)
+        {
+            var serviceProviderCollection = session.Client.GetDatabase(ConnectionConfiguration.MongoDatabaseName).GetCollection<ServiceProvider>(ConnectionConfiguration.ServiceProvideCollection);
+
+            var filter = Builders<ServiceProvider>.Filter;
+
+            var nestedFilter = Builders<ServiceProvider>.Filter.And(
+                filter.Eq(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId)),
+                filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId)));
+
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+
+            if (appointment.ServiceRequestId != null)
+            {
+                update = update.Set("Appointments.$.ServiceRequestId", appointment.ServiceRequestId);
+            }
+
+            if (appointment.CustomerId != null)
+            {
+                update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
+            }
+
+            if (appointment.CustomerProfileId != null)
+            {
+                update = update.Set("Appointments.$.CustomerProfileId", appointment.CustomerProfileId);
+            }
+
+            if (appointment.OrganisationId != null)
+            {
+                update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
+            }
+
+            if (appointment.Status != null)
+            {
+                update = update.Set("Appointments.$.Status", appointment.Status);
+            }
+
+            if (appointment.AppointmentType != null)
+            {
+                update = update.Set("Appointments.$.AppointmentType", appointment.AppointmentType);
+            }
+
+            if (appointment.PaymentDetail != null)
+            {
+                update = update.Set("Appointments.$.PaymentDetail", appointment.PaymentDetail);
+            }
+
+            if (appointment.AddressId != null)
+            {
+                update = update.Set("Appointments.$.AddressId", appointment.AddressId);
+            }
+
+            if (appointment.ScheduledAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);
+            }
+
+            if (appointment.ScheduledAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
+            }
+
+            if (appointment.ActualAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentStartTime", appointment.ActualAppointmentStartTime);
+            }
+
+            if (appointment.ActualAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
+            }
+
+            if (appointment.Cancellation != null)
+            {
+                appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
+                update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
+            }
+
+            var result = await serviceProviderCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return result.IsAcknowledged;
+        }
+
         #endregion CrossDocument
+
 
     }
 }

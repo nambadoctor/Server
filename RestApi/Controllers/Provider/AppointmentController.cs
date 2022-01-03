@@ -3,7 +3,6 @@ using DataModel.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using MiddleWare.Interfaces;
-using System;
 using System.Threading.Tasks;
 
 namespace RestApi.Controllers.Provider
@@ -23,17 +22,20 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{AppointmentId}/{Serviceproviderid}")]
         [Authorize]
-        public async Task<Appointment> GetOrganisation(string AppointmentId, string ServiceProviderId)
+        public async Task<Appointment> GetAppointment(string AppointmentId, string ServiceProviderId)
         {
-
-            if (string.IsNullOrWhiteSpace(AppointmentId))
-            {
-                throw new ArgumentException("Appointment Id was null");
-            }
 
             var appointment = await appointmentService.GetAppointment(ServiceProviderId, AppointmentId);
 
             return appointment;
+        }
+
+        [HttpPut()]
+        public async Task<Appointment> SetAppointment([FromBody] Appointment appointment)
+        {
+            var appointmentToReturn = await appointmentService.SetAppointment(appointment);
+
+            return appointmentToReturn;
         }
     }
 }

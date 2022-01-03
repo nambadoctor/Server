@@ -1,5 +1,6 @@
 ﻿using Mongo = DataModel.Mongo;
 using Client = DataModel.Client.Provider;
+using MongoDB.Bson;
 
 namespace MiddleWare.Converters
 {
@@ -19,8 +20,68 @@ namespace MiddleWare.Converters
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
+            appointmentData.OrganisationId = appointment.OrganisationId;
+            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
             appointmentData.AppointmentType = appointment.AppointmentType.ToString();
             appointmentData.Status = appointment.Status.ToString();
+            appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
+            appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
+            appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
+            appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+
+            return appointmentData;
+        }
+
+        public static Client.Appointment ConvertToClientAppointmentData(
+            string serviceProviderName,
+            Mongo.Appointment appointment,
+            string customerName)
+        {
+            var appointmentData = new Client.Appointment();
+
+            appointmentData.ServiceProviderId = appointment.ServiceProviderId;
+            appointmentData.ServiceProviderName = serviceProviderName;
+
+            appointmentData.CustomerId = appointment.CustomerId;
+            appointmentData.CustomerName = customerName;
+
+            appointmentData.AppointmentId = appointment.AppointmentId.ToString();
+            appointmentData.OrganisationId = appointment.OrganisationId;
+            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+            appointmentData.AppointmentType = appointment.AppointmentType.ToString();
+            appointmentData.Status = appointment.Status.ToString();
+            appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
+            appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
+            appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
+            appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+
+            return appointmentData;
+        }
+
+        public static Mongo.Appointment ConvertToMongoAppointmentData(
+           Client.Appointment appointment)
+        {
+            var appointmentData = new Mongo.Appointment();
+
+            appointmentData.ServiceProviderId = appointment.ServiceProviderId;
+
+            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+
+            appointmentData.OrganisationId = appointment.OrganisationId;
+
+            appointmentData.CustomerId = appointment.CustomerId;
+
+            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId))
+                appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
+
+            Enum.TryParse(appointment.AppointmentType, out Mongo.AppointmentType appointmentType);
+            appointmentData.AppointmentType = appointmentType;
+
+            Enum.TryParse(appointment.Status, out Mongo.AppointmentStatus statusType);
+            appointmentData.Status = statusType;
+
             appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;

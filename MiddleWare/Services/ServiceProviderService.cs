@@ -1,8 +1,9 @@
 ﻿using DataLayer;
+using DataModel.Client;
 using DataModel.Shared;
-using Microsoft.VisualBasic;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
+using MiddleWare.Utils;
 using MongoDB.Bson;
 using Client = DataModel.Client.Provider;
 
@@ -29,7 +30,7 @@ namespace MiddleWare.Services
 
                     if (serviceProvider == null)
                     {
-                        logger.LogError("Service provider does not exist for the phonumber: {0}", 
+                        logger.LogError("Service provider does not exist for the phonumber: {0}",
                             NambaDoctorContext.PhoneNumber);
 
                         throw new ServiceProviderDoesnotExistsException
@@ -37,12 +38,12 @@ namespace MiddleWare.Services
 
                     }
 
-                    logger.LogInformation ("Found service provider id {0}" , serviceProvider.ServiceProviderId);
+                    logger.LogInformation("Found service provider id {0}", serviceProvider.ServiceProviderId);
                     NambaDoctorContext.AddTraceContext("ServiceProviderId", serviceProvider.ServiceProviderId.ToString());
 
                     var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
 
-                    if (organisationList == null )
+                    if (organisationList == null)
                     {
                         logger.LogError("No organisation found for service providerId: {0}",
                             serviceProvider.ServiceProviderId);
@@ -54,7 +55,7 @@ namespace MiddleWare.Services
                     var defaultOrganisation = organisationList.FirstOrDefault();
 
 
-                    if(defaultOrganisation == null)
+                    if (defaultOrganisation == null)
                     {
                         throw new ServiceProviderOrgsDoesnotExistsException
                             (string.Format("Service provider {0} does not have default organisation", serviceProvider.ServiceProviderId));
@@ -83,7 +84,7 @@ namespace MiddleWare.Services
 
                 }
             }
-            
+
         }
         public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
@@ -132,5 +133,36 @@ namespace MiddleWare.Services
             return clientServiceProvider;
         }
 
+        public async Task<List<GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId)
+        {
+            logger.LogInformation("Starting null check");
+
+            if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
+            {
+                throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
+            }
+
+            if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
+            {
+                throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
+            }
+
+            NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+            NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
+
+            var availabilities = await datalayer.GetServiceProviderAvailabilities(ServiceProviderId, OrganisationId);
+
+            var listOfSpIds = new List<string>();
+            listOfSpIds.Add(ServiceProviderId);
+
+            var appointments = await datalayer.GetAppointmentsForServiceProvider(OrganisationId, listOfSpIds);
+
+            var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
+
+            //Make slots for 2 weeks
+            var generatedSlots = SlotGenerator.GenerateAvailableSlotsForDays(availabilities, serviceProviderProfile.AppointmentDuration, 0, 2, appointments);
+
+            return generatedSlots;
+        }
     }
 }

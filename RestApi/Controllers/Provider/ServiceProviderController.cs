@@ -1,15 +1,13 @@
-﻿using DataModel.Client.Provider;
+﻿using DataModel.Client;
+using DataModel.Client.Provider;
 using DataModel.Shared;
 using DnsClient.Internal;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using MiddleWare.Interfaces;
-using MongoDB.Bson;
-using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Twilio.TwiML.Voice;
 using ILogger = Microsoft.Extensions.Logging.ILogger;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -84,6 +82,14 @@ namespace RestApi.Controllers.Provider
                     logger.LogInformation("End: Ctrl:GetServiceProviderOrganisationMemeberships");
                 }
             }
+        }
+
+        [HttpGet("{ServiceProviderId}/slots/{OrganisationId}")]
+        public async Task<List<GeneratedSlot>> GetServiceProviderOrganisationMemeberships(string ServiceProviderId, string OrganisationId)
+        {
+            var slots = await serviceProviderService.GetServiceProviderSlots(ServiceProviderId, OrganisationId);
+
+            return slots;
         }
     }
 }
