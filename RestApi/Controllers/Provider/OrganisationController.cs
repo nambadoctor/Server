@@ -20,9 +20,9 @@ namespace RestApi.Controllers.Provider
         private IAppointmentService appointmentService;
         private ICustomerService customerService;
         private ILogger logger;
-        
-        public OrganisationController(IOrganisationService organisationService, 
-                                        IAppointmentService appointmentService, 
+
+        public OrganisationController(IOrganisationService organisationService,
+                                        IAppointmentService appointmentService,
                                         ICustomerService customerService,
                                         ILogger<OrganisationController> logger)
         {
@@ -37,15 +37,12 @@ namespace RestApi.Controllers.Provider
         public async Task<Organisation> GetOrganisation(string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
-
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
                     logger.LogInformation("Start GetOrganisation");
-
                     var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
-
                     return organisations;
                 }
                 finally
@@ -59,28 +56,44 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<List<Appointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
-            if (string.IsNullOrWhiteSpace(OrganisationId))
+            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new ArgumentException("Organisation Id was null");
+                try
+                {
+                    logger.LogInformation("Start GetOrganisationAppointments");
+                    var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
+                    return appointments;
+                }
+                finally
+                {
+                    logger.LogInformation("End GetOrganisationAppointments");
+                }
             }
 
-            var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
-
-            return appointments;
         }
 
         [HttpGet("{OrganisationId}/customers")]
         [Authorize]
         public async Task<List<CustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
-            if (string.IsNullOrWhiteSpace(OrganisationId))
+            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new ArgumentException("Organisation Id was null");
+                try
+                {
+                    logger.LogInformation("Start GetOrganisationCustomers");
+
+                    var customers = await customerService.GetCustomers(OrganisationId, ServiceProviderIds);
+
+                    return customers;
+                }
+                finally
+                {
+                    logger.LogInformation("End GetOrganisationCustomers");
+                }
             }
-
-            var customers = await customerService.GetCustomers(OrganisationId, ServiceProviderIds);
-
-            return customers;
         }
+
     }
 }

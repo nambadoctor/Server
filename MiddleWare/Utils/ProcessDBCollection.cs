@@ -1,4 +1,5 @@
-﻿using Server = DataModel.Mongo;
+﻿using MongoDB.Bson;
+using Server = DataModel.Mongo;
 
 namespace MiddleWare.Utils
 {
@@ -23,5 +24,22 @@ namespace MiddleWare.Utils
 
             return listOfServiceProviderIds;
         }
+
+        public static List<ObjectId> ConvertStringListToObjectIdList(List<string> listOfStringIds)
+        {
+            var objectIdList = new List<ObjectId>();
+            if (listOfStringIds != null)
+            { 
+                foreach (var objectId in listOfStringIds)
+                {
+                    objectIdList.Add(new ObjectId(objectId));
+                }
+            }
+            return objectIdList;
+        }
     }
+
+
+
+
 }

@@ -1,4 +1,5 @@
 ﻿using DataModel.Mongo;
+using MongoDB.Bson;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -25,7 +26,7 @@ namespace DataLayer
         /// </summary>
         /// <param name="serviceProviderIds"></param>
         /// <returns></returns>
-        public Task<List<ServiceProvider>> GetServiceProviders(List<string> serviceProviderIds);
+        public Task<List<ServiceProvider>> GetServiceProviders(List<ObjectId> serviceProviderIds);
 
         /// <summary>
         /// Get service provider profiles from list of IDs passed

@@ -26,6 +26,8 @@ namespace MiddleWare.Services
             {
                 try
                 {
+                    logger.LogInformation("Start GetOrganisationAsync");
+
                     if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var spid))
                     {
                         logger.LogError("OrganisationID is null or empty of not well formed");
@@ -47,7 +49,9 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Found {0} members in Organisation :{1}", listOfServiceProviderIds.Count.ToString(), OrganisationId);
 
-                    var serviceProviders = await datalayer.GetServiceProviders(listOfServiceProviderIds);
+                    var serviceProviderIds = ProcessDBCollection.ConvertStringListToObjectIdList(listOfServiceProviderIds);
+
+                    var serviceProviders = await datalayer.GetServiceProviders(serviceProviderIds);
 
                     if(serviceProviders == null)
                     {
@@ -76,12 +80,11 @@ namespace MiddleWare.Services
                 catch (Exception ex)
                 {
                     logger.LogError("Exception: {0}" , ex.ToString());
-
                     throw;
                 }
                 finally
                 {
-
+                    logger.LogInformation("Start GetOrganisationAsync");
                 }
             }
 

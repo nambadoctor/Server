@@ -29,6 +29,10 @@ namespace MiddleWare.Services
 
         public async Task<List<Appointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
         {
+            if (string.IsNullOrWhiteSpace(organsiationId))
+            {
+                throw new ArgumentException("Organisation Id was null");
+            }
 
             var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
 

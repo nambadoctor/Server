@@ -68,14 +68,9 @@ namespace DataLayer
         }
 
         /// <inheritdoc />
-        public async Task<List<ServiceProvider>> GetServiceProviders(List<string> serviceProviderIds)
+        public async Task<List<ServiceProvider>> GetServiceProviders(List<ObjectId> serviceProviderIds)
         {
-            var objectIdList = new List<ObjectId>();
-            foreach (var spId in serviceProviderIds)
-            {
-                objectIdList.Add(new ObjectId(spId));
-            }
-            var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, objectIdList);
+            var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, serviceProviderIds);
             var result = await this.serviceProviderCollection.Find(filter).ToListAsync();
             return result;
         }

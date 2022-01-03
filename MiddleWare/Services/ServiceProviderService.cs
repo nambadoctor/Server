@@ -38,6 +38,7 @@ namespace MiddleWare.Services
                     }
 
                     logger.LogInformation ("Found service provider id {0}" , serviceProvider.ServiceProviderId);
+                    NambaDoctorContext.AddTraceContext("ServiceProviderId", serviceProvider.ServiceProviderId.ToString());
 
                     var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
 
@@ -59,6 +60,10 @@ namespace MiddleWare.Services
                             (string.Format("Service provider {0} does not have default organisation", serviceProvider.ServiceProviderId));
 
                     }
+
+                    NambaDoctorContext.AddTraceContext("DefaultOrganisationId", defaultOrganisation.OrganisationId.ToString());
+                    NambaDoctorContext.AddTraceContext("DefaultOrganisationName", defaultOrganisation.Name);
+
 
                     logger.LogInformation("Set default organisation Name: {0} Id : {1}", defaultOrganisation.Name, defaultOrganisation.OrganisationId);
 
