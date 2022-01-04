@@ -138,6 +138,8 @@ namespace MiddleWare.Services
                 serviceRequest.ServiceRequestId = serviceRequestId;
                 serviceRequest.AppointmentId = appointmentId.ToString();
                 serviceRequest.CustomerId = appointment.CustomerId;
+                serviceRequest.OrganisationId = appointment.OrganisationId;
+                serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
 
                 var generatedAppointment = await datalayer.SetAppointmentWithServiceRequest(
                     AppointmentConverter.ConvertToMongoAppointmentData(appointment),
