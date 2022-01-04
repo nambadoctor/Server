@@ -14,7 +14,7 @@ namespace DataModel.Client.Provider.Outgoing
             this.Appointment = clientAppointment;
         }
 
-        OutgoingAppointment Appointment { get; set; }
-        OutgoingCustomerProfile Profile { get; set; }
+        public OutgoingAppointment Appointment { get; set; }
+        public OutgoingCustomerProfile Profile { get; set; }
     }
 }

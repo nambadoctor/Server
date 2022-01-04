@@ -92,13 +92,14 @@ namespace MiddleWare.Services
             customerProfile.CustomerId = customerAddedData.CustomerId;
             customerProfile.EmailAddress = customerAddedData.EmailAddress;
             customerProfile.ProfilePicURL = customerAddedData.ProfilePicURL;
-            customerProfile.PhoneNumbers = customerProfile.PhoneNumbers;
+            customerProfile.PhoneNumbers = customerAddedData.PhoneNumbers;
 
             var appointment = new Mongo.Appointment();
             var appointmentId = ObjectId.GenerateNewId();
             var serviceRequestId = ObjectId.GenerateNewId();
 
             appointment.AppointmentId = appointmentId;
+            appointment.ServiceProviderId = customerAddedData.ServiceProviderId;
             appointment.ServiceRequestId = serviceRequestId.ToString();
             appointment.AddressId = customerAddedData.AddressId;
             appointment.CustomerId = customerAddedData.CustomerId;

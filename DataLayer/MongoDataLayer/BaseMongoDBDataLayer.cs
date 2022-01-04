@@ -576,6 +576,9 @@ namespace DataLayer
             authInfo.AuthType = "PhoneNumber";
 
             customer.AuthInfos.Add(authInfo);
+            customer.NotificationInfos = new List<NotificationInfo>();
+            customer.Profiles = new List<CustomerProfile>();
+            customer.ServiceRequests = new List<ServiceRequest>();
 
             await this.customerCollection.InsertOneAsync(customer);
         }
