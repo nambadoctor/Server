@@ -271,11 +271,6 @@ namespace DataLayer
                 update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
             }
 
-            if (appointment.CustomerProfileId != null)
-            {
-                update = update.Set("Appointments.$.CustomerProfileId", appointment.CustomerProfileId);
-            }
-
             if (appointment.OrganisationId != null)
             {
                 update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
@@ -873,11 +868,6 @@ namespace DataLayer
                 update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
             }
 
-            if (appointment.CustomerProfileId != null)
-            {
-                update = update.Set("Appointments.$.CustomerProfileId", appointment.CustomerProfileId);
-            }
-
             if (appointment.OrganisationId != null)
             {
                 update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
@@ -932,6 +922,118 @@ namespace DataLayer
             var result = await serviceProviderCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
 
             return result.IsAcknowledged;
+        }
+
+        private async Task<bool> SetCustomerProfileWithSession(IClientSessionHandle session, CustomerProfile customerProfile)
+        {
+            var customerCollection = session.Client.GetDatabase(ConnectionConfiguration.MongoDatabaseName).GetCollection<Customer>(ConnectionConfiguration.CustomerCollection);
+
+            ObjectId customerId;
+            if (string.IsNullOrWhiteSpace(customerProfile.CustomerId))
+            {
+                customerId = ObjectId.GenerateNewId();
+                customerProfile.CustomerId = customerId.ToString();
+                await SetCustomerWithAuthInfo(customerId, customerProfile.PhoneNumbers.FirstOrDefault());
+            }
+            else
+            {
+                customerId = new ObjectId(customerProfile.CustomerId);
+            }
+
+            if (customerProfile.CustomerProfileId == ObjectId.Empty)
+            {
+                customerProfile.CustomerProfileId = ObjectId.GenerateNewId();
+            }
+
+            var filter = Builders<Customer>.Filter;
+
+            var nestedFilter = filter.And(
+                filter.Eq(cust => cust.CustomerId, customerId),
+                filter.ElemMatch(cust => cust.Profiles, profile => profile.CustomerProfileId == customerProfile.CustomerProfileId));
+
+            var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, customerId);
+
+            if (customerProfile.CustomerId != null)
+            {
+                update = update.Set("Profiles.$.CustomerId", customerProfile.CustomerId);
+            }
+
+            if (customerProfile.FirstName != null)
+            {
+                update = update.Set("Profiles.$.FirstName", customerProfile.FirstName);
+            }
+
+            if (customerProfile.LastName != null)
+            {
+                update = update.Set("Profiles.$.LastName", customerProfile.LastName);
+            }
+
+            if (customerProfile.Gender != null)
+            {
+                update = update.Set("Profiles.$.Gender", customerProfile.Gender);
+            }
+
+            if (customerProfile.DateOfBirth != null)
+            {
+                update = update.Set("Profiles.$.DateOfBirth", customerProfile.DateOfBirth);
+            }
+
+            if (customerProfile.PhoneNumbers != null)
+            {
+                update = update.Set("Profiles.$.PhoneNumbers", customerProfile.PhoneNumbers);
+            }
+
+            if (customerProfile.Addresses != null)
+            {
+                update = update.Set("Profiles.$.Addresses", customerProfile.Addresses);
+            }
+
+            if (customerProfile.EmailAddress != null)
+            {
+                update = update.Set("Profiles.$.EmailAddress", customerProfile.EmailAddress);
+            }
+
+            if (customerProfile.OrganisationId != null)
+            {
+                update = update.Set("Profiles.$.OrganisationId", customerProfile.OrganisationId);
+            }
+
+            if (customerProfile.ServiceProviderId != null)
+            {
+                update = update.Set("Profiles.$.ServiceProviderId", customerProfile.ServiceProviderId);
+            }
+
+            var result = await customerCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+
+            return result.IsAcknowledged;
+        }
+
+        public async Task<(CustomerProfile, Appointment)> SetCustomerWithAppointment(CustomerProfile customerProfile, Appointment appointment, ServiceRequest serviceRequest)
+        {
+            var session = await mongoClient.StartSessionAsync();
+
+            var transactionOptions = new TransactionOptions(
+                                                    readConcern: ReadConcern.Snapshot,
+                                                    writeConcern: WriteConcern.WMajority);
+            session.StartTransaction(transactionOptions);
+
+            try
+            {
+
+                //When session is passed, it gets used as a write option parameter and to set collection config 
+                await SetCustomerProfileWithSession(session, customerProfile);
+                await SetAppointmentWithSession(session, appointment);
+                await SetServiceRequestWithSession(session, serviceRequest);
+
+                session.CommitTransaction();
+
+                return (customerProfile, appointment);
+            }
+            catch (Exception ex)
+            {
+                session.AbortTransaction();
+                throw new MongoTransactionException(ex.Message, ex.InnerException);
+            }
         }
 
         #endregion CrossDocument

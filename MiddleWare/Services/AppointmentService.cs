@@ -2,7 +2,8 @@
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MongoDB.Bson;
-using Client = DataModel.Client.Provider;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Services
@@ -15,7 +16,7 @@ namespace MiddleWare.Services
         {
             this.datalayer = dataLayer;
         }
-        public async Task<Client.Appointment> GetAppointment(string serviceProviderId, string appointmentId)
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
             if (string.IsNullOrWhiteSpace(serviceProviderId) || ObjectId.TryParse(serviceProviderId, out ObjectId spId) == false)
             {
@@ -38,7 +39,7 @@ namespace MiddleWare.Services
             return appointmentData;
         }
 
-        public async Task<List<Client.Appointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
         {
             if (string.IsNullOrWhiteSpace(organsiationId) || ObjectId.TryParse(organsiationId, out ObjectId orgId) == false)
             {
@@ -62,7 +63,7 @@ namespace MiddleWare.Services
 
             //Piece together all the objects
 
-            var listToReturn = new List<Client.Appointment>();
+            var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
 
             foreach (var appointment in appointments)
             {
@@ -85,7 +86,7 @@ namespace MiddleWare.Services
             return listToReturn;
         }
 
-        public async Task<Client.Appointment> SetAppointment(Client.Appointment appointment)
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.Appointment appointment)
         {
             //Do validations here for cust, org and service provider id
             if (string.IsNullOrWhiteSpace(appointment.OrganisationId) || ObjectId.TryParse(appointment.OrganisationId, out ObjectId orgId) == false)
@@ -107,6 +108,21 @@ namespace MiddleWare.Services
             {
                 throw new ArgumentException("Appointment Id was invalid");
             }
+
+            var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
+
+            if (spProfile == null)
+            {
+                throw new InvalidDataException("Service provider profile is missing");
+            }
+
+            var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+
+            if (customerProfile == null)
+            {
+                throw new InvalidDataException("Customer profile is missing");
+            }
+
             //New appointment
             if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
             {
@@ -127,7 +143,10 @@ namespace MiddleWare.Services
                     serviceRequest
                     );
 
-                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(appointment.ServiceProviderName, generatedAppointment, appointment.CustomerName);
+                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
+                    $"{spProfile.FirstName} {spProfile.LastName}",
+                    generatedAppointment,
+                    $"{customerProfile.FirstName} {customerProfile.LastName}");
 
                 return clientAppointment;
             }
@@ -136,7 +155,10 @@ namespace MiddleWare.Services
                 //Existing appointment update
                 var generatedAppointment = await datalayer.SetAppointment(AppointmentConverter.ConvertToMongoAppointmentData(appointment));
 
-                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(appointment.ServiceProviderName, generatedAppointment, appointment.CustomerName);
+                var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
+                    $"{spProfile.FirstName} {spProfile.LastName}",
+                    generatedAppointment,
+                    $"{customerProfile.FirstName} {customerProfile.LastName}");
 
                 return clientAppointment;
             }

@@ -1,11 +1,13 @@
-﻿using Client = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
+using ProviderClientCommon = DataModel.Client.Provider.Common;
 using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Converters
 {
     public static class CustomerConverter
     {
-        public static Mongo.CustomerProfile ConvertToMongoCustomerProfile(Client.CustomerProfile customerProfile)
+        public static Mongo.CustomerProfile ConvertToMongoCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
             var mongoCustomerProfile = new Mongo.CustomerProfile();
 
@@ -31,9 +33,9 @@ namespace MiddleWare.Converters
 
             return mongoCustomerProfile;
         }
-        public static Client.CustomerProfile ConvertToClientCustomerProfile(Mongo.CustomerProfile customerProfile)
+        public static ProviderClientOutgoing.OutgoingCustomerProfile ConvertToClientCustomerProfile(Mongo.CustomerProfile customerProfile)
         {
-            var clientCustomerProfile = new Client.CustomerProfile();
+            var clientCustomerProfile = new ProviderClientOutgoing.OutgoingCustomerProfile();
 
             clientCustomerProfile.CustomerId = customerProfile.CustomerId;
             clientCustomerProfile.FirstName = customerProfile.FirstName;
@@ -48,7 +50,7 @@ namespace MiddleWare.Converters
 
             if (customerProfile.PhoneNumbers != null)
             {
-                clientCustomerProfile.PhoneNumbers = new List<Client.PhoneNumber>();
+                clientCustomerProfile.PhoneNumbers = new List<ProviderClientCommon.PhoneNumber>();
                 foreach (var ph in customerProfile.PhoneNumbers)
                 {
                     clientCustomerProfile.PhoneNumbers.Add(ConvertToClientPhoneNumber(ph));
@@ -58,9 +60,9 @@ namespace MiddleWare.Converters
             return clientCustomerProfile;
         }
 
-        public static List<Client.CustomerProfile> ConvertToClientCustomerProfileList(List<Mongo.CustomerProfile> customerList)
+        public static List<ProviderClientOutgoing.OutgoingCustomerProfile> ConvertToClientCustomerProfileList(List<Mongo.CustomerProfile> customerList)
         {
-            var clientCustomerProfiles = new List<Client.CustomerProfile>();
+            var clientCustomerProfiles = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
 
             foreach (var customer in customerList)
             {
@@ -70,9 +72,9 @@ namespace MiddleWare.Converters
             return clientCustomerProfiles;
         }
 
-        public static Client.DateOfBirth ConvertToClientDateOfBirth(Mongo.DateOfBirth dateOfBirth)
+        public static ProviderClientCommon.DateOfBirth ConvertToClientDateOfBirth(Mongo.DateOfBirth dateOfBirth)
         {
-            var clientDateOfBirth = new Client.DateOfBirth();
+            var clientDateOfBirth = new ProviderClientCommon.DateOfBirth();
 
             clientDateOfBirth.DateOfBirthId = dateOfBirth.DateOfBirthId.ToString();
 
@@ -83,7 +85,7 @@ namespace MiddleWare.Converters
             return clientDateOfBirth;
         }
 
-        public static Mongo.DateOfBirth ConvertToMongoDateOfBirth(Client.DateOfBirth dateOfBirth)
+        public static Mongo.DateOfBirth ConvertToMongoDateOfBirth(ProviderClientCommon.DateOfBirth dateOfBirth)
         {
             var mongoDateOfBirth = new Mongo.DateOfBirth();
             if (string.IsNullOrWhiteSpace(dateOfBirth.DateOfBirthId))
@@ -98,9 +100,9 @@ namespace MiddleWare.Converters
             return mongoDateOfBirth;
         }
 
-        public static Client.PhoneNumber ConvertToClientPhoneNumber(Mongo.PhoneNumber phoneNumber)
+        public static ProviderClientCommon.PhoneNumber ConvertToClientPhoneNumber(Mongo.PhoneNumber phoneNumber)
         {
-            var clientPhoneNumber = new Client.PhoneNumber();
+            var clientPhoneNumber = new ProviderClientCommon.PhoneNumber();
 
             clientPhoneNumber.PhoneNumberId = phoneNumber.PhoneNumberId.ToString();
 
@@ -111,7 +113,7 @@ namespace MiddleWare.Converters
             return clientPhoneNumber;
         }
 
-        public static Mongo.PhoneNumber ConvertToMongoPhoneNumber(Client.PhoneNumber phoneNumber)
+        public static Mongo.PhoneNumber ConvertToMongoPhoneNumber(ProviderClientCommon.PhoneNumber phoneNumber)
         {
             var mongoPhoneNumber = new Mongo.PhoneNumber();
 

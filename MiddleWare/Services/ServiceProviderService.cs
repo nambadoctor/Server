@@ -1,5 +1,6 @@
 ﻿using DataLayer;
-using DataModel.Client;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
@@ -19,7 +20,7 @@ namespace MiddleWare.Services
             this.datalayer = dataLayer;
             this.logger = logger;
         }
-        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
+        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderOrganisationMemeberships"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -86,7 +87,7 @@ namespace MiddleWare.Services
             }
 
         }
-        public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
+        public async Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             logger.LogInformation("Starting null check");
 
@@ -133,7 +134,7 @@ namespace MiddleWare.Services
             return clientServiceProvider;
         }
 
-        public async Task<List<GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId)
+        public async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId)
         {
             logger.LogInformation("Starting null check");
 

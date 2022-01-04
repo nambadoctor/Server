@@ -1,4 +1,5 @@
-﻿using DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Interfaces
 {
@@ -8,6 +9,6 @@ namespace MiddleWare.Interfaces
         /// Get organisation based on Id
         /// </summary>
         /// <returns></returns>
-        public Task<Organisation> GetOrganisationAsync(string OrganisationId);
+        public Task<ProviderClientOutgoing.Organisation> GetOrganisationAsync(string OrganisationId);
     }
 }

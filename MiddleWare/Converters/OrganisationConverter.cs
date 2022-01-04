@@ -1,19 +1,20 @@
-﻿using ClientModel = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ServerModel = DataModel.Mongo;
 namespace MiddleWare.Converters
 {
     public static class OrganisationConverter
     {
-        public static ClientModel.Organisation ConvertToClientOrganisation(ServerModel.Organisation mongoOrganisation, List<DataModel.Mongo.ServiceProvider> serviceProviders)
+        public static ProviderClientOutgoing.Organisation ConvertToClientOrganisation(ServerModel.Organisation mongoOrganisation, List<DataModel.Mongo.ServiceProvider> serviceProviders)
         {
-            var clientOrganisation = new ClientModel.Organisation();
+            var clientOrganisation = new ProviderClientOutgoing.Organisation();
 
             clientOrganisation.OrganisationId = mongoOrganisation.OrganisationId.ToString();
             clientOrganisation.Name = mongoOrganisation.Name;
             clientOrganisation.Description = mongoOrganisation.Description;
             clientOrganisation.Logo = mongoOrganisation.Logo;
 
-            var serviceProvidersInOrg = new List<ClientModel.ServiceProviderProfile>();
+            var serviceProvidersInOrg = new List<ProviderClientOutgoing.ServiceProviderProfile>();
 
             foreach (var serviceProvider in serviceProviders)
             {
@@ -35,9 +36,9 @@ namespace MiddleWare.Converters
             return clientOrganisation;
         }
 
-        public static List<ClientModel.Organisation> ConvertToClientOrganisationList(List<ServerModel.Organisation> mongoOrganisations, List<ServerModel.ServiceProvider> serviceProviders)
+        public static List<ProviderClientOutgoing.Organisation> ConvertToClientOrganisationList(List<ServerModel.Organisation> mongoOrganisations, List<ServerModel.ServiceProvider> serviceProviders)
         {
-            var clientOrgList = new List<ClientModel.Organisation>();
+            var clientOrgList = new List<ProviderClientOutgoing.Organisation>();
 
             foreach (var mongoOrganisation in mongoOrganisations)
             {

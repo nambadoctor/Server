@@ -1,4 +1,5 @@
-﻿using DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -34,7 +35,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}")]
         [Authorize]
-        public async Task<Organisation> GetOrganisation(string OrganisationId)
+        public async Task<ProviderClientOutgoing.Organisation> GetOrganisation(string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -54,7 +55,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}/appointments")]
         [Authorize]
-        public async Task<List<Appointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
             using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -75,7 +76,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}/customers")]
         [Authorize]
-        public async Task<List<CustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
             using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))

@@ -1,5 +1,5 @@
-﻿using DataModel.Client;
-using DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using DnsClient.Internal;
 using Microsoft.AspNetCore.Authorization;
@@ -30,7 +30,7 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("{ServiceProviderId}/organisation/{OrganisationId}")]
-        public async Task<ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
+        public async Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderAsync"))
 
@@ -61,7 +61,7 @@ namespace RestApi.Controllers.Provider
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        public async Task<ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
+        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderOrganisationMemeberships"))
 
@@ -85,7 +85,7 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("{ServiceProviderId}/slots/{OrganisationId}")]
-        public async Task<List<GeneratedSlot>> GetServiceProviderOrganisationMemeberships(string ServiceProviderId, string OrganisationId)
+        public async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderOrganisationMemeberships(string ServiceProviderId, string OrganisationId)
         {
             var slots = await serviceProviderService.GetServiceProviderSlots(ServiceProviderId, OrganisationId);
 

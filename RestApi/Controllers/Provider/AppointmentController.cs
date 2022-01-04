@@ -1,4 +1,5 @@
-﻿using DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -22,7 +23,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{AppointmentId}/{Serviceproviderid}")]
         [Authorize]
-        public async Task<Appointment> GetAppointment(string AppointmentId, string ServiceProviderId)
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string AppointmentId, string ServiceProviderId)
         {
 
             var appointment = await appointmentService.GetAppointment(ServiceProviderId, AppointmentId);
@@ -30,8 +31,9 @@ namespace RestApi.Controllers.Provider
             return appointment;
         }
 
-        [HttpPut()]
-        public async Task<Appointment> SetAppointment([FromBody] Appointment appointment)
+        [HttpPut("")]
+        [Authorize]
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment([FromBody] ProviderClientIncoming.Appointment appointment)
         {
             var appointmentToReturn = await appointmentService.SetAppointment(appointment);
 

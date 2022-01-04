@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace DataModel.Client
+namespace DataModel.Client.Provider.Outgoing
 {
     public class GeneratedSlot
     {

@@ -1,8 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using DataModel.Client.Provider.Common;
+using System.Collections.Generic;
 
-namespace DataModel.Client.Provider
+namespace DataModel.Client.Provider.Outgoing
 {
-    public class CustomerProfile
+    public class OutgoingCustomerProfile
     {
         public string CustomerId { get; set; }
         public string FirstName { get; set; }

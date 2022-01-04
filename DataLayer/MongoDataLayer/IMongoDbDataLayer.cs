@@ -193,5 +193,13 @@ namespace DataLayer
         /// <returns></returns>
         public Task<Appointment> SetAppointmentWithServiceRequest(Appointment appointment, ServiceRequest serviceRequest);
 
+        /// <summary>
+        /// Sets an appointment and service request along with customer as a transaction
+        /// </summary>
+        /// <param name="customerProfile"></param>
+        /// <param name="appointment"></param>
+        /// <returns></returns>
+        public Task<(CustomerProfile, Appointment)> SetCustomerWithAppointment(CustomerProfile customerProfile, Appointment appointment, ServiceRequest serviceRequest);
+
     }
 }

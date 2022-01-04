@@ -1,19 +1,20 @@
-﻿using DataModel.Client;
-using DataModel.Mongo;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
+using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Utils
 {
     public class SlotGenerator
     {
 
-        public static List<GeneratedSlot> GetPastAppointmentTimings(IEnumerable<Appointment> appointments)
+        public static List<ProviderClientOutgoing.GeneratedSlot> GetPastAppointmentTimings(List<Mongo.Appointment> appointments)
         {
-            List<GeneratedSlot> pastAppointmentTimings = new List<GeneratedSlot>();
+            List<ProviderClientOutgoing.GeneratedSlot> pastAppointmentTimings = new List<ProviderClientOutgoing.GeneratedSlot>();
             if (appointments != null)
                 foreach (var appointment in appointments)
                 {
-                    if (appointment.Status != AppointmentStatus.Cancelled)
-                        pastAppointmentTimings.Add(new GeneratedSlot
+                    if (appointment.Status != Mongo.AppointmentStatus.Cancelled)
+                        pastAppointmentTimings.Add(new ProviderClientOutgoing.GeneratedSlot
                         {
                             StartDateTime = appointment.ScheduledAppointmentStartTime.HasValue ? appointment.ScheduledAppointmentStartTime.Value : DateTime.UtcNow.AddDays(100),
                             EndDateTime = appointment.ScheduledAppointmentEndTime.HasValue ? appointment.ScheduledAppointmentEndTime.Value : DateTime.UtcNow.AddDays(100)
@@ -21,12 +22,12 @@ namespace MiddleWare.Utils
                 }
             return pastAppointmentTimings;
         }
-        public static List<GeneratedSlot> GenerateAvailableSlotsForDays(List<ServiceProviderAvailability> availabilities, int duration, int interval, int weeks, List<Appointment> appointments)
+        public static List<ProviderClientOutgoing.GeneratedSlot> GenerateAvailableSlotsForDays(List<Mongo.ServiceProviderAvailability> availabilities, int duration, int interval, int weeks, List<Mongo.Appointment> appointments)
         {
 
             duration = duration == 0 ? 10 : duration; // to make sure it while loop doesnt run infinetly
 
-            List<GeneratedSlot> allSlots = new List<GeneratedSlot>();
+            List<ProviderClientOutgoing.GeneratedSlot> allSlots = new List<ProviderClientOutgoing.GeneratedSlot>();
 
             for (int i = 1; i <= weeks; i++)
             {
@@ -37,9 +38,9 @@ namespace MiddleWare.Utils
             return getOrderedSlots(allSlots);
         }
 
-        public static List<GeneratedSlot> parseAvailabilitiesToSlots(List<ServiceProviderAvailability> availabilities, int duration, int interval, int week, List<GeneratedSlot> bookedSlots)
+        public static List<ProviderClientOutgoing.GeneratedSlot> parseAvailabilitiesToSlots(List<Mongo.ServiceProviderAvailability> availabilities, int duration, int interval, int week, List<ProviderClientOutgoing.GeneratedSlot> bookedSlots)
         {
-            List<GeneratedSlot> slots = new List<GeneratedSlot>();
+            List<ProviderClientOutgoing.GeneratedSlot> slots = new List<ProviderClientOutgoing.GeneratedSlot>();
 
             if (week > 1)
                 week = (week - 1) * 7;
@@ -67,7 +68,7 @@ namespace MiddleWare.Utils
 
                         currentDate = currentDate.AddDays(dayOffSet + week);
 
-                        var tempSlot = new GeneratedSlot();
+                        var tempSlot = new ProviderClientOutgoing.GeneratedSlot();
                         tempSlot.Duration = duration;
                         tempSlot.StartDateTime = currentDate;
                         tempSlot.EndDateTime = currentDate.AddMinutes(duration);
@@ -92,14 +93,14 @@ namespace MiddleWare.Utils
             return slots;
         }
 
-        private static bool IsSlotOverlapping(List<GeneratedSlot> bookedSlots, GeneratedSlot slotToAdd)
+        private static bool IsSlotOverlapping(List<ProviderClientOutgoing.GeneratedSlot> bookedSlots, ProviderClientOutgoing.GeneratedSlot slotToAdd)
         {
             var preBookedTime = false;
             preBookedTime = IsSlotTimePreBooked(bookedSlots, slotToAdd, preBookedTime);
             return preBookedTime;
         }
 
-        private static bool IsSlotTimePreBooked(List<GeneratedSlot> bookedSlots, GeneratedSlot slotToAdd, bool preBookedTime)
+        private static bool IsSlotTimePreBooked(List<ProviderClientOutgoing.GeneratedSlot> bookedSlots, ProviderClientOutgoing.GeneratedSlot slotToAdd, bool preBookedTime)
         {
             foreach (var slot in bookedSlots)
             {
@@ -116,7 +117,7 @@ namespace MiddleWare.Utils
             return preBookedTime;
         }
 
-        private static List<GeneratedSlot> getOrderedSlots(List<GeneratedSlot> slots)
+        private static List<ProviderClientOutgoing.GeneratedSlot> getOrderedSlots(List<ProviderClientOutgoing.GeneratedSlot> slots)
         {
             var allSlots = from slot in slots
                            orderby slot.StartDateTime

@@ -1,10 +1,11 @@
-﻿using Client = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Interfaces
 {
     public interface IServiceRequestService
     {
-        public Task<Client.ServiceRequest> GetServiceRequest(string customerId, string appointmentId);
-        public Task<Client.ServiceRequest> SetServiceRequest(Client.ServiceRequest serviceRequest);
+        public Task<ProviderClientOutgoing.ServiceRequest> GetServiceRequest(string customerId, string appointmentId);
+        public Task<ProviderClientOutgoing.ServiceRequest> SetServiceRequest(ProviderClientIncoming.ServiceRequest serviceRequest);
     }
 }

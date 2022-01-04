@@ -1,4 +1,5 @@
-﻿using DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -23,7 +24,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{Customerid}/{Organisationid}")]
         [Authorize]
-        public async Task<CustomerProfile> GetCustomerProfile(string CustomerId, string OrganisationId)
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string CustomerId, string OrganisationId)
         {
 
             if (string.IsNullOrWhiteSpace(CustomerId))
@@ -38,9 +39,18 @@ namespace RestApi.Controllers.Provider
 
         [HttpPut()]
         [Authorize]
-        public async Task<CustomerProfile> SetCustomerProfile([FromBody] CustomerProfile customerProfile)
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
             var customerProfileToReturn = await customerService.SetCustomerProfile(customerProfile);
+
+            return customerProfileToReturn;
+        }
+
+        [HttpPut("appointment")]
+        [Authorize]
+        public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
+        {
+            var customerProfileToReturn = await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
 
             return customerProfileToReturn;
         }

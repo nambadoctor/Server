@@ -1,4 +1,4 @@
-﻿namespace DataModel.Client.Provider
+﻿namespace DataModel.Client.Provider.Common
 {
     public class DateOfBirth
     {

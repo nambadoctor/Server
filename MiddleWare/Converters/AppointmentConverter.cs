@@ -1,17 +1,18 @@
 ﻿using Mongo = DataModel.Mongo;
-using Client = DataModel.Client.Provider;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using MongoDB.Bson;
 
 namespace MiddleWare.Converters
 {
     public static class AppointmentConverter
     {
-        public static Client.Appointment ConvertToClientAppointmentData(
+        public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
             Mongo.ServiceProviderProfile serviceProviderProfile,
             Mongo.Appointment appointment,
             Mongo.CustomerProfile customerProfile)
         {
-            var appointmentData = new Client.Appointment();
+            var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
 
             appointmentData.ServiceProviderId = serviceProviderProfile.ServiceProviderId;
             appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
@@ -22,6 +23,7 @@ namespace MiddleWare.Converters
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
             appointmentData.OrganisationId = appointment.OrganisationId;
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentType = appointment.AppointmentType.ToString();
             appointmentData.Status = appointment.Status.ToString();
             appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
@@ -32,12 +34,12 @@ namespace MiddleWare.Converters
             return appointmentData;
         }
 
-        public static Client.Appointment ConvertToClientAppointmentData(
+        public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
             string serviceProviderName,
             Mongo.Appointment appointment,
             string customerName)
         {
-            var appointmentData = new Client.Appointment();
+            var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
 
             appointmentData.ServiceProviderId = appointment.ServiceProviderId;
             appointmentData.ServiceProviderName = serviceProviderName;
@@ -45,6 +47,7 @@ namespace MiddleWare.Converters
             appointmentData.CustomerId = appointment.CustomerId;
             appointmentData.CustomerName = customerName;
 
+            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
             appointmentData.OrganisationId = appointment.OrganisationId;
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
@@ -59,7 +62,7 @@ namespace MiddleWare.Converters
         }
 
         public static Mongo.Appointment ConvertToMongoAppointmentData(
-           Client.Appointment appointment)
+           ProviderClientIncoming.Appointment appointment)
         {
             var appointmentData = new Mongo.Appointment();
 

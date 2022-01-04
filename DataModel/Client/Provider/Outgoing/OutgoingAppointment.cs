@@ -1,8 +1,8 @@
 ﻿using System;
 
-namespace DataModel.Client.Provider
+namespace DataModel.Client.Provider.Outgoing
 {
-    public class Appointment
+    public class OutgoingAppointment
     {
         public string AppointmentId { get; set; }
         public string OrganisationId { get; set; }
@@ -12,6 +12,7 @@ namespace DataModel.Client.Provider
         public string CustomerId { get; set; }
         public string CustomerName { get; set; }
         public string AppointmentType { get; set; }
+        public string AddressId { get; set; }
         public string Status { get; set; }
         public DateTime? ScheduledAppointmentStartTime { get; set; }
         public DateTime? ScheduledAppointmentEndTime { get; set; }

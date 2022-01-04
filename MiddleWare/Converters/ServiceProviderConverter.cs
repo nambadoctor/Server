@@ -1,16 +1,17 @@
-﻿using ClientModel = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ServerModel = DataModel.Mongo;
 
 namespace MiddleWare.Converters
 {
     public static class ServiceProviderConverter
     {
-        public static ClientModel.ServiceProviderBasic ConvertToClientServiceProviderBasic(ServerModel.ServiceProvider mongoServiceProvider, List<ServerModel.Organisation> organisationList, ServerModel.Organisation defaultOrganisation)
+        public static ProviderClientOutgoing.ServiceProviderBasic ConvertToClientServiceProviderBasic(ServerModel.ServiceProvider mongoServiceProvider, List<ServerModel.Organisation> organisationList, ServerModel.Organisation defaultOrganisation)
         {
-            var serviceProviderBasic = new ClientModel.ServiceProviderBasic();
+            var serviceProviderBasic = new ProviderClientOutgoing.ServiceProviderBasic();
 
             serviceProviderBasic.ServiceProviderId = mongoServiceProvider.ServiceProviderId.ToString();
-            serviceProviderBasic.Organsiations = new List<ClientModel.OrgansiationBasic>();
+            serviceProviderBasic.Organsiations = new List<ProviderClientOutgoing.OrgansiationBasic>();
 
             foreach (var organisation in organisationList)
             {
@@ -25,9 +26,9 @@ namespace MiddleWare.Converters
             return serviceProviderBasic;
         }
 
-        public static ClientModel.OrgansiationBasic ConvertOrganisationToOrganisationBasic(ServerModel.Organisation organisation, bool isDefault)
+        public static ProviderClientOutgoing.OrgansiationBasic ConvertOrganisationToOrganisationBasic(ServerModel.Organisation organisation, bool isDefault)
         {
-            var organisationBasic = new ClientModel.OrgansiationBasic();
+            var organisationBasic = new ProviderClientOutgoing.OrgansiationBasic();
 
             organisationBasic.Name = organisation.Name;
             organisationBasic.Logo = organisation.Logo;
@@ -37,9 +38,9 @@ namespace MiddleWare.Converters
 
             return organisationBasic;
         }
-        public static ClientModel.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProviderProfile mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member)
+        public static ProviderClientOutgoing.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProviderProfile mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member)
         {
-            var clientSp = new ClientModel.ServiceProvider();
+            var clientSp = new ProviderClientOutgoing.ServiceProvider();
 
             clientSp.ServiceProviderId = mongoServiceProvider.ServiceProviderId;
             clientSp.OrganisationId = organisation.OrganisationId.ToString();
@@ -48,7 +49,7 @@ namespace MiddleWare.Converters
             clientSp.Roles.Add(member.Role);
 
             //Set profile values
-            var clientSpProfile = new ClientModel.ServiceProviderProfile();
+            var clientSpProfile = new ProviderClientOutgoing.ServiceProviderProfile();
             clientSpProfile.FirstName = mongoServiceProvider.FirstName;
             clientSpProfile.LastName = mongoServiceProvider.LastName;
             clientSpProfile.ProfilePictureUrl = mongoServiceProvider.ProfilePictureUrl;
@@ -62,9 +63,9 @@ namespace MiddleWare.Converters
             return clientSp;
         }
 
-        public static ClientModel.ServiceProviderProfile ConvertToClientServiceProviderProfile(ServerModel.ServiceProviderProfile mongoServiceProviderProfile, string serviceProviderId, string organisationId)
+        public static ProviderClientOutgoing.ServiceProviderProfile ConvertToClientServiceProviderProfile(ServerModel.ServiceProviderProfile mongoServiceProviderProfile, string serviceProviderId, string organisationId)
         {
-            var clientSp = new ClientModel.ServiceProviderProfile();
+            var clientSp = new ProviderClientOutgoing.ServiceProviderProfile();
 
             clientSp.ServiceProviderId = serviceProviderId;
             clientSp.OrganisationId = organisationId;
