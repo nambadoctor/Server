@@ -769,35 +769,14 @@ namespace DataLayer
         public async Task<Appointment> SetAppointmentWithServiceRequest(Appointment appointment, ServiceRequest serviceRequest)
         {
 
-            var transactionOptions = new TransactionOptions(
-                                                    readConcern: ReadConcern.Default,
-                                                    writeConcern: WriteConcern.Acknowledged);
+            await AddAppointmentWithSession(null, appointment);
+            await AddServiceRequestWithSession(null, serviceRequest);
 
-            using (var session = mongoClient.StartSession())
-            {
-                session.StartTransaction(transactionOptions);
-
-                try
-                {
-
-                    //When session is passed, it gets used as a write option parameter and to set collection config 
-                    await SetAppointmentWithSession(session, appointment);
-                    await SetServiceRequestWithSession(session, serviceRequest);
-
-                    session.CommitTransaction();
-
-                    return appointment;
-                }
-                catch (Exception ex)
-                {
-                    session.AbortTransaction();
-                    throw new MongoTransactionException(ex.Message, ex.InnerException);
-                }
-            }
+            return appointment;
 
         }
 
-        private async Task<bool> SetServiceRequestWithSession(IClientSessionHandle session, ServiceRequest serviceRequest)
+        private async Task<bool> AddServiceRequestWithSession(IClientSessionHandle session, ServiceRequest serviceRequest)
         {
             var filter = Builders<Customer>.Filter;
 
@@ -805,12 +784,12 @@ namespace DataLayer
 
             var update = Builders<Customer>.Update.AddToSet(cust => cust.ServiceRequests, serviceRequest);
 
-            var srResult = await customerCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+            var srResult = await customerCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
 
             return srResult.IsAcknowledged;
         }
 
-        private async Task<bool> SetAppointmentWithSession(IClientSessionHandle session, Appointment appointment)
+        private async Task<bool> AddAppointmentWithSession(IClientSessionHandle session, Appointment appointment)
         {
             var filter = Builders<ServiceProvider>.Filter;
 
@@ -818,12 +797,12 @@ namespace DataLayer
 
             var update = Builders<ServiceProvider>.Update.AddToSet(sp => sp.Appointments, appointment);
 
-            var result = await serviceProviderCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+            var result = await serviceProviderCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
 
             return result.IsAcknowledged;
         }
 
-        private async Task<string> SetCustomerProfileWithSession(IClientSessionHandle session, CustomerProfile customerProfile)
+        private async Task<string> AddCustomerProfileWithSession(IClientSessionHandle session, CustomerProfile customerProfile)
         {
             ObjectId customerId;
             if (string.IsNullOrWhiteSpace(customerProfile.CustomerId))
@@ -906,7 +885,7 @@ namespace DataLayer
                     update = update.Set("Profiles.$.ServiceProviderId", customerProfile.ServiceProviderId);
                 }
 
-                var result = await customerCollection.UpdateOneAsync(session, nestedFilter, update, new UpdateOptions { IsUpsert = true });
+                var result = await customerCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
 
             }
 
@@ -915,37 +894,16 @@ namespace DataLayer
 
         public async Task<(CustomerProfile, Appointment)> SetCustomerWithAppointment(CustomerProfile customerProfile, Appointment appointment, ServiceRequest serviceRequest)
         {
+            var customerId = await AddCustomerProfileWithSession(null, customerProfile);
+            appointment.CustomerId = customerId;
+            serviceRequest.CustomerId = customerId;
 
-            var transactionOptions = new TransactionOptions(
-                                                    readConcern: ReadConcern.Default,
-                                                    writeConcern: WriteConcern.Acknowledged);
+            await AddAppointmentWithSession(null, appointment);
 
-            using (var session = mongoClient.StartSession())
-            {
-                session.StartTransaction(transactionOptions);
+            await AddServiceRequestWithSession(null, serviceRequest);
 
-                try
-                {
+            return (customerProfile, appointment);
 
-                    //When session is passed, it gets used as a write option parameter and to set collection config 
-                    var customerId = await SetCustomerProfileWithSession(session, customerProfile);
-                    appointment.CustomerId = customerId;
-                    serviceRequest.CustomerId = customerId;
-
-                    await SetAppointmentWithSession(session, appointment);
-
-                    await SetServiceRequestWithSession(session, serviceRequest);
-
-                    session.CommitTransaction();
-
-                    return (customerProfile, appointment);
-                }
-                catch (Exception ex)
-                {
-                    session.AbortTransaction();
-                    throw new MongoTransactionException(ex.Message, ex.InnerException);
-                }
-            }
         }
 
         #endregion CrossDocument
