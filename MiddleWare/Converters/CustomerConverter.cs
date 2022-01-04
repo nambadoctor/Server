@@ -2,6 +2,7 @@
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientCommon = DataModel.Client.Provider.Common;
 using Mongo = DataModel.Mongo;
+using MongoDB.Bson;
 
 namespace MiddleWare.Converters
 {
@@ -12,6 +13,8 @@ namespace MiddleWare.Converters
             var mongoCustomerProfile = new Mongo.CustomerProfile();
 
             mongoCustomerProfile.CustomerId = customerProfile.CustomerId;
+            if (!string.IsNullOrWhiteSpace(customerProfile.CustomerProfileId))
+                mongoCustomerProfile.CustomerProfileId = new ObjectId(customerProfile.CustomerProfileId);
             mongoCustomerProfile.FirstName = customerProfile.FirstName;
             mongoCustomerProfile.LastName = customerProfile.LastName;
             mongoCustomerProfile.Gender = customerProfile.Gender;
@@ -38,6 +41,7 @@ namespace MiddleWare.Converters
             var clientCustomerProfile = new ProviderClientOutgoing.OutgoingCustomerProfile();
 
             clientCustomerProfile.CustomerId = customerProfile.CustomerId;
+            clientCustomerProfile.CustomerProfileId = customerProfile.CustomerProfileId.ToString();
             clientCustomerProfile.FirstName = customerProfile.FirstName;
             clientCustomerProfile.LastName = customerProfile.LastName;
             clientCustomerProfile.Gender = customerProfile.Gender;

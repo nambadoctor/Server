@@ -26,8 +26,8 @@ namespace ServiceTests.Data
         private ObjectId CustId2;
         private void SetClient()
         {
-            var mongoClient = new MongoClient("***PROD STRING***");
-            database = mongoClient.GetDatabase("NambaDoctorDbPpe");
+            var mongoClient = new MongoClient("mongodb+srv://momrider69:toor@cluster0.nq6u3.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
+            database = mongoClient.GetDatabase("NambaDoctorDb");
 
             this.serviceProviderCollection = database.GetCollection<ServiceProvider>("ServiceProviders");
             this.customerCollection = database.GetCollection<Customer>("Customers");
@@ -74,6 +74,7 @@ namespace ServiceTests.Data
                 OrganisationId = OrgId1.ToString(),
                 PaymentType = PaymentType.PostPay
             });
+            sp1.Appointments = new List<Appointment>();
 
             var sp2 = new ServiceProvider();
             sp2.ServiceProviderId = SpId2;
@@ -103,6 +104,7 @@ namespace ServiceTests.Data
                 OrganisationId = OrgId1.ToString(),
                 PaymentType = PaymentType.PostPay
             });
+            sp2.Appointments = new List<Appointment>();
 
             await this.serviceProviderCollection.InsertOneAsync(sp1);
             await this.serviceProviderCollection.InsertOneAsync(sp2);
@@ -135,11 +137,11 @@ namespace ServiceTests.Data
                 FirstName = "Joshua",
                 Gender = "Male",
                 LastName = "Abraham",
-                Languages = new List<string>(),
                 OrganisationId = OrgId1.ToString(),
                 ServiceProviderId = SpId1.ToString()
             });
             cust1.AuthInfos.Add(new AuthInfo { AuthId = "+917777777777", AuthType = "PhoneNumber" });
+            cust1.ServiceRequests = new List<ServiceRequest>();
 
             var cust2 = new Customer();
             cust2.CustomerId = CustId2;
@@ -151,11 +153,11 @@ namespace ServiceTests.Data
                 FirstName = "Nithin",
                 Gender = "Male",
                 LastName = "Manivannan",
-                Languages = new List<string>(),
                 OrganisationId = OrgId1.ToString(),
                 ServiceProviderId = SpId2.ToString()
             });
             cust2.AuthInfos.Add(new AuthInfo { AuthId = "+918888888888", AuthType = "PhoneNumber" });
+            cust2.ServiceRequests = new List<ServiceRequest>();
 
             await this.customerCollection.InsertOneAsync(cust1);
             await this.customerCollection.InsertOneAsync(cust2);

@@ -113,6 +113,7 @@ namespace MiddleWare.Services
             serviceRequest.AppointmentId = appointmentId.ToString();
             serviceRequest.ServiceProviderId = customerAddedData.ServiceProviderId;
             serviceRequest.OrganisationId = customerAddedData.OrganisationId;
+            serviceRequest.CustomerId = customerAddedData.CustomerId;
 
             return (
                 CustomerConverter.ConvertToMongoCustomerProfile(customerProfile),

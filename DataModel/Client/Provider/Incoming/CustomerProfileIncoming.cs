@@ -10,6 +10,7 @@ namespace DataModel.Client.Provider.Incoming
     public class CustomerProfileIncoming
     {
         public string CustomerId { get; set; }
+        public string CustomerProfileId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public List<PhoneNumber> PhoneNumbers { get; set; }

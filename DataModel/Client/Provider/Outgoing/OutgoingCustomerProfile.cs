@@ -6,6 +6,7 @@ namespace DataModel.Client.Provider.Outgoing
     public class OutgoingCustomerProfile
     {
         public string CustomerId { get; set; }
+        public string CustomerProfileId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public List<PhoneNumber> PhoneNumbers { get; set; }
