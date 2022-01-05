@@ -711,6 +711,21 @@ namespace DataLayer
                     update = update.Set("ServiceRequests.$.Advices", serviceRequest.Advices);
                 }
 
+                if (serviceRequest.MedicineList != null)
+                {
+                    update = update.Set("ServiceRequests.$.MedicineList", serviceRequest.MedicineList);
+                }
+
+                if (serviceRequest.Reports != null)
+                {
+                    update = update.Set("ServiceRequests.$.Reports", serviceRequest.Reports);
+                }
+
+                if (serviceRequest.PrescriptionDocuments != null)
+                {
+                    update = update.Set("ServiceRequests.$.PrescriptionDocuments", serviceRequest.PrescriptionDocuments);
+                }
+
                 var result = await this.customerCollection.UpdateOneAsync(nestedFilter, update, new UpdateOptions { IsUpsert = true });
 
                 return serviceRequest;

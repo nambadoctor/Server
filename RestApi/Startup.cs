@@ -10,6 +10,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MiddleWare.Interfaces;
 using MiddleWare.Services;
+using ND.DataLayer.Utils.BlobStorage;
 using RestApi.Middlewares;
 using System;
 using System.IO;
@@ -59,9 +60,12 @@ namespace NambaDoctorWebApi
             services.AddScoped<IServiceProviderService, ServiceProviderService>();
             services.AddScoped<ICustomerService, CustomerService>();
             services.AddScoped<IAppointmentService, AppointmentService>();
+            services.AddScoped<IReportService, ReportService>();
+            services.AddScoped<IPrescriptionService, PrescriptionService>();
 
             //Init datalayer with telemetry
             services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();
+            services.AddSingleton<IMediaContainer, MediaContainer>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

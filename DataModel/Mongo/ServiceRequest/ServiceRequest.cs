@@ -21,7 +21,8 @@ namespace DataModel.Mongo
         public Vitals Vitals { get; set; }
         public List<AdditionalDetail> AdditionalDetails { get; set; }
         public List<Advice> Advices { get; set; }
-        public List<Prescription> Prescriptions { get; set; } // Usually only 1 but multiple for history purpose
+        public List<Medicine> MedicineList { get; set; }
+        public List<PrescriptionDocument> PrescriptionDocuments { get; set; }
         public List<Report> Reports { get; set; }
         public bool IsDeleted { get; set; }
     }

@@ -2,15 +2,14 @@
 using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
-using DataModel.Mongo;
 using DataModel.Shared;
 using System;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace DataLayer.Utils
+namespace ND.DataLayer.Utils.BlobStorage
 {
-    public class MediaContainer
+    public class MediaContainer : IMediaContainer
     {
         private BlobServiceClient blobServiceClient;
 
@@ -47,30 +46,6 @@ namespace DataLayer.Utils
             return uri.AbsoluteUri;
         }
 
-        public async Task<byte[]> DownloadFileAsBytesFromStorage(string fileName)
-        {
-            try
-            {
-                BlobClient blob = containerClient.GetBlobClient(fileName);
-                BlobDownloadInfo blobDownload = await blob.DownloadAsync();
-                var content = blobDownload.Content;
-
-                byte[] result;
-                using (var memoryStream = new MemoryStream())
-                {
-                    content.CopyTo(memoryStream);
-                    result = memoryStream.ToArray();
-                }
-
-                return result;
-            }
-            catch (Exception ex)
-            {
-                return null;
-            }
-        }
-
-
         private Task<Uri> GetServiceSasUriForBlob(BlobClient blobClient,
             string storedPolicyName = null)
         {
@@ -101,6 +76,29 @@ namespace DataLayer.Utils
                 return Task.FromResult(sasUri);
             }
             else
+            {
+                return null;
+            }
+        }
+
+        private async Task<byte[]> DownloadFileAsBytesFromStorage(string fileName)
+        {
+            try
+            {
+                BlobClient blob = containerClient.GetBlobClient(fileName);
+                BlobDownloadInfo blobDownload = await blob.DownloadAsync();
+                var content = blobDownload.Content;
+
+                byte[] result;
+                using (var memoryStream = new MemoryStream())
+                {
+                    content.CopyTo(memoryStream);
+                    result = memoryStream.ToArray();
+                }
+
+                return result;
+            }
+            catch (Exception ex)
             {
                 return null;
             }
