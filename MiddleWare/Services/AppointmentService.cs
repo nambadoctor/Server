@@ -32,7 +32,7 @@ namespace MiddleWare.Services
 
             var serviceProviderProfile = await datalayer.GetServiceProviderProfile(serviceProviderId, appointment.OrganisationId);
 
-            var customerProfile = await datalayer.GetCustomerProfile(appointmentId, appointment.CustomerId);
+            var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId); ;
 
             var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(serviceProviderProfile, appointment, customerProfile);
 
