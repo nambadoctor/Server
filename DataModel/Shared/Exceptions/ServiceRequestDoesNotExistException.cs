@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace DataModel.Shared.Exceptions
 {
-    public class ServiceRequestDoesNotExist : Exception
+    public class ServiceRequestDoesNotExistException : Exception
     {
-        public ServiceRequestDoesNotExist(string message)
+        public ServiceRequestDoesNotExistException(string message)
     : base(message)
         {
         }
-        public ServiceRequestDoesNotExist(string message, Exception innerException)
+        public ServiceRequestDoesNotExistException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

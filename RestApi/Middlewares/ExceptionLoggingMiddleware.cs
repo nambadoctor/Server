@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 
 namespace RestApi.Middlewares
@@ -29,7 +30,7 @@ namespace RestApi.Middlewares
                 logger.LogError(ex, "Appointment Does Not Exist");
                 throw new BadHttpRequestException(ex.Message, 501);
             }
-            catch (ServiceRequestDoesNotExist ex)
+            catch (ServiceRequestDoesNotExistException ex)
             {
                 logger.LogError(ex, "ServiceRequest Does Not Exist");
                 throw new BadHttpRequestException(ex.Message, 502);
@@ -58,6 +59,11 @@ namespace RestApi.Middlewares
             {
                 logger.LogError(ex, "Phone number already in use");
                 throw new BadHttpRequestException(ex.Message, 507);
+            }
+            catch (IOException ex)
+            {
+                logger.LogError(ex, "Error reading or writing to blob");
+                throw new BadHttpRequestException(ex.Message, 508);
             }
             catch (ArgumentException ex)
             {

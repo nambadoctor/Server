@@ -7,6 +7,7 @@ using DataLayer;
 using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
 using DataModel.Shared;
+using DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
@@ -32,41 +33,43 @@ namespace MiddleWare.Services
                 {
                     if (string.IsNullOrWhiteSpace(ReportId) || !ObjectId.TryParse(ReportId, out ObjectId reportId))
                     {
-                        throw new InvalidDataException("Report Id is invalid");
+                        throw new ArgumentException("Report Id is invalid");
                     }
 
                     if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
                     {
-                        throw new InvalidDataException("Customer Id is invalid");
+                        throw new ArgumentException("Customer Id is invalid");
                     }
 
                     if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
                     {
-                        throw new InvalidDataException("Appointment Id is invalid");
+                        throw new ArgumentException("Appointment Id is invalid");
                     }
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
                     if (serviceRequest == null)
                     {
-                        throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
+                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
                     }
 
                     if (serviceRequest.Reports == null)
                     {
-                        throw new InvalidDataException($"Prescription documents not found for appointment id :{AppointmentId}");
+                        throw new ReportDoesNotExistException($"Report documents not found for appointment id :{AppointmentId}");
                     }
 
                     var indexOfDocumentToDelete = serviceRequest.Reports.FindIndex(report => report.ReportId == reportId);
 
                     if (indexOfDocumentToDelete == -1)
                     {
-                        throw new InvalidDataException($"Prescription document with id {reportId} not found");
+                        throw new ReportDoesNotExistException($"Report document with id {reportId} not found in report list");
                     }
                     else
                     {
                         serviceRequest.Reports.RemoveAt(indexOfDocumentToDelete);
                     }
+
+                    logger.LogInformation("Setting service request with deleted report metadata");
 
                     await datalayer.SetServiceRequest(serviceRequest);
 
@@ -89,19 +92,19 @@ namespace MiddleWare.Services
                 {
                     if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
                     {
-                        throw new InvalidDataException("Customer Id is invalid");
+                        throw new ArgumentException("Customer Id is invalid");
                     }
 
                     if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
                     {
-                        throw new InvalidDataException("Appointment Id is invalid");
+                        throw new ArgumentException("Appointment Id is invalid");
                     }
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
                     if (serviceRequest == null)
                     {
-                        throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
+                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
                     }
 
                     var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
@@ -120,7 +123,7 @@ namespace MiddleWare.Services
                             }
                             else
                             {
-                                throw new InvalidDataException($"Report not found in blob:{report.ReportId}");
+                                throw new ReportDoesNotExistException($"Report not found in blob:{report.ReportId}");
                             }
 
                         }
@@ -145,24 +148,24 @@ namespace MiddleWare.Services
                 {
                     if (string.IsNullOrWhiteSpace(reportIncoming.ServiceRequestId) || !ObjectId.TryParse(reportIncoming.ServiceRequestId, out ObjectId serviceRequestId))
                     {
-                        throw new InvalidDataException("Service request Id is invalid");
+                        throw new ArgumentException("Service request Id is invalid");
                     }
 
                     if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
                     {
-                        throw new InvalidDataException("Customer Id is invalid");
+                        throw new ArgumentException("Customer Id is invalid");
                     }
 
                     if (string.IsNullOrWhiteSpace(reportIncoming.AppointmentId) || !ObjectId.TryParse(reportIncoming.AppointmentId, out ObjectId appointmentId))
                     {
-                        throw new InvalidDataException("Appointment Id is invalid");
+                        throw new ArgumentException("Appointment Id is invalid");
                     }
 
                     var serviceRequestFromDb = await datalayer.GetServiceRequest(reportIncoming.AppointmentId);
 
                     if (serviceRequestFromDb == null)
                     {
-                        throw new InvalidDataException("Service request does not exist");
+                        throw new ServiceRequestDoesNotExistException("Service request does not exist");
                     }
 
                     //Construct new service request to write
@@ -176,9 +179,13 @@ namespace MiddleWare.Services
                         serviceRequest.Reports.AddRange(serviceRequestFromDb.Reports);
                     }
 
+                    logger.LogInformation($"Begin data conversion ConvertToMongoReport");
+
                     //Add new prescription document to list
                     var report = ConvertToMongoReport(reportIncoming);
                     serviceRequest.Reports.Add(report);
+
+                    logger.LogInformation($"Finished data conversion ConvertToMongoReport");
 
                     //Upload to blob
                     var uploaded = await mediaContainer.UploadFileToStorage(reportIncoming.File, report.ReportId.ToString());
@@ -188,11 +195,25 @@ namespace MiddleWare.Services
                         throw new IOException("Unable to write file to blob storage");
                     }
 
+                    logger.LogInformation("Begin setting service request with report documents");
+
                     var response = await datalayer.SetServiceRequest(serviceRequest);
+
+                    logger.LogInformation("Finished setting service request with report documents");
 
                     //Construct outgoing prescription document which has sas url
                     var sasUrl = await mediaContainer.DownloadFileFromStorage(report.ReportId.ToString());
+
+                    if (sasUrl == null)
+                    {
+                        throw new ReportDoesNotExistException($"Error generating sas url for id : {report.ReportId}");
+                    }
+
+                    logger.LogInformation($"Begin data conversion ConvertToClientOutgoingReport");
+
                     var outgoingPrescriptionDocument = ConvertToClientOutgoingReport(report, sasUrl);
+
+                    logger.LogInformation($"Finish data conversion ConvertToClientOutgoingReport");
 
                     return outgoingPrescriptionDocument;
                 }
