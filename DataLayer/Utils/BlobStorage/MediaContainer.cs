@@ -3,6 +3,7 @@ using Azure.Storage.Blobs.Models;
 using Azure.Storage.Blobs.Specialized;
 using Azure.Storage.Sas;
 using DataModel.Shared;
+using Microsoft.Extensions.Logging;
 using System;
 using System.IO;
 using System.Threading.Tasks;
@@ -15,17 +16,15 @@ namespace ND.DataLayer.Utils.BlobStorage
 
         private BlobContainerClient containerClient;
 
+        private ILogger logger;
 
-        public MediaContainer()
+
+        public MediaContainer(ILogger<MediaContainer> logger)
         {
             blobServiceClient = new BlobServiceClient(ConnectionConfiguration.BlobStorageConnectionString);
             containerClient = blobServiceClient.GetBlobContainerClient(ConnectionConfiguration.BlobContainerName);
-        }
 
-        public async Task<string> CreateContainner(string containerName)
-        {
-            containerClient = await blobServiceClient.CreateBlobContainerAsync(containerName);
-            return containerClient.Name;
+            this.logger = logger;
         }
 
         public async Task<string> UploadFileToStorage(byte[] fileStream, string fileName)
