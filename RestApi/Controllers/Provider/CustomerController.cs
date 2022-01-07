@@ -32,17 +32,12 @@ namespace RestApi.Controllers.Provider
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string CustomerId, string OrganisationId)
         {
 
-            if (string.IsNullOrWhiteSpace(CustomerId))
-            {
-                throw new ArgumentException("Customer Id was null");
-            }
-
             var customerProfile = await customerService.GetCustomerProfile(CustomerId, OrganisationId);
 
             return customerProfile;
         }
 
-        [HttpGet("{PhoneNumber}/{Organisationid}")]
+        [HttpGet("CheckByPhoneNumber /{PhoneNumber}/{Organisationid}")]
         [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
         {

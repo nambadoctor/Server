@@ -81,7 +81,7 @@ namespace MiddleWare.Services
 
                     var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(phoneNumber);
 
-                    if (serviceProvider == null)
+                    if (serviceProvider != null)
                     {
                         throw new PhoneNumberBelongsToServiceProviderException($"Phone number : {phoneNumber} belongs to Service provider {serviceProvider.ServiceProviderId}");
                     }
