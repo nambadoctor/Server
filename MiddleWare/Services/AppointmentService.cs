@@ -6,7 +6,7 @@ using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using Mongo = DataModel.Mongo;
 using DataModel.Shared;
-using DataModel.Shared.Exceptions;
+using Exceptions = DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
@@ -41,7 +41,7 @@ namespace MiddleWare.Services
 
                     if (appointment == null)
                     {
-                        throw new AppointmentDoesNotExistException($"Appointment with id:{appointmentId} does not exist");
+                        throw new Exceptions.AppointmentDoesNotExistException($"Appointment with id:{appointmentId} does not exist");
                     }
 
                     var serviceProviderProfile = await datalayer.GetServiceProviderProfile(serviceProviderId, appointment.OrganisationId);
@@ -55,7 +55,7 @@ namespace MiddleWare.Services
 
                     if (customerProfile == null)
                     {
-                        throw new CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
+                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
                     }
 
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
@@ -88,7 +88,7 @@ namespace MiddleWare.Services
 
                     var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
 
-                    var serviceProviderProfiles = await datalayer.GetServiceProviderProfiles(serviceProviderIds, organsiationId);
+                    List<Mongo.ServiceProviderProfile> serviceProviderProfiles = await datalayer.GetServiceProviderProfiles(serviceProviderIds, organsiationId);
 
                     //Get customers
 
@@ -96,7 +96,8 @@ namespace MiddleWare.Services
 
                     foreach (var appointment in appointments)
                     {
-                        customerIdsToFetch.Add(appointment.CustomerId);
+                        if (!string.IsNullOrWhiteSpace(appointment.CustomerId))
+                            customerIdsToFetch.Add(appointment.CustomerId);
                     }
 
                     var customerProfiles = await datalayer.GetCustomerProfiles(customerIdsToFetch, organsiationId);
@@ -106,32 +107,43 @@ namespace MiddleWare.Services
 
                     var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
 
-                    foreach (var appointment in appointments)
+                    if (!(appointments == null || appointments.Count == 0))
                     {
-                        var spProfile = (from sp in serviceProviderProfiles
-                                         where sp.ServiceProviderId == appointment.ServiceProviderId
-                                         select sp).First();
-
-                        var custProfile = (from cust in customerProfiles
-                                           where cust.CustomerId == appointment.CustomerId
-                                           select cust).First();
-
-                        if (spProfile == null)
+                        if (serviceProviderProfiles == null || customerProfiles == null)
                         {
-                            throw new ServiceProviderDoesnotExistsException($"Service provider with id: {appointment.ServiceProviderId} does not exist");
+                            throw new Exceptions.InvalidDataException("Appointments data is corrupted");
                         }
 
-                        if (custProfile == null)
+                        foreach (var appointment in appointments)
                         {
-                            throw new ServiceProviderDoesnotExistsException($"Customer with id: {appointment.CustomerId} does not exist");
+                            if (!string.IsNullOrWhiteSpace(appointment.ServiceProviderId) && !string.IsNullOrWhiteSpace(appointment.CustomerId))
+                            {
+                                var spProfile = (from sp in serviceProviderProfiles
+                                                 where sp.ServiceProviderId == appointment.ServiceProviderId
+                                                 select sp).FirstOrDefault();
+
+                                var custProfile = (from cust in customerProfiles
+                                                   where cust.CustomerId == appointment.CustomerId
+                                                   select cust).FirstOrDefault();
+
+                                if (spProfile == null)
+                                {
+                                    throw new ServiceProviderDoesnotExistsException($"Service provider with id: {appointment.ServiceProviderId} does not exist");
+                                }
+
+                                if (custProfile == null)
+                                {
+                                    throw new ServiceProviderDoesnotExistsException($"Customer with id: {appointment.CustomerId} does not exist");
+                                }
+
+
+                                listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
+                                    spProfile,
+                                    appointment,
+                                    custProfile)
+                                    );
+                            }
                         }
-
-
-                        listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
-                            spProfile,
-                            appointment,
-                            custProfile)
-                            );
                     }
 
                     logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
@@ -184,7 +196,7 @@ namespace MiddleWare.Services
 
                     if (customerProfile == null)
                     {
-                        throw new CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
+                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
                     }
 
                     //New appointment

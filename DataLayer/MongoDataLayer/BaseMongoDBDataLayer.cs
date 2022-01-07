@@ -189,13 +189,31 @@ namespace DataLayer
                         serviceProviderIdList.Add(new ObjectId(serviceProviderId));
                     }
 
-                    var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, serviceProviderIdList);
+                    var organisationAppointmentFilter = Builders<ServiceProvider>.Filter.ElemMatch(
+                       sp => sp.Profiles,
+                       profile => profile.OrganisationId == organisationId
+                       );
+
+                    var serviceProviderFilter = Builders<ServiceProvider>.Filter.In(
+                        sp => sp.ServiceProviderId,
+                        serviceProviderIdList
+                        );
+
+                    FilterDefinition<ServiceProvider> combinedFilter;
+                    if (serviceProviderIds.Count == 0)
+                    {
+                        combinedFilter = organisationAppointmentFilter;
+                    }
+                    else
+                    {
+                        combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
+                    }
 
                     var project = Builders<ServiceProvider>.Projection.Expression(
                         sp => sp.Profiles.Where(profile => profile.OrganisationId == organisationId)
                         );
 
-                    var result = await this.serviceProviderCollection.Aggregate().Match(filter).Project(project).ToListAsync();
+                    var result = await this.serviceProviderCollection.Aggregate().Match(combinedFilter).Project(project).ToListAsync();
 
                     var listOfProfiles = new List<ServiceProviderProfile>();
 
