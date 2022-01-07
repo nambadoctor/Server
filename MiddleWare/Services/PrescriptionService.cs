@@ -6,6 +6,7 @@ using MiddleWare.Interfaces;
 using DataLayer;
 using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
+using DataModel.Shared;
 
 namespace MiddleWare.Services
 {
@@ -13,155 +14,192 @@ namespace MiddleWare.Services
     {
         private IMongoDbDataLayer datalayer;
         private IMediaContainer mediaContainer;
+        private ILogger logger;
 
-        public PrescriptionService(IMongoDbDataLayer dataLayer, IMediaContainer mediaContainer)
+        public PrescriptionService(IMongoDbDataLayer dataLayer, IMediaContainer mediaContainer, ILogger<PrescriptionService> logger)
         {
             this.datalayer = dataLayer;
             this.mediaContainer = mediaContainer;
+            this.logger = logger;
         }
         public async Task<string> DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
         {
-            if (string.IsNullOrWhiteSpace(PrescriptionDocumentId) || !ObjectId.TryParse(PrescriptionDocumentId, out ObjectId prescriptionDocumentId))
+            using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new InvalidDataException("Prescription Document Id is invalid");
-            }
-
-            if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-            {
-                throw new InvalidDataException("Customer Id is invalid");
-            }
-
-            if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-            {
-                throw new InvalidDataException("Appointment Id is invalid");
-            }
-
-            var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
-
-            if (serviceRequest == null)
-            {
-                throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
-            }
-
-            if (serviceRequest.PrescriptionDocuments == null)
-            {
-                throw new InvalidDataException($"Prescription documents not found for appointment id :{AppointmentId}");
-            }
-
-            var indexOfDocumentToDelete = serviceRequest.PrescriptionDocuments.FindIndex(document => document.PrescriptionDocumentId == prescriptionDocumentId);
-
-            if (indexOfDocumentToDelete == -1)
-            {
-                throw new InvalidDataException($"Prescription document with id {PrescriptionDocumentId} not found");
-            }
-            else
-            {
-                serviceRequest.PrescriptionDocuments.RemoveAt(indexOfDocumentToDelete);
-            }
-
-            await datalayer.SetServiceRequest(serviceRequest);
-
-            return PrescriptionDocumentId;
-        }
-
-        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string CustomerId, string AppointmentId)
-        {
-            if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-            {
-                throw new InvalidDataException("Customer Id is invalid");
-            }
-
-            if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-            {
-                throw new InvalidDataException("Appointment Id is invalid");
-            }
-
-            var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
-
-            if (serviceRequest == null)
-            {
-                throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
-            }
-
-            var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
-
-            if (serviceRequest.PrescriptionDocuments != null)
-            {
-                foreach (var prescDocument in serviceRequest.PrescriptionDocuments)
+                try
                 {
-                    var sasUrl = await mediaContainer.DownloadFileFromStorage(prescDocument.PrescriptionDocumentId.ToString());
-
-                    if (sasUrl != null)
+                    if (string.IsNullOrWhiteSpace(PrescriptionDocumentId) || !ObjectId.TryParse(PrescriptionDocumentId, out ObjectId prescriptionDocumentId))
                     {
-                        listToReturn.Add(
-                            ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
-                        );
+                        throw new InvalidDataException("Prescription Document Id is invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
+                    {
+                        throw new InvalidDataException("Customer Id is invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
+                    {
+                        throw new InvalidDataException("Appointment Id is invalid");
+                    }
+
+                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
+
+                    if (serviceRequest == null)
+                    {
+                        throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
+                    }
+
+                    if (serviceRequest.PrescriptionDocuments == null)
+                    {
+                        throw new InvalidDataException($"Prescription documents not found for appointment id :{AppointmentId}");
+                    }
+
+                    var indexOfDocumentToDelete = serviceRequest.PrescriptionDocuments.FindIndex(document => document.PrescriptionDocumentId == prescriptionDocumentId);
+
+                    if (indexOfDocumentToDelete == -1)
+                    {
+                        throw new InvalidDataException($"Prescription document with id {PrescriptionDocumentId} not found");
                     }
                     else
                     {
-                        throw new InvalidDataException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
+                        serviceRequest.PrescriptionDocuments.RemoveAt(indexOfDocumentToDelete);
                     }
+
+                    await datalayer.SetServiceRequest(serviceRequest);
+
+                    return PrescriptionDocumentId;
+                }
+                finally
+                {
 
                 }
             }
 
-            return listToReturn;
+        }
+
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string CustomerId, string AppointmentId)
+        {
+            using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
+                    {
+                        throw new InvalidDataException("Customer Id is invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
+                    {
+                        throw new InvalidDataException("Appointment Id is invalid");
+                    }
+
+                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
+
+                    if (serviceRequest == null)
+                    {
+                        throw new InvalidDataException($"Service request not found for appointment id :{AppointmentId}");
+                    }
+
+                    var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+
+                    if (serviceRequest.PrescriptionDocuments != null)
+                    {
+                        foreach (var prescDocument in serviceRequest.PrescriptionDocuments)
+                        {
+                            var sasUrl = await mediaContainer.DownloadFileFromStorage(prescDocument.PrescriptionDocumentId.ToString());
+
+                            if (sasUrl != null)
+                            {
+                                listToReturn.Add(
+                                    ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
+                                );
+                            }
+                            else
+                            {
+                                throw new InvalidDataException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
+                            }
+
+                        }
+                    }
+
+                    return listToReturn;
+                }
+                finally
+                {
+
+                }
+            }
+
         }
 
         public async Task<ProviderClientOutgoing.PrescriptionDocumentOutgoing> SetPrescriptionDocument(string CustomerId, ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
         {
-            if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.ServiceRequestId) || !ObjectId.TryParse(prescriptionDocumentIncoming.ServiceRequestId, out ObjectId serviceRequestId))
+            using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new InvalidDataException("Service request Id is invalid");
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.ServiceRequestId) || !ObjectId.TryParse(prescriptionDocumentIncoming.ServiceRequestId, out ObjectId serviceRequestId))
+                    {
+                        throw new InvalidDataException("Service request Id is invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
+                    {
+                        throw new InvalidDataException("Customer Id is invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.AppointmentId) || !ObjectId.TryParse(prescriptionDocumentIncoming.AppointmentId, out ObjectId appointmentId))
+                    {
+                        throw new InvalidDataException("Appointment Id is invalid");
+                    }
+
+                    var serviceRequestFromDb = await datalayer.GetServiceRequest(prescriptionDocumentIncoming.AppointmentId);
+
+                    if (serviceRequestFromDb == null)
+                    {
+                        throw new InvalidDataException("Service request does not exist");
+                    }
+
+                    //Construct new service request to write
+                    var serviceRequest = new Mongo.ServiceRequest();
+                    serviceRequest.CustomerId = CustomerId;
+                    serviceRequest.ServiceRequestId = serviceRequestId;
+                    serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
+
+                    if (serviceRequestFromDb.PrescriptionDocuments != null)
+                    {
+                        serviceRequest.PrescriptionDocuments.AddRange(serviceRequestFromDb.PrescriptionDocuments);
+                    }
+
+                    //Add new prescription document to list
+                    var prescriptionDocument = ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
+                    serviceRequest.PrescriptionDocuments.Add(prescriptionDocument);
+
+                    //Upload to blob
+                    var uploaded = await mediaContainer.UploadFileToStorage(prescriptionDocumentIncoming.File, prescriptionDocument.PrescriptionDocumentId.ToString());
+
+                    if (uploaded == null)
+                    {
+                        throw new IOException("Unable to write file to blob storage");
+                    }
+
+                    var response = await datalayer.SetServiceRequest(serviceRequest);
+
+                    //Construct outgoing prescription document which has sas url
+                    var sasUrl = await mediaContainer.DownloadFileFromStorage(prescriptionDocument.PrescriptionDocumentId.ToString());
+                    var outgoingPrescriptionDocument = ConvertToClientOutgoingPrescriptionDocument(prescriptionDocument, sasUrl);
+
+                    return outgoingPrescriptionDocument;
+                }
+                finally
+                {
+
+                }
             }
-
-            if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-            {
-                throw new InvalidDataException("Customer Id is invalid");
-            }
-
-            if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.AppointmentId) || !ObjectId.TryParse(prescriptionDocumentIncoming.AppointmentId, out ObjectId appointmentId))
-            {
-                throw new InvalidDataException("Appointment Id is invalid");
-            }
-
-            var serviceRequestFromDb = await datalayer.GetServiceRequest(prescriptionDocumentIncoming.AppointmentId);
-
-            if (serviceRequestFromDb == null)
-            {
-                throw new InvalidDataException("Service request does not exist");
-            }
-
-            //Construct new service request to write
-            var serviceRequest = new Mongo.ServiceRequest();
-            serviceRequest.CustomerId = CustomerId;
-            serviceRequest.ServiceRequestId = serviceRequestId;
-            serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
-
-            if (serviceRequestFromDb.PrescriptionDocuments != null)
-            {
-                serviceRequest.PrescriptionDocuments.AddRange(serviceRequestFromDb.PrescriptionDocuments);
-            }
-
-            //Add new prescription document to list
-            var prescriptionDocument = ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
-            serviceRequest.PrescriptionDocuments.Add(prescriptionDocument);
-
-            //Upload to blob
-            var uploaded = await mediaContainer.UploadFileToStorage(prescriptionDocumentIncoming.File, prescriptionDocument.PrescriptionDocumentId.ToString());
-
-            if (uploaded == null)
-            {
-                throw new IOException("Unable to write file to blob storage");
-            }
-
-            var response = await datalayer.SetServiceRequest(serviceRequest);
-
-            //Construct outgoing prescription document which has sas url
-            var sasUrl = await mediaContainer.DownloadFileFromStorage(prescriptionDocument.PrescriptionDocumentId.ToString());
-            var outgoingPrescriptionDocument = ConvertToClientOutgoingPrescriptionDocument(prescriptionDocument, sasUrl);
-
-            return outgoingPrescriptionDocument;
 
         }
 

@@ -85,7 +85,7 @@ namespace RestApi.Controllers.Provider
                 {
                     logger.LogInformation("Start GetOrganisationCustomers");
 
-                    var customers = await customerService.GetCustomers(OrganisationId, ServiceProviderIds);
+                    var customers = await customerService.GetCustomerProfiles(OrganisationId, ServiceProviderIds);
 
                     return customers;
                 }

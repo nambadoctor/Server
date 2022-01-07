@@ -6,6 +6,7 @@ using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
+using DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
@@ -42,7 +43,7 @@ namespace MiddleWare.Services
                     if (organisation == null)
                     {
                         logger.LogError("Organisation not found for Id {0}", OrganisationId);
-                        throw new InvalidDataException($"Organisation not found for id: {OrganisationId}");
+                        throw new OrganisationDoesNotExistException($"Organisation not found for id: {OrganisationId}");
                     }
 
 
@@ -57,7 +58,7 @@ namespace MiddleWare.Services
                     if (serviceProviders == null)
                     {
                         logger.LogError("Missing service providers for given ServiceProviderIDs");
-                        throw new InvalidDataException("Missing service providers for given ServiceProviderIDs");
+                        throw new ArgumentException("Missing service providers for given ServiceProviderIDs");
                     }
                     else
                     {
@@ -66,7 +67,7 @@ namespace MiddleWare.Services
                             logger.LogError("Mismatch in number of service providers returned. Requsted {0}, Returened {1}",
                                                                             listOfServiceProviderIds.ToString(), serviceProviders.Count.ToString());
 
-                            throw new InvalidDataException(String.Format("Mismatch in number of service providers returned. Requsted {0}, Returened {1}",
+                            throw new ArgumentException(String.Format("Mismatch in number of service providers returned. Requsted {0}, Returened {1}",
                                                                             listOfServiceProviderIds.ToString(), serviceProviders.Count.ToString()));
                         }
                     }

@@ -5,79 +5,163 @@ using Mongo = DataModel.Mongo;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MongoDB.Bson;
+using DataModel.Shared;
+using DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
     public class CustomerService : ICustomerService
     {
         private IMongoDbDataLayer datalayer;
+        private ILogger logger;
 
-        public CustomerService(IMongoDbDataLayer dataLayer)
+        public CustomerService(IMongoDbDataLayer dataLayer, ILogger<CustomerService> logger)
         {
             this.datalayer = dataLayer;
+            this.logger = logger;
         }
-        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomer(string customerId, string organisationId)
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string customerId, string organisationId)
         {
-            var customerProfile = await datalayer.GetCustomerProfile(customerId, organisationId);
-
-            var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
-
-            return clientCustomer;
-        }
-
-        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomers(string organsiationId, List<string> serviceProviderIds)
-
-        {
-            var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
-
-            var clientCustomers = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
-
-            foreach (var customer in customerProfiles)
+            using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomer"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
+                try
+                {
+                    var customerProfile = await datalayer.GetCustomerProfile(customerId, organisationId);
+
+                    var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
+
+                    return clientCustomer;
+                }
+                finally
+                {
+
+                }
+            }
+        }
+
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string phoneNumber, string organisationId)
+        {
+            using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomer"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                try
+                {
+                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
+
+                    if (customer == null)
+                    {
+                        return null;
+                    }
+
+                    var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(phoneNumber);
+
+                    if (serviceProvider == null)
+                    {
+                        throw new PhoneNumberBelongsToServiceProviderException($"Phone number : {phoneNumber} belongs to Service provider {serviceProvider.ServiceProviderId}");
+                    }
+
+                    var customerProfile = await datalayer.GetCustomerProfile(phoneNumber, organisationId);
+
+                    var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
+
+                    return clientCustomer;
+                }
+                finally
+                {
+
+                }
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomerProfiles(string organsiationId, List<string> serviceProviderIds)
+        {
+            using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomers"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                try
+                {
+                    var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
+
+                    var clientCustomers = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
+
+                    foreach (var customer in customerProfiles)
+                    {
+                        clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
+                    }
+
+                    return clientCustomers;
+                }
+                finally
+                {
+
+                }
             }
 
-            return clientCustomers;
         }
 
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> SetCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
+            using (logger.BeginScope("Method: {Method}", "CustomerService:SetCustomerProfile"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new InvalidDataException("No valid phone number passed");
+                try
+                {
+                    if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
+                    {
+                        throw new ArgumentException("No valid phone number passed");
+                    }
+
+                    var generatedCustomerProfile = await datalayer.SetCustomerProfile(CustomerConverter.ConvertToMongoCustomerProfile(customerProfile));
+
+                    var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile);
+
+                    return clientCustomerProfile;
+                }
+                finally
+                {
+
+                }
             }
 
-            var generatedCustomerProfile = await datalayer.SetCustomerProfile(CustomerConverter.ConvertToMongoCustomerProfile(customerProfile));
-
-            var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile);
-
-            return clientCustomerProfile;
         }
 
         public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfileWithAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerAddedData)
         {
-            if (customerAddedData.PhoneNumbers == null || customerAddedData.PhoneNumbers.Count == 0)
+            using (logger.BeginScope("Method: {Method}", "CustomerService:SetCustomerProfileWithAppointment"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new InvalidDataException("No valid phone number passed");
+                try
+                {
+                    if (customerAddedData.PhoneNumbers == null || customerAddedData.PhoneNumbers.Count == 0)
+                    {
+                        throw new ArgumentException("No valid phone number passed");
+                    }
+
+                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerAddedData);
+
+                    var generatedCustomerProfile = await datalayer.SetCustomerWithAppointment(
+                        parsedData.Item1,
+                        parsedData.Item2,
+                        parsedData.Item3
+                        );
+
+                    var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile.Item1);
+
+                    var spProfile = await datalayer.GetServiceProviderProfile(customerAddedData.ServiceProviderId, customerAddedData.OrganisationId);
+
+                    var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
+                        spProfile, generatedCustomerProfile.Item2,
+                        generatedCustomerProfile.Item1);
+
+                    return new ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing(clientCustomerProfile, clientAppointment);
+                }
+                finally
+                {
+
+                }
             }
 
-            var parsedData = GenerateDataForSettingCustomerAndAppointment(customerAddedData);
-
-            var generatedCustomerProfile = await datalayer.SetCustomerWithAppointment(
-                parsedData.Item1,
-                parsedData.Item2,
-                parsedData.Item3
-                );
-
-            var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile.Item1);
-
-            var spProfile = await datalayer.GetServiceProviderProfile(customerAddedData.ServiceProviderId, customerAddedData.OrganisationId);
-
-            var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                spProfile, generatedCustomerProfile.Item2,
-                generatedCustomerProfile.Item1);
-
-            return new ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing(clientCustomerProfile, clientAppointment);
         }
 
         private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerAddedData)

@@ -37,7 +37,17 @@ namespace RestApi.Controllers.Provider
                 throw new ArgumentException("Customer Id was null");
             }
 
-            var customerProfile = await customerService.GetCustomer(CustomerId, OrganisationId);
+            var customerProfile = await customerService.GetCustomerProfile(CustomerId, OrganisationId);
+
+            return customerProfile;
+        }
+
+        [HttpGet("{PhoneNumber}/{Organisationid}")]
+        [Authorize]
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
+        {
+
+            var customerProfile = await customerService.GetCustomerProfileFromPhoneNumber(PhoneNumber, OrganisationId);
 
             return customerProfile;
         }
