@@ -86,7 +86,7 @@ namespace MiddleWare.Services
                         throw new PhoneNumberBelongsToServiceProviderException($"Phone number : {phoneNumber} belongs to Service provider {serviceProvider.ServiceProviderId}");
                     }
 
-                    var customerProfile = await datalayer.GetCustomerProfile(phoneNumber, organisationId);
+                    var customerProfile = await datalayer.GetCustomerProfile(customer.CustomerId.ToString(), organisationId);
 
                     if (customerProfile == null)
                     {
