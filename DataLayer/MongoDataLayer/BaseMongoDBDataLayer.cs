@@ -191,18 +191,17 @@ namespace DataLayer
 
                     var filter = Builders<ServiceProvider>.Filter.In(sp => sp.ServiceProviderId, serviceProviderIdList);
 
-                    var project = Builders<ServiceProvider>.Projection.ElemMatch(
-                        sp => sp.Profiles,
-                        profile => profile.OrganisationId == organisationId
+                    var project = Builders<ServiceProvider>.Projection.Expression(
+                        sp => sp.Profiles.Where(profile => profile.OrganisationId == organisationId)
                         );
 
-                    var serviceProviders = await this.serviceProviderCollection.Find(filter).Project<ServiceProvider>(project).ToListAsync();
+                    var result = await this.serviceProviderCollection.Aggregate().Match(filter).Project(project).ToListAsync();
 
                     var listOfProfiles = new List<ServiceProviderProfile>();
 
-                    foreach (var sp in serviceProviders)
+                    foreach (var profiles in result)
                     {
-                        listOfProfiles.Add(sp.Profiles.FirstOrDefault());
+                        listOfProfiles.AddRange(profiles);
                     }
 
                     return listOfProfiles;
@@ -230,13 +229,19 @@ namespace DataLayer
                 {
                     logger.LogInformation("DB Execution start");
                     var filter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
-                    var availabilityProject = Builders<ServiceProvider>.Projection.ElemMatch(sp => sp.Availabilities, availability => availability.OrganisationId == organisationId);
 
-                    var serviceProvider = await this.serviceProviderCollection.Find(filter).Project<ServiceProvider>(availabilityProject).FirstOrDefaultAsync();
+                    var project = Builders<ServiceProvider>.Projection.Expression(
+                        sp => sp.Availabilities.Where(availability => availability.OrganisationId == organisationId)
+                        );
+
+                    var result = await this.serviceProviderCollection.Aggregate().Match(filter).Project(project).ToListAsync();
 
                     var availabilities = new List<ServiceProviderAvailability>();
 
-                    availabilities.AddRange(serviceProvider.Availabilities);
+                    foreach (var availability in result)
+                    {
+                        availabilities.AddRange(availability);
+                    }
 
                     return availabilities;
 
@@ -326,17 +331,17 @@ namespace DataLayer
                         combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
                     }
 
-                    var project = Builders<ServiceProvider>.Projection.ElemMatch(
-                        sp => sp.Appointments,
-                        appointment => appointment.OrganisationId == organisationId);
+                    var project = Builders<ServiceProvider>.Projection.Expression(
+                        sp => sp.Appointments.Where(appointment => appointment.OrganisationId == organisationId)
+                        );
 
-                    var serviceProviders = await this.serviceProviderCollection.Find(combinedFilter).Project<ServiceProvider>(project).ToListAsync();
+                    var result = await this.serviceProviderCollection.Aggregate().Match(combinedFilter).Project(project).ToListAsync();
 
                     var appointments = new List<Appointment>();
 
-                    foreach (var serviceProvider in serviceProviders)
+                    foreach (var sppointments in result)
                     {
-                        appointments.AddRange(serviceProvider.Appointments);
+                        appointments.AddRange(sppointments);
                     }
 
                     return appointments;
@@ -646,17 +651,17 @@ namespace DataLayer
 
                     var filter = Builders<Customer>.Filter.In(cust => cust.CustomerId, customerIdList);
 
-                    var project = Builders<Customer>.Projection.ElemMatch(
-                        cust => cust.Profiles,
-                        profile => profile.OrganisationId.Equals(organisationId));
+                    var project = Builders<Customer>.Projection.Expression(
+                        cust => cust.Profiles.Where(profile => profile.OrganisationId == organisationId)
+                        );
 
-                    var customers = await this.customerCollection.Find(filter).Project<Customer>(project).ToListAsync();
+                    var result = await this.customerCollection.Aggregate().Match(filter).Project(project).ToListAsync();
 
                     var profiles = new List<CustomerProfile>();
 
-                    foreach (var cust in customers)
+                    foreach (var profileList in result)
                     {
-                        profiles.Add(cust.Profiles.FirstOrDefault());
+                        profiles.AddRange(profileList);
                     }
 
                     return profiles;
@@ -701,18 +706,17 @@ namespace DataLayer
                         combinedFilter = organisationFilter & serviceProviderFilter;
                     }
 
-                    var project = Builders<Customer>.Projection.ElemMatch(
-                        cust => cust.Profiles,
-                        profile => profile.OrganisationId == organisationId
+                    var project = Builders<Customer>.Projection.Expression(
+                        cust => cust.Profiles.Where(profile => profile.OrganisationId == organisationId)
                         );
 
-                    var customers = await this.customerCollection.Find(combinedFilter).Project<Customer>(project).ToListAsync();
+                    var result = await this.customerCollection.Aggregate().Match(combinedFilter).Project(project).ToListAsync();
 
                     var profiles = new List<CustomerProfile>();
 
-                    foreach (var cust in customers)
+                    foreach (var profileList in result)
                     {
-                        profiles.Add(cust.Profiles.FirstOrDefault());
+                        profiles.AddRange(profileList);
                     }
 
                     return profiles;
