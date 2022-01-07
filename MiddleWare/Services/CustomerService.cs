@@ -27,9 +27,28 @@ namespace MiddleWare.Services
             {
                 try
                 {
+                    if (string.IsNullOrWhiteSpace(organisationId) || ObjectId.TryParse(organisationId, out ObjectId orgId) == false)
+                    {
+                        throw new ArgumentException("Organisation Id was invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(customerId) || ObjectId.TryParse(customerId, out ObjectId custId) == false)
+                    {
+                        throw new ArgumentException("Customer Id was invalid");
+                    }
+
                     var customerProfile = await datalayer.GetCustomerProfile(customerId, organisationId);
 
+                    if (customerProfile == null)
+                    {
+                        throw new CustomerDoesNotExistException($"Customer does not exist for id: {customerId} org id: {organisationId}");
+                    }
+
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
+
                     var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
+
+                    logger.LogInformation("Finished data conversion ConvertToClientCustomerProfile");
 
                     return clientCustomer;
                 }
@@ -47,10 +66,16 @@ namespace MiddleWare.Services
             {
                 try
                 {
+                    if (string.IsNullOrWhiteSpace(organisationId) || ObjectId.TryParse(organisationId, out ObjectId orgId) == false)
+                    {
+                        throw new ArgumentException("Organisation Id was invalid");
+                    }
+
                     var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
 
                     if (customer == null)
                     {
+                        logger.LogInformation($"No matching customer with phone number:{phoneNumber}");
                         return null;
                     }
 
@@ -63,7 +88,16 @@ namespace MiddleWare.Services
 
                     var customerProfile = await datalayer.GetCustomerProfile(phoneNumber, organisationId);
 
+                    if (customerProfile == null)
+                    {
+                        throw new CustomerDoesNotExistException($"Customer does not exist for id: {customer.CustomerId} org id: {organisationId}");
+                    }
+
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
+
                     var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
+
+                    logger.LogInformation("Finished data conversion ConvertToClientCustomerProfile");
 
                     return clientCustomer;
                 }
@@ -83,11 +117,28 @@ namespace MiddleWare.Services
                 {
                     var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
 
+                    if (customerProfiles == null)
+                    {
+                        logger.LogInformation($"No customers for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
+                    }
+                    else
+                    {
+                        logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
+                        logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
+                    }
+
                     var clientCustomers = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
 
-                    foreach (var customer in customerProfiles)
+                    if (customerProfiles != null)
                     {
-                        clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
+                        logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile list");
+
+                        foreach (var customer in customerProfiles)
+                        {
+                            clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
+                        }
+
+                        logger.LogInformation("End data conversion ConvertToClientCustomerProfile list");
                     }
 
                     return clientCustomers;
@@ -112,9 +163,33 @@ namespace MiddleWare.Services
                         throw new ArgumentException("No valid phone number passed");
                     }
 
-                    var generatedCustomerProfile = await datalayer.SetCustomerProfile(CustomerConverter.ConvertToMongoCustomerProfile(customerProfile));
+                    var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
+
+                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
+
+                    if (customer == null)
+                    {
+                        logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
+                    }
+                    else
+                    {
+                        logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
+                        customerProfile.CustomerId = customer.CustomerId.ToString();
+                    }
+
+                    logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");
+
+                    var mongoCustomerProfile = CustomerConverter.ConvertToMongoCustomerProfile(customerProfile);
+
+                    logger.LogInformation("Finished data conversion ConvertToMongoCustomerProfile");
+
+                    var generatedCustomerProfile = await datalayer.SetCustomerProfile(mongoCustomerProfile);
+
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
 
                     var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile);
+
+                    logger.LogInformation("Finished data conversion ConvertToClientCustomerProfile");
 
                     return clientCustomerProfile;
                 }
@@ -138,7 +213,35 @@ namespace MiddleWare.Services
                         throw new ArgumentException("No valid phone number passed");
                     }
 
+                    if (string.IsNullOrWhiteSpace(customerAddedData.OrganisationId) || ObjectId.TryParse(customerAddedData.OrganisationId, out ObjectId orgId) == false)
+                    {
+                        throw new ArgumentException("Organisation Id was invalid");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(customerAddedData.ServiceProviderId) || ObjectId.TryParse(customerAddedData.ServiceProviderId, out ObjectId spId) == false)
+                    {
+                        throw new ArgumentException("ServiceProvider Id was invalid");
+                    }
+
+                    var phoneNumber = customerAddedData.PhoneNumbers.First().CountryCode + customerAddedData.PhoneNumbers.First().Number;
+
+                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
+
+                    if (customer == null)
+                    {
+                        logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
+                    }
+                    else
+                    {
+                        logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
+                        customerAddedData.CustomerId = customer.CustomerId.ToString();
+                    }
+
+                    logger.LogInformation("Begin data conversion GenerateDataForSettingCustomerAndAppointment");
+
                     var parsedData = GenerateDataForSettingCustomerAndAppointment(customerAddedData);
+
+                    logger.LogInformation("Finished data conversion GenerateDataForSettingCustomerAndAppointment");
 
                     var generatedCustomerProfile = await datalayer.SetCustomerWithAppointment(
                         parsedData.Item1,
@@ -146,13 +249,26 @@ namespace MiddleWare.Services
                         parsedData.Item3
                         );
 
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
+
                     var clientCustomerProfile = CustomerConverter.ConvertToClientCustomerProfile(generatedCustomerProfile.Item1);
 
+                    logger.LogInformation("Finsihed data conversion ConvertToClientCustomerProfile");
+
                     var spProfile = await datalayer.GetServiceProviderProfile(customerAddedData.ServiceProviderId, customerAddedData.OrganisationId);
+
+                    if (spProfile == null)
+                    {
+                        throw new ServiceProviderDoesnotExistsException($"Service provider does not exist for id: {customerAddedData.ServiceProviderId} orgId: {customerAddedData.OrganisationId}");
+                    }
+
+                    logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
                     var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
                         spProfile, generatedCustomerProfile.Item2,
                         generatedCustomerProfile.Item1);
+
+                    logger.LogInformation("Finsihed data conversion ConvertToClientAppointmentData");
 
                     return new ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing(clientCustomerProfile, clientAppointment);
                 }
