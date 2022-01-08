@@ -115,6 +115,11 @@ namespace MiddleWare.Services
             {
                 try
                 {
+                    if (string.IsNullOrWhiteSpace(organsiationId) || ObjectId.TryParse(organsiationId, out ObjectId orgId) == false)
+                    {
+                        throw new ArgumentException("Organisation Id was invalid");
+                    }
+
                     var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
 
                     if (customerProfiles == null)
@@ -158,6 +163,7 @@ namespace MiddleWare.Services
             {
                 try
                 {
+
                     if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
                     {
                         throw new ArgumentException("No valid phone number passed");
@@ -171,10 +177,12 @@ namespace MiddleWare.Services
                     {
                         logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
                     }
-                    else
+
+                    //Update customer
+                    if (!string.IsNullOrWhiteSpace(customerProfile.CustomerId) && ObjectId.TryParse(customerProfile.CustomerId, out ObjectId customerId) == false)
                     {
                         logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
-                        customerProfile.CustomerId = customer.CustomerId.ToString();
+                        customerProfile.CustomerId = customerId.ToString();
                     }
 
                     logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");
@@ -201,29 +209,31 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfileWithAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerAddedData)
+        public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfileWithAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "CustomerService:SetCustomerProfileWithAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (customerAddedData.PhoneNumbers == null || customerAddedData.PhoneNumbers.Count == 0)
+                    var customerProfile = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
+
+                    if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
                     {
                         throw new ArgumentException("No valid phone number passed");
                     }
 
-                    if (string.IsNullOrWhiteSpace(customerAddedData.OrganisationId) || ObjectId.TryParse(customerAddedData.OrganisationId, out ObjectId orgId) == false)
+                    if (string.IsNullOrWhiteSpace(customerProfile.OrganisationId) || ObjectId.TryParse(customerProfile.OrganisationId, out ObjectId orgId) == false)
                     {
                         throw new ArgumentException("Organisation Id was invalid");
                     }
 
-                    if (string.IsNullOrWhiteSpace(customerAddedData.ServiceProviderId) || ObjectId.TryParse(customerAddedData.ServiceProviderId, out ObjectId spId) == false)
+                    if (string.IsNullOrWhiteSpace(customerProfile.ServiceProviderId) || ObjectId.TryParse(customerProfile.ServiceProviderId, out ObjectId spId) == false)
                     {
                         throw new ArgumentException("ServiceProvider Id was invalid");
                     }
 
-                    var phoneNumber = customerAddedData.PhoneNumbers.First().CountryCode + customerAddedData.PhoneNumbers.First().Number;
+                    var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
 
                     var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
 
@@ -234,12 +244,12 @@ namespace MiddleWare.Services
                     else
                     {
                         logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
-                        customerAddedData.CustomerId = customer.CustomerId.ToString();
+                        customerProfile.CustomerId = customer.CustomerId.ToString();
                     }
 
                     logger.LogInformation("Begin data conversion GenerateDataForSettingCustomerAndAppointment");
 
-                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerAddedData);
+                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerProfileWithAppointmentIncoming);
 
                     logger.LogInformation("Finished data conversion GenerateDataForSettingCustomerAndAppointment");
 
@@ -255,11 +265,11 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Finsihed data conversion ConvertToClientCustomerProfile");
 
-                    var spProfile = await datalayer.GetServiceProviderProfile(customerAddedData.ServiceProviderId, customerAddedData.OrganisationId);
+                    var spProfile = await datalayer.GetServiceProviderProfile(customerProfile.ServiceProviderId, customerProfile.OrganisationId);
 
                     if (spProfile == null)
                     {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider does not exist for id: {customerAddedData.ServiceProviderId} orgId: {customerAddedData.OrganisationId}");
+                        throw new ServiceProviderDoesnotExistsException($"Service provider does not exist for id: {customerProfile.ServiceProviderId} orgId: {customerProfile.OrganisationId}");
                     }
 
                     logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
@@ -280,41 +290,44 @@ namespace MiddleWare.Services
 
         }
 
-        private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerAddedData)
+        private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming)
         {
+            var customerData = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
+            var appointmentData = customerProfileWithAppointmentIncoming.AppointmentIncoming;
+
             var customerProfile = new ProviderClientIncoming.CustomerProfileIncoming();
-            customerProfile.OrganisationId = customerAddedData.OrganisationId;
-            customerProfile.ServiceProviderId = customerAddedData.ServiceProviderId;
-            customerProfile.FirstName = customerAddedData.FirstName;
-            customerProfile.LastName = customerAddedData.LastName;
-            customerProfile.Gender = customerAddedData.Gender;
-            customerProfile.DateOfBirth = customerAddedData.DateOfBirth;
-            customerProfile.CustomerId = customerAddedData.CustomerId;
-            customerProfile.EmailAddress = customerAddedData.EmailAddress;
-            customerProfile.ProfilePicURL = customerAddedData.ProfilePicURL;
-            customerProfile.PhoneNumbers = customerAddedData.PhoneNumbers;
+            customerProfile.OrganisationId = customerData.OrganisationId;
+            customerProfile.ServiceProviderId = customerData.ServiceProviderId;
+            customerProfile.FirstName = customerData.FirstName;
+            customerProfile.LastName = customerData.LastName;
+            customerProfile.Gender = customerData.Gender;
+            customerProfile.DateOfBirth = customerData.DateOfBirth;
+            customerProfile.CustomerId = customerData.CustomerId;
+            customerProfile.EmailAddress = customerData.EmailAddress;
+            customerProfile.ProfilePicURL = customerData.ProfilePicURL;
+            customerProfile.PhoneNumbers = customerData.PhoneNumbers;
 
             var appointment = new Mongo.Appointment();
             var appointmentId = ObjectId.GenerateNewId();
             var serviceRequestId = ObjectId.GenerateNewId();
 
             appointment.AppointmentId = appointmentId;
-            appointment.ServiceProviderId = customerAddedData.ServiceProviderId;
+            appointment.ServiceProviderId = appointmentData.ServiceProviderId;
             appointment.ServiceRequestId = serviceRequestId.ToString();
-            appointment.AddressId = customerAddedData.AddressId;
-            appointment.CustomerId = customerAddedData.CustomerId;
-            appointment.OrganisationId = customerAddedData.OrganisationId;
-            appointment.ScheduledAppointmentStartTime = customerAddedData.ScheduledAppointmentStartTime;
-            appointment.ScheduledAppointmentEndTime = customerAddedData.ScheduledAppointmentEndTime;
-            appointment.ActualAppointmentStartTime = customerAddedData.ActualAppointmentStartTime;
-            appointment.ActualAppointmentEndTime = customerAddedData.ActualAppointmentEndTime;
+            appointment.AddressId = appointmentData.AddressId;
+            appointment.CustomerId = appointmentData.CustomerId;
+            appointment.OrganisationId = appointmentData.OrganisationId;
+            appointment.ScheduledAppointmentStartTime = appointmentData.ScheduledAppointmentStartTime;
+            appointment.ScheduledAppointmentEndTime = appointmentData.ScheduledAppointmentEndTime;
+            appointment.ActualAppointmentStartTime = appointmentData.ActualAppointmentStartTime;
+            appointment.ActualAppointmentEndTime = appointmentData.ActualAppointmentEndTime;
 
             var serviceRequest = new Mongo.ServiceRequest();
             serviceRequest.ServiceRequestId = serviceRequestId;
             serviceRequest.AppointmentId = appointmentId.ToString();
-            serviceRequest.ServiceProviderId = customerAddedData.ServiceProviderId;
-            serviceRequest.OrganisationId = customerAddedData.OrganisationId;
-            serviceRequest.CustomerId = customerAddedData.CustomerId;
+            serviceRequest.ServiceProviderId = appointmentData.ServiceProviderId;
+            serviceRequest.OrganisationId = appointmentData.OrganisationId;
+            serviceRequest.CustomerId = appointmentData.CustomerId;
 
             return (
                 CustomerConverter.ConvertToMongoCustomerProfile(customerProfile),

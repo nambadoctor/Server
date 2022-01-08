@@ -33,7 +33,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpPut("")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment([FromBody] ProviderClientIncoming.Appointment appointment)
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {
             var appointmentToReturn = await appointmentService.SetAppointment(appointment);
 

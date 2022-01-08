@@ -62,7 +62,7 @@ namespace MiddleWare.Converters
         }
 
         public static Mongo.Appointment ConvertToMongoAppointmentData(
-           ProviderClientIncoming.Appointment appointment)
+           ProviderClientIncoming.AppointmentIncoming appointment)
         {
             var appointmentData = new Mongo.Appointment();
 

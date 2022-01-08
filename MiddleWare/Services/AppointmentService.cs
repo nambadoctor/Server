@@ -158,7 +158,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.Appointment appointment)
+        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:SetAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))

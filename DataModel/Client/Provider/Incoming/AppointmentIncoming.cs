@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace DataModel.Client.Provider.Incoming
 {
-    public class Appointment
+    public class AppointmentIncoming
     {
         public string? AppointmentId { get; set; }
         public string OrganisationId { get; set; }
