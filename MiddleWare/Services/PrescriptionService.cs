@@ -8,6 +8,7 @@ using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
 using DataModel.Shared;
 using DataModel.Shared.Exceptions;
+using MiddleWare.Utils;
 
 namespace MiddleWare.Services
 {
@@ -187,7 +188,7 @@ namespace MiddleWare.Services
                     logger.LogInformation($"Finished data conversion ConvertToMongoPrescriptionDocument");
 
                     //Upload to blob
-                    var uploaded = await mediaContainer.UploadFileToStorage(prescriptionDocumentIncoming.File, prescriptionDocument.PrescriptionDocumentId.ToString());
+                    var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64Decode(prescriptionDocumentIncoming.File), prescriptionDocument.PrescriptionDocumentId.ToString());
 
                     if (uploaded == null)
                     {

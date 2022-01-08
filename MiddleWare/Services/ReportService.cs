@@ -8,6 +8,7 @@ using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
 using DataModel.Shared;
 using DataModel.Shared.Exceptions;
+using MiddleWare.Utils;
 
 namespace MiddleWare.Services
 {
@@ -188,7 +189,7 @@ namespace MiddleWare.Services
                     logger.LogInformation($"Finished data conversion ConvertToMongoReport");
 
                     //Upload to blob
-                    var uploaded = await mediaContainer.UploadFileToStorage(reportIncoming.File, report.ReportId.ToString());
+                    var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64Decode(reportIncoming.File), report.ReportId.ToString());
 
                     if (uploaded == null)
                     {
