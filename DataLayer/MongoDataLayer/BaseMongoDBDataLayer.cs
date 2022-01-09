@@ -295,8 +295,10 @@ namespace DataLayer
 
                     var serviceProvider = await this.serviceProviderCollection.Find(serviceProviderFilter).Project<ServiceProvider>(project).FirstOrDefaultAsync();
 
-
-                    return serviceProvider.Appointments.FirstOrDefault();
+                    if (serviceProvider != null && serviceProvider.Appointments != null)
+                        return serviceProvider.Appointments.FirstOrDefault();
+                    else
+                        return null;
 
                 }
                 catch (Exception ex)
@@ -635,7 +637,10 @@ namespace DataLayer
 
                     var customer = await this.customerCollection.Find(filter).Project<Customer>(project).FirstOrDefaultAsync();
 
-                    return customer.Profiles.FirstOrDefault();
+                    if (customer != null && customer.Profiles != null)
+                        return customer.Profiles.FirstOrDefault();
+                    else
+                        return null;
 
                 }
                 catch (Exception ex)
@@ -928,7 +933,10 @@ namespace DataLayer
 
                     var customer = await this.customerCollection.Find(serviceRequestFilter).Project<Customer>(project).FirstOrDefaultAsync();
 
-                    return customer.ServiceRequests.FirstOrDefault();
+                    if (customer != null && customer.ServiceRequests != null)
+                        return customer.ServiceRequests.FirstOrDefault();
+                    else
+                        return null;
 
                 }
                 catch (Exception ex)

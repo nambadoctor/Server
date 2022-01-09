@@ -131,6 +131,28 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web
             }
         }
 
+        private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/customer/{ChosenCustomerId}/report/{ChosenAppointmentId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var reports = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.ReportOutgoing>>(value);
+                return reports;
+            }
+        }
+
+        private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions()
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/customer/{ChosenCustomerId}/prescription/{ChosenAppointmentId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var prescriptions = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>>(value);
+                return prescriptions;
+            }
+        }
+
         [TestMethod]
         public async Task RunProviderReadTests()
         {
@@ -148,11 +170,18 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web
 
             var chosenCustomer = OrgCustomers.FirstOrDefault();
             ChosenCustomerId = chosenCustomer.CustomerId;
-
             var validPhoneNumber = chosenCustomer.PhoneNumbers.First();
+
+            var chosenAppointment = OrgAppointments.FirstOrDefault();
+            ChosenAppointmentId = chosenAppointment.AppointmentId;
 
             var customerFromId = await GetCustomerProfileById();
             var customerByPhone = await GetCustomerProfileByPhoneNumber(validPhoneNumber.CountryCode + validPhoneNumber.Number);
+
+            //var reports = await GetAppointmentReports();
+            //var prescriptions = await GetAppointmentPrescriptions(); These guys throwing error because data is invalid
+
+            var str = "";
 
         }
     }

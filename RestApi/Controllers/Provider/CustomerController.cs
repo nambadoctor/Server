@@ -27,7 +27,7 @@ namespace RestApi.Controllers.Provider
             this.prescriptionService = prescriptionService;
         }
 
-        [HttpGet("{Customerid}/{Organisationid}")]
+        [HttpGet("{CustomerId}/{OrganisationId}")]
         [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string CustomerId, string OrganisationId)
         {
@@ -38,6 +38,7 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("CheckByPhoneNumber/{PhoneNumber}/{OrganisationId}")] //Here phone number cannot contain + as its not allowed in .Net query string
+        [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
         {
 
@@ -64,7 +65,7 @@ namespace RestApi.Controllers.Provider
             return customerProfileToReturn;
         }
 
-        [HttpGet("{Customerid}/report/{AppointmentId}")]
+        [HttpGet("{CustomerId}/report/{AppointmentId}")]
         [Authorize]
         public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string CustomerId, string AppointmentId)
         {
@@ -74,7 +75,7 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpDelete("{Customerid}/report/{AppointmentId}/{ReportId}")]
+        [HttpDelete("{CustomerId}/report/{AppointmentId}/{ReportId}")]
         [Authorize]
         public async Task<string> DeleteReport(string CustomerId, string AppointmentId, string ReportId)
         {
@@ -84,7 +85,7 @@ namespace RestApi.Controllers.Provider
             return reportId;
         }
 
-        [HttpPut("{Customerid}/report")]
+        [HttpPut("{CustomerId}/report")]
         [Authorize]
         public async Task<ProviderClientOutgoing.ReportOutgoing> SetReport(string CustomerId, [FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
         {
@@ -93,7 +94,7 @@ namespace RestApi.Controllers.Provider
             return report;
         }
 
-        [HttpGet("{Customerid}/prescription/{AppointmentId}")]
+        [HttpGet("{CustomerId}/prescription/{AppointmentId}")]
         [Authorize]
         public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptionDocuments(string CustomerId, string AppointmentId)
         {
@@ -103,7 +104,7 @@ namespace RestApi.Controllers.Provider
             return prescriptionDocuments;
         }
 
-        [HttpDelete("{Customerid}/prescription/{AppointmentId}/{PrescriptionDocumentId}")]
+        [HttpDelete("{CustomerId}/prescription/{AppointmentId}/{PrescriptionDocumentId}")]
         [Authorize]
         public async Task<string> DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
         {
@@ -113,7 +114,7 @@ namespace RestApi.Controllers.Provider
             return reportId;
         }
 
-        [HttpPut("{Customerid}/prescription")]
+        [HttpPut("{CustomerId}/prescription")]
         [Authorize]
         public async Task<ProviderClientOutgoing.PrescriptionDocumentOutgoing> SetPrescriptionDocument(string CustomerId, [FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
         {
