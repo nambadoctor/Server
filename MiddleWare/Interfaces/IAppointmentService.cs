@@ -1,10 +1,12 @@
-﻿using Client = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Interfaces
 {
     public interface IAppointmentService
     {
-        public Task<Client.Appointment> GetAppointment(string serviceProviderId, string appointmentId);
-        public Task<List<Client.Appointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds);
+        public Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId);
+        public Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds);
+        public Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment);
     }
 }

@@ -1,11 +1,12 @@
-﻿using DataModel.Client.Provider;
-using Client = DataModel.Client.Provider;
+﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Interfaces
 {
     public interface IServiceProviderService
     {
-        public Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships();
-        public Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId);
+        public Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships();
+        public Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId);
+        public Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId);
     }
 }

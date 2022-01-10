@@ -17,7 +17,6 @@ namespace DataModel.Mongo
         public DateOfBirth DateOfBirth { get; set; }
         public List<PhoneNumber> PhoneNumbers { get; set; }
         public List<Address> Addresses { get; set; }
-        public List<string> Languages { get; set; }
         public string EmailAddress { get; set; }
         public string ProfilePicURL { get; set; }
         public string? OrganisationId { get; set; }

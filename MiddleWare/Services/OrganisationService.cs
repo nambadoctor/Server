@@ -1,10 +1,12 @@
 ﻿using DataLayer;
-using DataModel.Client.Provider;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
+using DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
@@ -19,7 +21,7 @@ namespace MiddleWare.Services
             this.logger = logger;
         }
 
-        public async Task<Organisation> GetOrganisationAsync(string OrganisationId)
+        public async Task<ProviderClientOutgoing.Organisation> GetOrganisationAsync(string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderOrganisationMemeberships"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -40,8 +42,8 @@ namespace MiddleWare.Services
 
                     if (organisation == null)
                     {
-                        logger.LogError("Organisation not found for Id {0}" , OrganisationId);
-                        throw new InvalidDataException($"Organisation not found for id: {OrganisationId}");
+                        logger.LogError("Organisation not found for Id {0}", OrganisationId);
+                        throw new OrganisationDoesNotExistException($"Organisation not found for id: {OrganisationId}");
                     }
 
 
@@ -53,19 +55,19 @@ namespace MiddleWare.Services
 
                     var serviceProviders = await datalayer.GetServiceProviders(serviceProviderIds);
 
-                    if(serviceProviders == null)
+                    if (serviceProviders == null)
                     {
                         logger.LogError("Missing service providers for given ServiceProviderIDs");
-                        throw new InvalidDataException("Missing service providers for given ServiceProviderIDs");
+                        throw new ArgumentException("Missing service providers for given ServiceProviderIDs");
                     }
                     else
                     {
-                        if(serviceProviders.Count != listOfServiceProviderIds.Count)
+                        if (serviceProviders.Count != listOfServiceProviderIds.Count)
                         {
                             logger.LogError("Mismatch in number of service providers returned. Requsted {0}, Returened {1}",
                                                                             listOfServiceProviderIds.ToString(), serviceProviders.Count.ToString());
 
-                            throw new InvalidDataException(String.Format("Mismatch in number of service providers returned. Requsted {0}, Returened {1}", 
+                            throw new ArgumentException(String.Format("Mismatch in number of service providers returned. Requsted {0}, Returened {1}",
                                                                             listOfServiceProviderIds.ToString(), serviceProviders.Count.ToString()));
                         }
                     }
@@ -79,7 +81,7 @@ namespace MiddleWare.Services
                 }
                 catch (Exception ex)
                 {
-                    logger.LogError("Exception: {0}" , ex.ToString());
+                    logger.LogError("Exception: {0}", ex.ToString());
                     throw;
                 }
                 finally

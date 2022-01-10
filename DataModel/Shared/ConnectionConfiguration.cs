@@ -13,7 +13,7 @@
         public static string TestUsersCollection = "TesterUsers";
         public static string OrganisationCollection = "Organisations";
         public static string ServiceProviderCreatedTemplatesCollection = "ServiceProviderCreatedTemplates";
-        public static string MongoDatabaseName = "NambaDoctorDb";
+        public static string MongoDatabaseName = "NambaDoctor";
 
         //Production secrets
         public static string MongoConnectionString = "mongodb+srv://naren:mangoApple101@cluster0.fdske.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";

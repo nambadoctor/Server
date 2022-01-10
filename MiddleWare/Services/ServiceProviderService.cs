@@ -1,8 +1,10 @@
 ﻿using DataLayer;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using DataModel.Shared;
-using Microsoft.VisualBasic;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
+using MiddleWare.Utils;
 using MongoDB.Bson;
 using Client = DataModel.Client.Provider;
 
@@ -18,7 +20,7 @@ namespace MiddleWare.Services
             this.datalayer = dataLayer;
             this.logger = logger;
         }
-        public async Task<Client.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
+        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderOrganisationMemeberships"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -29,7 +31,7 @@ namespace MiddleWare.Services
 
                     if (serviceProvider == null)
                     {
-                        logger.LogError("Service provider does not exist for the phonumber: {0}", 
+                        logger.LogError("Service provider does not exist for the phonumber: {0}",
                             NambaDoctorContext.PhoneNumber);
 
                         throw new ServiceProviderDoesnotExistsException
@@ -37,12 +39,12 @@ namespace MiddleWare.Services
 
                     }
 
-                    logger.LogInformation ("Found service provider id {0}" , serviceProvider.ServiceProviderId);
+                    logger.LogInformation("Found service provider id {0}", serviceProvider.ServiceProviderId);
                     NambaDoctorContext.AddTraceContext("ServiceProviderId", serviceProvider.ServiceProviderId.ToString());
 
                     var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
 
-                    if (organisationList == null )
+                    if (organisationList == null)
                     {
                         logger.LogError("No organisation found for service providerId: {0}",
                             serviceProvider.ServiceProviderId);
@@ -54,7 +56,7 @@ namespace MiddleWare.Services
                     var defaultOrganisation = organisationList.FirstOrDefault();
 
 
-                    if(defaultOrganisation == null)
+                    if (defaultOrganisation == null)
                     {
                         throw new ServiceProviderOrgsDoesnotExistsException
                             (string.Format("Service provider {0} does not have default organisation", serviceProvider.ServiceProviderId));
@@ -83,54 +85,105 @@ namespace MiddleWare.Services
 
                 }
             }
-            
+
         }
-        public async Task<Client.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
+        public async Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            logger.LogInformation("Starting null check");
-
-            if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderAsync"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
+                    {
+                        throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
+                    {
+                        throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
+                    }
+
+                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
+                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
+
+                    if (serviceProviderProfile == null)
+                    {
+                        throw new ServiceProviderDoesnotExistsException($"Serviceprovider not found with id: {ServiceProviderId}");
+                    }
+
+                    var organisation = await datalayer.GetOrganisation(OrganisationId);
+
+                    if (organisation == null)
+                    {
+                        throw new ServiceProviderOrgsDoesnotExistsException($"Organisation not found with id: {OrganisationId}");
+                    }
+
+                    //Find role in org
+                    var role = organisation.Members.Find(member => member.ServiceProviderId == ServiceProviderId);
+                    if (role == null)
+                    {
+                        throw new KeyNotFoundException($"No role found for this service provider({ServiceProviderId}) in organisation with id: {OrganisationId}");
+                    }
+
+                    //Buid client Object
+                    var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
+                        serviceProviderProfile,
+                        organisation,
+                        role
+                        );
+
+                    return clientServiceProvider;
+                }
+                finally
+                {
+
+                }
             }
 
-            if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
-            {
-                throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
-            }
-
-            NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
-            NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
-            var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
-
-            if (serviceProviderProfile == null)
-            {
-                throw new ServiceProviderDoesnotExistsException($"Serviceprovider not found with id: {ServiceProviderId}");
-            }
-
-            var organisation = await datalayer.GetOrganisation(OrganisationId);
-
-            if (organisation == null)
-            {
-                throw new ServiceProviderOrgsDoesnotExistsException($"Organisation not found with id: {OrganisationId}");
-            }
-
-            //Find role in org
-            var role = organisation.Members.Find(member => member.ServiceProviderId == ServiceProviderId);
-            if (role == null)
-            {
-                throw new KeyNotFoundException($"No role found for this service provider({ServiceProviderId}) in organisation with id: {OrganisationId}");
-            }
-
-            //Buid client Object
-            var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
-                serviceProviderProfile,
-                organisation,
-                role
-                );
-
-            return clientServiceProvider;
         }
 
+        public async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderAsync"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                try
+                {
+                    if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
+                    {
+                        throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
+                    }
+
+                    if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
+                    {
+                        throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
+                    }
+
+                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
+
+                    var availabilities = await datalayer.GetServiceProviderAvailabilities(ServiceProviderId, OrganisationId);
+
+                    var listOfSpIds = new List<string>();
+                    listOfSpIds.Add(ServiceProviderId);
+
+                    var appointments = await datalayer.GetAppointmentsForServiceProvider(OrganisationId, listOfSpIds);
+
+                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
+
+                    //Make slots for 2 weeks
+                    var generatedSlots = SlotGenerator.GenerateAvailableSlotsForDays(availabilities, serviceProviderProfile.AppointmentDuration, 0, 2, appointments);
+
+                    return generatedSlots;
+                }
+                finally
+                {
+
+                }
+
+            }
+        }
     }
 }

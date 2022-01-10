@@ -8,7 +8,7 @@ namespace DataModel.Mongo
     public class Report
     {
         [BsonId]
-        public ObjectId ReportId { set; get; }
+        public ObjectId ReportId { set; get; } //This will be the filename in blob
         public FileInfo FileInfo { get; set; }
         public ReportDetails Details { get; set; }
 

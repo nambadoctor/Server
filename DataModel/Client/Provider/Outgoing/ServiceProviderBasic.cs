@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DataModel.Client.Provider
+namespace DataModel.Client.Provider.Outgoing
 {
     public class ServiceProviderBasic
     {

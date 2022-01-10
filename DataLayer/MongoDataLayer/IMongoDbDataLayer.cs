@@ -44,6 +44,14 @@ namespace DataLayer
         public Task<ServiceProvider> GetServiceProviderFromRegisteredPhoneNumber(string phoneNumber);
 
         /// <summary>
+        /// Get availability for service provider and filter by org id
+        /// </summary>
+        /// <param name="serviceProviderId"></param>
+        /// <param name="organisationId"></param>
+        /// <returns></returns>
+        public Task<List<ServiceProviderAvailability>> GetServiceProviderAvailabilities(string serviceProviderId, string organisationId);
+
+        /// <summary>
         /// Get organsiation document from Id
         /// </summary>
         /// <param name="organisationId"></param>
@@ -125,11 +133,25 @@ namespace DataLayer
         public Task<List<CustomerProfile>> GetCustomerProfilesAddedByOrganisation(string organisationId, List<string> serviceProviderIds);
 
         /// <summary>
+        /// Set customer profile
+        /// </summary>
+        /// <param name="customerProfile"></param>
+        /// <returns></returns>
+        public Task<CustomerProfile> SetCustomerProfile(CustomerProfile customerProfile);
+
+        /// <summary>
         /// Get service request matching appointment Id
         /// </summary>
         /// <param name="serviceRequestId"></param>
         /// <returns></returns>
         public Task<ServiceRequest> GetServiceRequest(string appointmentId);
+
+        /// <summary>
+        /// Set service request for customer
+        /// </summary>
+        /// <param name="serviceRequest"></param>
+        /// <returns></returns>
+        public Task<ServiceRequest> SetServiceRequest(ServiceRequest serviceRequest);
 
         /// <summary>
         /// Get list of all service requests owned by customer
@@ -154,5 +176,30 @@ namespace DataLayer
         /// <param name="serviceProviderIds"></param>
         /// <returns></returns>
         public Task<List<Appointment>> GetAppointmentsForServiceProvider(string organisationId, List<string> serviceProviderIds);
+
+        /// <summary>
+        /// Set appointment
+        /// </summary>
+        /// <param name="appointment"></param>
+        /// <returns></returns>
+        public Task<Appointment> SetAppointment(Appointment appointment);
+
+        /// <summary>
+        /// Set appointment and service request. 
+        /// Only to be used when setting it first time as it requires modification across multiple collection.
+        /// </summary>
+        /// <param name="appointment"></param>
+        /// <param name="serviceRequest"></param>
+        /// <returns></returns>
+        public Task<Appointment> SetAppointmentWithServiceRequest(Appointment appointment, ServiceRequest serviceRequest);
+
+        /// <summary>
+        /// Sets an appointment and service request along with customer as a transaction
+        /// </summary>
+        /// <param name="customerProfile"></param>
+        /// <param name="appointment"></param>
+        /// <returns></returns>
+        public Task<(CustomerProfile, Appointment)> SetCustomerWithAppointment(CustomerProfile customerProfile, Appointment appointment, ServiceRequest serviceRequest);
+
     }
 }
