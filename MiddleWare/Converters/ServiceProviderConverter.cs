@@ -11,11 +11,11 @@ namespace MiddleWare.Converters
             var serviceProviderBasic = new ProviderClientOutgoing.ServiceProviderBasic();
 
             serviceProviderBasic.ServiceProviderId = mongoServiceProvider.ServiceProviderId.ToString();
-            serviceProviderBasic.Organsiations = new List<ProviderClientOutgoing.OrgansiationBasic>();
+            serviceProviderBasic.Organisations = new List<ProviderClientOutgoing.OrgansiationBasic>();
 
             foreach (var organisation in organisationList)
             {
-                serviceProviderBasic.Organsiations.Add(
+                serviceProviderBasic.Organisations.Add(
                     ConvertOrganisationToOrganisationBasic(
                         organisation,
                         organisation.OrganisationId == defaultOrganisation.OrganisationId

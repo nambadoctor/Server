@@ -7,6 +7,6 @@ namespace DataModel.Client.Provider.Outgoing
     public class ServiceProviderBasic
     {
         public string ServiceProviderId { get; set; }
-        public List<OrgansiationBasic> Organsiations { get; set; }
+        public List<OrgansiationBasic> Organisations { get; set; }
     }
 }
