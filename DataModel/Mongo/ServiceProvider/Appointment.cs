@@ -14,6 +14,8 @@ namespace DataModel.Mongo
         public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string ServiceProviderName { get; set; }
 
         [BsonRepresentation(BsonType.String)]
         [JsonConverter(typeof(JsonStringEnumConverter))]

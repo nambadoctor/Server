@@ -13,6 +13,8 @@ namespace DataModel.Client.Provider.Incoming
         public string? ServiceRequestId { get; set; }
         public string ServiceProviderId { get; set; }
         public string CustomerId { get; set; }
+        public string CustomerName { get; set; }
+        public string ServiceProviderName { get; set; }
         public string AppointmentType { get; set; }
         public string AddressId { get; set; }
         public string Status { get; set; }

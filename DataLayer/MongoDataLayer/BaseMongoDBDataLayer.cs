@@ -416,6 +416,16 @@ namespace DataLayer
                         update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
                     }
 
+                    if (appointment.ServiceProviderName != null)
+                    {
+                        update = update.Set("Appointments.$.ServiceProviderName", appointment.ServiceProviderName);
+                    }
+
+                    if (appointment.CustomerName != null)
+                    {
+                        update = update.Set("Appointments.$.CustomerName", appointment.CustomerName);
+                    }
+
                     if (appointment.Status != null)
                     {
                         update = update.Set("Appointments.$.Status", appointment.Status);

@@ -265,18 +265,9 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Finsihed data conversion ConvertToClientCustomerProfile");
 
-                    var spProfile = await datalayer.GetServiceProviderProfile(customerProfile.ServiceProviderId, customerProfile.OrganisationId);
-
-                    if (spProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider does not exist for id: {customerProfile.ServiceProviderId} orgId: {customerProfile.OrganisationId}");
-                    }
-
                     logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                    var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                        spProfile, generatedCustomerProfile.Item2,
-                        generatedCustomerProfile.Item1);
+                    var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(generatedCustomerProfile.Item2);
 
                     logger.LogInformation("Finsihed data conversion ConvertToClientAppointmentData");
 
@@ -321,6 +312,8 @@ namespace MiddleWare.Services
             appointment.ScheduledAppointmentEndTime = appointmentData.ScheduledAppointmentEndTime;
             appointment.ActualAppointmentStartTime = appointmentData.ActualAppointmentStartTime;
             appointment.ActualAppointmentEndTime = appointmentData.ActualAppointmentEndTime;
+            appointment.ServiceProviderName = appointmentData.ServiceProviderName;
+            appointment.CustomerName = appointmentData?.CustomerName;
 
             var serviceRequest = new Mongo.ServiceRequest();
             serviceRequest.ServiceRequestId = serviceRequestId;

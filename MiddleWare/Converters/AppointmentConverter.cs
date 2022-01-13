@@ -8,49 +8,20 @@ namespace MiddleWare.Converters
     public static class AppointmentConverter
     {
         public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
-            Mongo.ServiceProviderProfile serviceProviderProfile,
-            Mongo.Appointment appointment,
-            Mongo.CustomerProfile customerProfile)
-        {
-            var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
-
-            appointmentData.ServiceProviderId = serviceProviderProfile.ServiceProviderId;
-            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
-
-            appointmentData.CustomerId = customerProfile.CustomerId;
-            appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
-
-            appointmentData.AppointmentId = appointment.AppointmentId.ToString();
-            appointmentData.OrganisationId = appointment.OrganisationId;
-            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
-            appointmentData.AddressId = appointment.AddressId;
-            appointmentData.AppointmentType = appointment.AppointmentType.ToString();
-            appointmentData.Status = appointment.Status.ToString();
-            appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
-            appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
-            appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
-            appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
-
-            return appointmentData;
-        }
-
-        public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
-            string serviceProviderName,
-            Mongo.Appointment appointment,
-            string customerName)
+            Mongo.Appointment appointment)
         {
             var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
 
             appointmentData.ServiceProviderId = appointment.ServiceProviderId;
-            appointmentData.ServiceProviderName = serviceProviderName;
+            appointmentData.ServiceProviderName = appointment.ServiceProviderName;
 
             appointmentData.CustomerId = appointment.CustomerId;
-            appointmentData.CustomerName = customerName;
+            appointmentData.CustomerName = appointment.CustomerName;
 
-            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
             appointmentData.OrganisationId = appointment.OrganisationId;
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentType = appointment.AppointmentType.ToString();
             appointmentData.Status = appointment.Status.ToString();
             appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
@@ -75,6 +46,10 @@ namespace MiddleWare.Converters
             appointmentData.CustomerId = appointment.CustomerId;
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
+
+            appointmentData.ServiceProviderName = appointment.ServiceProviderName;
+
+            appointmentData.CustomerName = appointment.CustomerName;
 
             if (!string.IsNullOrWhiteSpace(appointment.AppointmentId))
                 appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);

@@ -44,23 +44,9 @@ namespace MiddleWare.Services
                         throw new Exceptions.AppointmentDoesNotExistException($"Appointment with id:{appointmentId} does not exist");
                     }
 
-                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(serviceProviderId, appointment.OrganisationId);
-
-                    if (serviceProviderProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{serviceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
-                    }
-
-                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
-
-                    if (customerProfile == null)
-                    {
-                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
-                    }
-
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                    var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(serviceProviderProfile, appointment, customerProfile);
+                    var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(appointment);
 
                     logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
@@ -87,21 +73,6 @@ namespace MiddleWare.Services
                     }
 
                     var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
-
-                    List<Mongo.ServiceProviderProfile> serviceProviderProfiles = await datalayer.GetServiceProviderProfiles(serviceProviderIds, organsiationId);
-
-                    //Get customers
-
-                    var customerIdsToFetch = new List<string>();
-
-                    foreach (var appointment in appointments)
-                    {
-                        if (!string.IsNullOrWhiteSpace(appointment.CustomerId))
-                            customerIdsToFetch.Add(appointment.CustomerId);
-                    }
-
-                    var customerProfiles = await datalayer.GetCustomerProfiles(customerIdsToFetch, organsiationId);
-
                     //Piece together all the objects
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
@@ -109,40 +80,12 @@ namespace MiddleWare.Services
 
                     if (!(appointments == null || appointments.Count == 0))
                     {
-                        if (serviceProviderProfiles == null || customerProfiles == null)
-                        {
-                            throw new Exceptions.InvalidDataException("Appointments data is corrupted");
-                        }
 
                         foreach (var appointment in appointments)
                         {
-                            if (!string.IsNullOrWhiteSpace(appointment.ServiceProviderId) && !string.IsNullOrWhiteSpace(appointment.CustomerId))
-                            {
-                                var spProfile = (from sp in serviceProviderProfiles
-                                                 where sp.ServiceProviderId == appointment.ServiceProviderId
-                                                 select sp).FirstOrDefault();
-
-                                var custProfile = (from cust in customerProfiles
-                                                   where cust.CustomerId == appointment.CustomerId
-                                                   select cust).FirstOrDefault();
-
-                                if (spProfile == null)
-                                {
-                                    throw new ServiceProviderDoesnotExistsException($"Service provider with id: {appointment.ServiceProviderId} does not exist");
-                                }
-
-                                if (custProfile == null)
-                                {
-                                    throw new ServiceProviderDoesnotExistsException($"Customer with id: {appointment.CustomerId} does not exist");
-                                }
-
-
-                                listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
-                                    spProfile,
-                                    appointment,
-                                    custProfile)
+                            listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
+                                    appointment)
                                     );
-                            }
                         }
                     }
 
@@ -185,20 +128,6 @@ namespace MiddleWare.Services
                         throw new ArgumentException("Appointment Id was invalid");
                     }
 
-                    var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
-
-                    if (spProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{appointment.ServiceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
-                    }
-
-                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
-
-                    if (customerProfile == null)
-                    {
-                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
-                    }
-
                     //New appointment
                     if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
                     {
@@ -232,10 +161,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                            $"{spProfile.FirstName} {spProfile.LastName}",
-                            generatedAppointment,
-                            $"{customerProfile.FirstName} {customerProfile.LastName}");
+                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(generatedAppointment);
 
                         logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
@@ -255,10 +181,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                            $"{spProfile.FirstName} {spProfile.LastName}",
-                            generatedAppointment,
-                            $"{customerProfile.FirstName} {customerProfile.LastName}");
+                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(generatedAppointment);
 
                         logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
