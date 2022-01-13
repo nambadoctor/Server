@@ -16,43 +16,19 @@ namespace MongoDB.GenericRepository.Repository
         {
         }
 
-        public async Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds)
+        public Task<ServiceProvider> GetServiceProviderFromPhoneNumber(string phoneNumber)
         {
-
-            var serviceProviderIdList = new List<ObjectId>();
-            foreach (var spId in serviceProviderIds)
-            {
-                serviceProviderIdList.Add(new ObjectId(spId));
-            }
-
-            var organisationAppointmentFilter = Builders<ServiceProvider>.Filter.ElemMatch(
-                sp => sp.Appointments,
-                appointment => appointment.OrganisationId == organisationId
-                );
-
-            var serviceProviderFilter = Builders<ServiceProvider>.Filter.In(
-                sp => sp.ServiceProviderId,
-                serviceProviderIdList
-                );
-
-            FilterDefinition<ServiceProvider> combinedFilter;
-            if (serviceProviderIds.Count == 0)
-            {
-                combinedFilter = organisationAppointmentFilter;
-            }
-            else
-            {
-                combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
-            }
-
-            var project = Builders<ServiceProvider>.Projection.Expression(
-                sp => sp.Appointments.Where(appointment => appointment.OrganisationId == organisationId)
-                );
-
-            var result = await this.GetListByFilterAndProject(combinedFilter, project);
-
-            return result.ToList();
+            throw new NotImplementedException();
         }
 
+        public Task<ServiceProviderProfile> GetServiceProviderProfile(string organisationId, string serviceProviderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public Task<List<ServiceProviderProfile>> GetServiceProviderProfiles(string organisationId)
+        {
+            throw new NotImplementedException();
+        }
     }
 }

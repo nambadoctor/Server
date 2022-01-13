@@ -22,6 +22,7 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("{AppointmentId}/{Serviceproviderid}")]
+        [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string AppointmentId, string ServiceProviderId)
         {
 

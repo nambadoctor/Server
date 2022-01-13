@@ -8,34 +8,37 @@ using MiddleWare.Utils;
 using MongoDB.Bson;
 using Client = DataModel.Client.Provider;
 using DataModel.Shared.Exceptions;
+using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
     public class ServiceProviderService : IServiceProviderService
     {
-        private IMongoDbDataLayer datalayer;
+        private IServiceProviderRepository serviceProviderRepository;
+        private IOrganisationRepository organisationRepository;
         private ILogger logger;
 
-        public ServiceProviderService(IMongoDbDataLayer dataLayer, ILogger<ServiceProviderService> logger)
+        public ServiceProviderService(IServiceProviderRepository serviceProviderRepository, IOrganisationRepository organisationRepository, ILogger<ServiceProviderService> logger)
         {
-            this.datalayer = dataLayer;
+            this.serviceProviderRepository = serviceProviderRepository;
+            this.organisationRepository = organisationRepository;
             this.logger = logger;
         }
-        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
+        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemberships()
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderOrganisationMemeberships"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(NambaDoctorContext.PhoneNumber);
+                    var serviceProvider = await serviceProviderRepository.GetServiceProviderFromPhoneNumber(NambaDoctorContext.PhoneNumber);
 
                     DataValidation.ValidateObject(serviceProvider);
 
                     logger.LogInformation("Found service provider id {0}", serviceProvider.ServiceProviderId);
                     NambaDoctorContext.AddTraceContext("ServiceProviderId", serviceProvider.ServiceProviderId.ToString());
 
-                    var organisationList = await datalayer.GetOrganisations(serviceProvider.ServiceProviderId.ToString());
+                    var organisationList = await organisationRepository.GetOrganisationsOfServiceProvider(serviceProvider.ServiceProviderId.ToString());
 
                     if (organisationList == null)
                     {
@@ -92,11 +95,11 @@ namespace MiddleWare.Services
 
                     NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
                     NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
-                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
+                    var serviceProviderProfile = await serviceProviderRepository.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
 
                     DataValidation.ValidateObject(serviceProviderProfile);
 
-                    var organisation = await datalayer.GetOrganisation(OrganisationId);
+                    var organisation = await organisationRepository.GetById(OrganisationId);
 
                     DataValidation.ValidateObject(organisation);
 

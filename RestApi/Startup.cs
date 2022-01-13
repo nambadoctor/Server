@@ -75,6 +75,9 @@ namespace NambaDoctorWebApi
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IOrganisationRepository, OrganisationRepository>();
+            services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

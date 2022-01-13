@@ -19,12 +19,12 @@ namespace MongoDB.GenericRepository.Repository
             DbSet = Context.GetCollection<TEntity>(collectionName);
         }
 
-        public virtual void Add(TEntity obj)
+        public virtual async Task Add(TEntity obj)
         {
-            Context.AddCommand(() => DbSet.InsertOneAsync(obj));
+            Context.AddCommand(async () => await DbSet.InsertOneAsync(obj));
         }
 
-        public virtual async Task<TEntity> GetById(Guid id)
+        public virtual async Task<TEntity> GetById(string id)
         {
             var data = await DbSet.FindAsync(Builders<TEntity>.Filter.Eq("_id", id));
             return data.SingleOrDefault();
@@ -79,7 +79,7 @@ namespace MongoDB.GenericRepository.Repository
             //Context.AddCommand(() => DbSet.ReplaceOneAsync(Builders<TEntity>.Filter.Eq("_id", obj.GetId()), obj));
         }
 
-        public virtual void Remove(Guid id)
+        public virtual void Remove(string id)
         {
             Context.AddCommand(() => DbSet.DeleteOneAsync(Builders<TEntity>.Filter.Eq("_id", id)));
         }

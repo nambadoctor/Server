@@ -15,15 +15,19 @@ namespace MiddleWare.Services
 {
     public class AppointmentService : IAppointmentService
     {
-        private IMongoDbDataLayer datalayer;
         private IServiceProviderRepository serviceProviderRepository;
+        private ICustomerRepository customerRepository;
+        private IAppointmentRepository appointmenRepository;
+        private IServiceRequestRepository serviceRequestRepository;
         private ILogger logger;
 
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, IMongoDbDataLayer dataLayer, ILogger<AppointmentService> logger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger)
         {
-            this.datalayer = dataLayer;
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
+            this.customerRepository = customerRepository;
+            this.appointmenRepository = appointmenRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
         }
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
@@ -37,7 +41,7 @@ namespace MiddleWare.Services
 
                     DataValidation.ValidateIncomingId(appointmentId, IdType.Appointment);
 
-                    var appointment = await datalayer.GetAppointment(serviceProviderId, appointmentId);
+                    var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
 
                     DataValidation.ValidateObject(appointment);
 
@@ -66,7 +70,7 @@ namespace MiddleWare.Services
                 {
                     DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
 
-                    var appointments = await serviceProviderRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
+                    var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
                     //Piece together all the objects
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
@@ -112,11 +116,11 @@ namespace MiddleWare.Services
                         throw new ArgumentException("Appointment Id was invalid");
                     }
 
-                    var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
+                    var spProfile = await serviceProviderRepository.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
 
                     DataValidation.ValidateObject(spProfile);
 
-                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+                    var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
 
                     DataValidation.ValidateObject(customerProfile);
 
@@ -147,10 +151,10 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        await datalayer.SetAppointmentWithServiceRequest(
-                            mongoAppointment,
-                            serviceRequest
-                            );
+                        await appointmenRepository.AddAppointment(mongoAppointment);
+
+                        await serviceRequestRepository.AddServiceRequest(serviceRequest);
+
                     }
                     else
                     {
@@ -162,7 +166,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        await datalayer.SetAppointment(mongoAppointment);
+                        await appointmenRepository.UpdateAppointment(mongoAppointment);
                     }
                 }
                 finally

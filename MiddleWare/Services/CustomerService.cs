@@ -8,17 +8,24 @@ using MongoDB.Bson;
 using DataModel.Shared;
 using DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
+using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
     public class CustomerService : ICustomerService
     {
-        private IMongoDbDataLayer datalayer;
         private ILogger logger;
+        private ICustomerRepository customerRepository;
+        private IAppointmentRepository appointmenRepository;
+        private IServiceRequestRepository serviceRequestRepository;
+        private IServiceProviderRepository serviceProviderRepository;
 
-        public CustomerService(IMongoDbDataLayer dataLayer, ILogger<CustomerService> logger)
+        public CustomerService(ICustomerRepository customerRepository, IServiceProviderRepository serviceProviderRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<CustomerService> logger)
         {
-            this.datalayer = dataLayer;
+            this.serviceProviderRepository = serviceProviderRepository;
+            this.appointmenRepository = appointmenRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
+            this.customerRepository = customerRepository;
             this.logger = logger;
         }
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string customerId, string organisationId)
@@ -32,7 +39,7 @@ namespace MiddleWare.Services
 
                     DataValidation.ValidateIncomingId(customerId, IdType.Customer);
 
-                    var customerProfile = await datalayer.GetCustomerProfile(customerId, organisationId);
+                    var customerProfile = await customerRepository.GetCustomerProfile(customerId, organisationId);
 
                     DataValidation.ValidateObject(customerProfile);
 
@@ -62,25 +69,25 @@ namespace MiddleWare.Services
 
                     DataValidation.ValidateIncomingId(phoneNumber, IdType.Customer);
 
-                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
+                    var customer = await customerRepository.GetCustomerFromPhoneNumber(phoneNumber);
 
                     if (customer != null)
                     {
                         return new ProviderClientOutgoing.OutgoingCustomerProfile();
                     }
 
-                    var serviceProvider = await datalayer.GetServiceProviderFromRegisteredPhoneNumber(phoneNumber);
+                    var serviceProvider = await serviceProviderRepository.GetServiceProviderFromPhoneNumber(phoneNumber);
 
                     if (serviceProvider != null)
                     {
                         throw new PhoneNumberBelongsToServiceProviderException($"Phone number : {phoneNumber} belongs to Service provider {serviceProvider.ServiceProviderId}");
                     }
 
-                    var customerProfile = await datalayer.GetCustomerProfile(customer.CustomerId.ToString(), organisationId);
+                    var customerProfile = await customerRepository.GetCustomerProfile(customer.CustomerId.ToString(), organisationId);
 
                     if (customerProfile == null)
                     {
-                        throw new CustomerDoesNotExistException($"Customer does not exist for id: {customer.CustomerId} org id: {organisationId}");
+                        return new ProviderClientOutgoing.OutgoingCustomerProfile { CustomerId = customer.CustomerId.ToString() };
                     }
 
                     logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
@@ -107,7 +114,7 @@ namespace MiddleWare.Services
                 {
                     DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
 
-                    var customerProfiles = await datalayer.GetCustomerProfilesAddedByOrganisation(organsiationId, serviceProviderIds);
+                    var customerProfiles = await customerRepository.GetCustomersOfOrganisation(organsiationId, serviceProviderIds);
 
                     if (customerProfiles == null)
                     {
@@ -150,34 +157,7 @@ namespace MiddleWare.Services
                 try
                 {
 
-                    if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
-                    {
-                        throw new ArgumentException("No valid phone number passed");
-                    }
-
-                    var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
-
-                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
-
-                    if (customer == null)
-                    {
-                        logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
-                    }
-
-                    //Update customer
-                    if (!string.IsNullOrWhiteSpace(customerProfile.CustomerId) && ObjectId.TryParse(customerProfile.CustomerId, out ObjectId customerId) == false)
-                    {
-                        logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
-                        customerProfile.CustomerId = customerId.ToString();
-                    }
-
-                    logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");
-
-                    var mongoCustomerProfile = CustomerConverter.ConvertToMongoCustomerProfile(customerProfile);
-
-                    logger.LogInformation("Finished data conversion ConvertToMongoCustomerProfile");
-
-                    await datalayer.SetCustomerProfile(mongoCustomerProfile);
+                    await UpsertCustomerProfile(customerProfile);
 
                 }
                 finally
@@ -195,52 +175,31 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    var customerProfile = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
 
-                    if(customerProfile == null)
-                    {
-                        throw new ArgumentException("Null customer passed");
-                    }
-
-                    if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
-                    {
-                        throw new ArgumentException("No valid phone number passed");
-                    }
-
-                    DataValidation.ValidateIncomingId(customerProfile.OrganisationId, IdType.Organisation);
-                    DataValidation.ValidateIncomingId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
-
-                    var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
-
-                    var customer = await datalayer.GetCustomerFromRegisteredPhoneNumber(phoneNumber);
-
-                    if (customer == null)
-                    {
-                        logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
-                    }
-                    else
-                    {
-                        logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
-                        customerProfile.CustomerId = customer.CustomerId.ToString();
-                    }
-
-                    logger.LogInformation("Begin data conversion GenerateDataForSettingCustomerAndAppointment");
-
-                    var spProfile = await datalayer.GetServiceProviderProfile(
+                    var spProfile = await serviceProviderRepository.GetServiceProviderProfile(
                         customerProfileWithAppointmentIncoming.AppointmentIncoming.ServiceProviderId,
                         customerProfileWithAppointmentIncoming.AppointmentIncoming.OrganisationId);
 
                     DataValidation.ValidateObject(spProfile);
 
-                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerProfileWithAppointmentIncoming, spProfile);
+                    var customerProfile = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
 
-                    logger.LogInformation("Finished data conversion GenerateDataForSettingCustomerAndAppointment");
+                    var customerId = await UpsertCustomerProfile(customerProfile);
 
-                    await datalayer.SetCustomerWithAppointment(
-                        parsedData.Item1,
-                        parsedData.Item2,
-                        parsedData.Item3
-                        );
+                    logger.LogInformation("Begin data conversion GenerateAppointmentAndServiceRequest");
+
+                    var mongoCustomerProfile = CustomerConverter.ConvertToMongoCustomerProfile(customerProfile);
+
+                    var parsedData = GenerateAppointmentAndServiceRequest(customerProfileWithAppointmentIncoming.AppointmentIncoming, mongoCustomerProfile, spProfile);
+
+                    logger.LogInformation("Finished data conversion GenerateAppointmentAndServiceRequest");
+
+                    parsedData.Item1.CustomerId = customerId;
+                    parsedData.Item2.CustomerId = customerId;
+
+                    await appointmenRepository.AddAppointment(parsedData.Item1);
+
+                    await serviceRequestRepository.AddServiceRequest(parsedData.Item2);
                 }
                 finally
                 {
@@ -250,20 +209,77 @@ namespace MiddleWare.Services
 
         }
 
-        private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming, Mongo.ServiceProviderProfile serviceProviderProfile)
+        private async Task<string> UpsertCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            var customerData = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
-            var appointmentData = customerProfileWithAppointmentIncoming.AppointmentIncoming;
+            DataValidation.ValidateObject(customerProfile);
 
-            var customerProfile = new ProviderClientIncoming.CustomerProfileIncoming();
-            customerProfile.OrganisationId = customerData.OrganisationId;
-            customerProfile.ServiceProviderId = customerData.ServiceProviderId;
-            customerProfile.FirstName = customerData.FirstName;
-            customerProfile.LastName = customerData.LastName;
-            customerProfile.Gender = customerData.Gender;
-            customerProfile.DateOfBirth = customerData.DateOfBirth;
-            customerProfile.CustomerId = customerData.CustomerId;
-            customerProfile.PhoneNumbers = customerData.PhoneNumbers;
+            if (customerProfile.PhoneNumbers == null || customerProfile.PhoneNumbers.Count == 0)
+            {
+                throw new ArgumentException("No valid phone number passed");
+            }
+
+            DataValidation.ValidateIncomingId(customerProfile.OrganisationId, IdType.Organisation);
+            DataValidation.ValidateIncomingId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
+
+            var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
+
+            var customer = await customerRepository.GetCustomerFromPhoneNumber(phoneNumber);
+
+            if (customer == null)
+            {
+                logger.LogInformation($"New customer set started for phone number : {phoneNumber}");
+            }
+
+            //Update customer
+            if (!string.IsNullOrWhiteSpace(customerProfile.CustomerId) && ObjectId.TryParse(customerProfile.CustomerId, out ObjectId customerId) == false)
+            {
+                logger.LogInformation($"Found existing customer for phone number : {phoneNumber}");
+                customerProfile.CustomerId = customerId.ToString();
+            }
+
+            logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");
+
+            var mongoCustomerProfile = CustomerConverter.ConvertToMongoCustomerProfile(customerProfile);
+
+            logger.LogInformation("Finished data conversion ConvertToMongoCustomerProfile");
+
+            if (customer == null)
+            {
+                customer = await GenerateAndAddNewCustomer(customerProfile.PhoneNumbers.First());
+
+                mongoCustomerProfile.CustomerId = customer.CustomerId.ToString();
+                await customerRepository.AddCustomerProfile(mongoCustomerProfile);
+            }
+            else
+            {
+                await customerRepository.UpdateCustomerProfile(mongoCustomerProfile);
+            }
+
+            return mongoCustomerProfile.CustomerId;
+        }
+
+        private async Task<Mongo.Customer> GenerateAndAddNewCustomer(DataModel.Client.Provider.Common.PhoneNumber phoneNumber)
+        {
+            var customer = new Mongo.Customer();
+            customer.CustomerId = ObjectId.GenerateNewId();
+            customer.AuthInfos = new List<Mongo.AuthInfo>();
+
+            var authInfo = new Mongo.AuthInfo();
+            authInfo.AuthInfoId = ObjectId.GenerateNewId();
+            authInfo.AuthId = phoneNumber.CountryCode + phoneNumber.Number;
+            authInfo.AuthType = "PhoneNumber";
+
+            customer.AuthInfos.Add(authInfo);
+            customer.Profiles = new List<Mongo.CustomerProfile>();
+            customer.ServiceRequests = new List<Mongo.ServiceRequest>();
+
+            await customerRepository.Add(customer);
+
+            return customer;
+        }
+
+        private (Mongo.Appointment, Mongo.ServiceRequest) GenerateAppointmentAndServiceRequest(ProviderClientIncoming.AppointmentIncoming appointmentData, Mongo.CustomerProfile customerProfile, Mongo.ServiceProviderProfile serviceProviderProfile)
+        {
 
             var appointment = new Mongo.Appointment();
             var appointmentId = ObjectId.GenerateNewId();
@@ -289,7 +305,6 @@ namespace MiddleWare.Services
             serviceRequest.CustomerId = appointmentData.CustomerId;
 
             return (
-                CustomerConverter.ConvertToMongoCustomerProfile(customerProfile),
                 appointment,
                 serviceRequest
                 );

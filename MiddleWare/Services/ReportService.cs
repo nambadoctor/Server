@@ -9,18 +9,19 @@ using MongoDB.Bson;
 using DataModel.Shared;
 using DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
+using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
     public class ReportService : IReportService
     {
-        private IMongoDbDataLayer datalayer;
+        private IServiceRequestRepository serviceRequestRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IMongoDbDataLayer dataLayer, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
-            this.datalayer = dataLayer;
+            this.serviceRequestRepository = serviceRequestRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -36,7 +37,7 @@ namespace MiddleWare.Services
                     DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
                     DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
-                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
+                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
                     DataValidation.ValidateObject(serviceRequest);
 
@@ -58,7 +59,7 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Setting service request with deleted report metadata");
 
-                    await datalayer.SetServiceRequest(serviceRequest);
+                    await serviceRequestRepository.UpdateServiceRequest(serviceRequest);
                 }
                 finally
                 {
@@ -78,7 +79,7 @@ namespace MiddleWare.Services
                     DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
                     DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
-                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
+                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
                     DataValidation.ValidateObject(serviceRequest);
 
@@ -125,7 +126,7 @@ namespace MiddleWare.Services
                     DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
                     DataValidation.ValidateIncomingId(reportIncoming.AppointmentId, IdType.Appointment);
 
-                    var serviceRequestFromDb = await datalayer.GetServiceRequest(reportIncoming.AppointmentId);
+                    var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(reportIncoming.AppointmentId);
 
                     if (serviceRequestFromDb == null)
                     {
@@ -161,7 +162,7 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Begin setting service request with report documents");
 
-                    var response = await datalayer.SetServiceRequest(serviceRequest);
+                    await serviceRequestRepository.UpdateServiceRequest(serviceRequest);
 
                     logger.LogInformation("Finished setting service request with report documents");
 

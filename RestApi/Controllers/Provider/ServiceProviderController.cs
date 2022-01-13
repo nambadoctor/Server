@@ -30,6 +30,7 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("{ServiceProviderId}/organisation/{OrganisationId}")]
+        [Authorize]
         public async Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
             using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderAsync"))
@@ -69,9 +70,9 @@ namespace RestApi.Controllers.Provider
             {
                 try
                 {
-                    logger.LogInformation("Start: GetServiceProviderOrganisationMemeberships");
+                    logger.LogInformation("Start: GetServiceProviderOrganisationMemberships");
 
-                    var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemeberships();
+                    var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemberships();
 
                     logger.LogInformation("SP Exists: Ctrl:GetServiceProviderOrganisationMemeberships");
 
@@ -79,7 +80,7 @@ namespace RestApi.Controllers.Provider
                 }
                 finally
                 {
-                    logger.LogInformation("End: Ctrl:GetServiceProviderOrganisationMemeberships");
+                    logger.LogInformation("End: Ctrl:GetServiceProviderOrganisationMemberships");
                 }
             }
         }
