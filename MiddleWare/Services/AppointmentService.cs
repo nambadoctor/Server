@@ -9,18 +9,21 @@ using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using DataModel.Shared.Exceptions;
+using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
     public class AppointmentService : IAppointmentService
     {
         private IMongoDbDataLayer datalayer;
+        private IServiceProviderRepository serviceProviderRepository;
         private ILogger logger;
 
-        public AppointmentService(IMongoDbDataLayer dataLayer, ILogger<AppointmentService> logger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, IMongoDbDataLayer dataLayer, ILogger<AppointmentService> logger)
         {
             this.datalayer = dataLayer;
             this.logger = logger;
+            this.serviceProviderRepository = serviceProviderRepository;
         }
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
@@ -63,7 +66,7 @@ namespace MiddleWare.Services
                 {
                     DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
 
-                    var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
+                    var appointments = await serviceProviderRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
                     //Piece together all the objects
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 

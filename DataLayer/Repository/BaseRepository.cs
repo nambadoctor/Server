@@ -36,12 +36,44 @@ namespace MongoDB.GenericRepository.Repository
             return all.ToList();
         }
 
-        public virtual async Task<IEnumerable<TEntity>> GetByFilter(FilterDefinition<TEntity> filter)
+        public virtual async Task<IEnumerable<TEntity>> GetListByFilter(FilterDefinition<TEntity> filter)
         {
-            var all = await DbSet.FindAsync(filter);
-            return all.ToList();
+            var all = await DbSet.Find(filter).ToListAsync();
+            return all;
         }
 
+        public virtual async Task<TEntity> GetSingleByFilter(FilterDefinition<TEntity> filter)
+        {
+            var result = await DbSet.Find(filter).FirstOrDefaultAsync();
+            return result;
+        }
+
+        public async Task<IEnumerable<T>> GetListByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project)
+        {
+            var list = await DbSet.Aggregate().Match(filter).Project(project).ToListAsync();
+            var result = new List<T>();
+            foreach (var item in list)
+            {
+                result.AddRange(item);
+            }
+            return result;
+        }
+
+        public async Task<TEntity> GetSingleByFilterAndProject(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity> project)
+        {
+            var result = await DbSet.Find(filter).Project<TEntity>(project).FirstOrDefaultAsync();
+            return result;
+        }
+
+        public async Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)
+        {
+            await DbSet.UpdateOneAsync(filter, updateDefinition, new UpdateOptions { IsUpsert = true });
+        }
+
+        public async Task Upsert(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)
+        {
+            await DbSet.UpdateOneAsync(filter, updateDefinition, new UpdateOptions { IsUpsert = true });
+        }
         public virtual void Update(TEntity obj)
         {
             //Context.AddCommand(() => DbSet.ReplaceOneAsync(Builders<TEntity>.Filter.Eq("_id", obj.GetId()), obj));
@@ -56,5 +88,6 @@ namespace MongoDB.GenericRepository.Repository
         {
             Context?.Dispose();
         }
+
     }
 }
