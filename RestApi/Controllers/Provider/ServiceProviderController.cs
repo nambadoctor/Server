@@ -83,13 +83,5 @@ namespace RestApi.Controllers.Provider
                 }
             }
         }
-
-        [HttpGet("{ServiceProviderId}/slots/{OrganisationId}")]
-        public async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderOrganisationMemeberships(string ServiceProviderId, string OrganisationId)
-        {
-            var slots = await serviceProviderService.GetServiceProviderSlots(ServiceProviderId, OrganisationId);
-
-            return slots;
-        }
     }
 }

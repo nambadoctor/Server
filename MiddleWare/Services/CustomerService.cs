@@ -303,8 +303,6 @@ namespace MiddleWare.Services
             customerProfile.Gender = customerData.Gender;
             customerProfile.DateOfBirth = customerData.DateOfBirth;
             customerProfile.CustomerId = customerData.CustomerId;
-            customerProfile.EmailAddress = customerData.EmailAddress;
-            customerProfile.ProfilePicURL = customerData.ProfilePicURL;
             customerProfile.PhoneNumbers = customerData.PhoneNumbers;
 
             var appointment = new Mongo.Appointment();
@@ -314,7 +312,6 @@ namespace MiddleWare.Services
             appointment.AppointmentId = appointmentId;
             appointment.ServiceProviderId = appointmentData.ServiceProviderId;
             appointment.ServiceRequestId = serviceRequestId.ToString();
-            appointment.AddressId = appointmentData.AddressId;
             appointment.CustomerId = appointmentData.CustomerId;
             appointment.OrganisationId = appointmentData.OrganisationId;
             appointment.ScheduledAppointmentStartTime = appointmentData.ScheduledAppointmentStartTime;

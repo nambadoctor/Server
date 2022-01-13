@@ -79,7 +79,7 @@ namespace DataLayer
         /// <inheritdoc />
         public async Task<List<ServiceProvider>> GetServiceProviders(List<ObjectId> serviceProviderIds)
         {
-            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderAvailabilities"))
+            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviders"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
@@ -223,45 +223,6 @@ namespace DataLayer
                     }
 
                     return listOfProfiles;
-
-                }
-                catch (Exception ex)
-                {
-                    logger.LogInformation("DB execution end with Exception: {0}", ex.ToString());
-                    throw;
-                }
-                finally
-                {
-                    logger.LogInformation("DB Execution end");
-                }
-            }
-        }
-
-        /// <inheritdoc />
-        public async Task<List<ServiceProviderAvailability>> GetServiceProviderAvailabilities(string serviceProviderId, string organisationId)
-        {
-            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderAvailabilities"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("DB Execution start");
-                    var filter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
-
-                    var project = Builders<ServiceProvider>.Projection.Expression(
-                        sp => sp.Availabilities.Where(availability => availability.OrganisationId == organisationId)
-                        );
-
-                    var result = await this.serviceProviderCollection.Aggregate().Match(filter).Project(project).ToListAsync();
-
-                    var availabilities = new List<ServiceProviderAvailability>();
-
-                    foreach (var availability in result)
-                    {
-                        availabilities.AddRange(availability);
-                    }
-
-                    return availabilities;
 
                 }
                 catch (Exception ex)
@@ -434,16 +395,6 @@ namespace DataLayer
                     if (appointment.AppointmentType != null)
                     {
                         update = update.Set("Appointments.$.AppointmentType", appointment.AppointmentType);
-                    }
-
-                    if (appointment.PaymentDetail != null)
-                    {
-                        update = update.Set("Appointments.$.PaymentDetail", appointment.PaymentDetail);
-                    }
-
-                    if (appointment.AddressId != null)
-                    {
-                        update = update.Set("Appointments.$.AddressId", appointment.AddressId);
                     }
 
                     if (appointment.ScheduledAppointmentStartTime != null)
@@ -840,16 +791,6 @@ namespace DataLayer
                             update = update.Set("Profiles.$.PhoneNumbers", customerProfile.PhoneNumbers);
                         }
 
-                        if (customerProfile.Addresses != null)
-                        {
-                            update = update.Set("Profiles.$.Addresses", customerProfile.Addresses);
-                        }
-
-                        if (customerProfile.EmailAddress != null)
-                        {
-                            update = update.Set("Profiles.$.EmailAddress", customerProfile.EmailAddress);
-                        }
-
                         if (customerProfile.OrganisationId != null)
                         {
                             update = update.Set("Profiles.$.OrganisationId", customerProfile.OrganisationId);
@@ -899,7 +840,6 @@ namespace DataLayer
                     authInfo.AuthType = "PhoneNumber";
 
                     customer.AuthInfos.Add(authInfo);
-                    customer.NotificationInfos = new List<NotificationInfo>();
                     customer.Profiles = new List<CustomerProfile>();
                     customer.ServiceRequests = new List<ServiceRequest>();
 
@@ -1002,7 +942,7 @@ namespace DataLayer
         /// <inheritdoc />
         public async Task<ServiceRequest> SetServiceRequest(ServiceRequest serviceRequest)
         {
-            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:GetServiceProviderAvailabilities"))
+            using (logger.BeginScope("Method: {Method}", "BaseMongoDBDataLayer:SetServiceRequest"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
@@ -1056,49 +996,9 @@ namespace DataLayer
                             update = update.Set("ServiceRequests.$.AppointmentId", serviceRequest.AppointmentId);
                         }
 
-                        if (serviceRequest.Reason != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Reason", serviceRequest.Reason);
-                        }
-
-                        if (serviceRequest.Examination != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Examination", serviceRequest.Examination);
-                        }
-
-                        if (serviceRequest.Allergies != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Allergies", serviceRequest.Allergies);
-                        }
-
-                        if (serviceRequest.Histories != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Histories", serviceRequest.Histories);
-                        }
-
-                        if (serviceRequest.Diagnosis != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Diagnosis", serviceRequest.Diagnosis);
-                        }
-
                         if (serviceRequest.Vitals != null)
                         {
                             update = update.Set("ServiceRequests.$.Vitals", serviceRequest.Vitals);
-                        }
-
-                        if (serviceRequest.AdditionalDetails != null)
-                        {
-                            update = update.Set("ServiceRequests.$.AdditionalDetails", serviceRequest.AdditionalDetails);
-                        }
-
-                        if (serviceRequest.Advices != null)
-                        {
-                            update = update.Set("ServiceRequests.$.Advices", serviceRequest.Advices);
-                        }
-
-                        if (serviceRequest.MedicineList != null)
-                        {
-                            update = update.Set("ServiceRequests.$.MedicineList", serviceRequest.MedicineList);
                         }
 
                         if (serviceRequest.Reports != null)
@@ -1411,16 +1311,6 @@ namespace DataLayer
                 if (customerProfile.PhoneNumbers != null)
                 {
                     update = update.Set("Profiles.$.PhoneNumbers", customerProfile.PhoneNumbers);
-                }
-
-                if (customerProfile.Addresses != null)
-                {
-                    update = update.Set("Profiles.$.Addresses", customerProfile.Addresses);
-                }
-
-                if (customerProfile.EmailAddress != null)
-                {
-                    update = update.Set("Profiles.$.EmailAddress", customerProfile.EmailAddress);
                 }
 
                 if (customerProfile.OrganisationId != null)

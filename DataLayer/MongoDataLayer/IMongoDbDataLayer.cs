@@ -49,13 +49,6 @@ namespace DataLayer
         /// <param name="serviceProviderId"></param>
         /// <param name="organisationId"></param>
         /// <returns></returns>
-        public Task<List<ServiceProviderAvailability>> GetServiceProviderAvailabilities(string serviceProviderId, string organisationId);
-
-        /// <summary>
-        /// Get organsiation document from Id
-        /// </summary>
-        /// <param name="organisationId"></param>
-        /// <returns></returns>
         public Task<Organisation> GetOrganisation(string organisationId);
 
         /// <summary>

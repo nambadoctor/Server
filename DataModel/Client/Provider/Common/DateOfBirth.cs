@@ -1,4 +1,6 @@
-﻿namespace DataModel.Client.Provider.Common
+﻿using System;
+
+namespace DataModel.Client.Provider.Common
 {
     public class DateOfBirth
     {
@@ -8,5 +10,8 @@
         public int? Month { get; set; } //1-12
 
         public int? Year { get; set; } //YYYY
+
+        public string? Age { get; set; }
+        public DateTime CreatedDate { get; set; }
     }
 }

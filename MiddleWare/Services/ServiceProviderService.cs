@@ -143,47 +143,5 @@ namespace MiddleWare.Services
             }
 
         }
-
-        public async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderSlots(string ServiceProviderId, string OrganisationId)
-        {
-            using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderAsync"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(ServiceProviderId) || !ObjectId.TryParse(ServiceProviderId, out var spid))
-                    {
-                        throw new ArgumentNullException("ServiceProviderId is null or empty or not well formed objectId");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(OrganisationId) || !ObjectId.TryParse(OrganisationId, out var orgid))
-                    {
-                        throw new ArgumentNullException("OrganisationId is null or empty or not well formed objectId");
-                    }
-
-                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
-                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
-
-                    var availabilities = await datalayer.GetServiceProviderAvailabilities(ServiceProviderId, OrganisationId);
-
-                    var listOfSpIds = new List<string>();
-                    listOfSpIds.Add(ServiceProviderId);
-
-                    var appointments = await datalayer.GetAppointmentsForServiceProvider(OrganisationId, listOfSpIds);
-
-                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
-
-                    //Make slots for 2 weeks
-                    var generatedSlots = SlotGenerator.GenerateAvailableSlotsForDays(availabilities, serviceProviderProfile.AppointmentDuration, 0, 2, appointments);
-
-                    return generatedSlots;
-                }
-                finally
-                {
-
-                }
-
-            }
-        }
     }
 }

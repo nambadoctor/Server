@@ -33,26 +33,6 @@ namespace RestApi.Controllers.Provider
             this.logger = logger;
         }
 
-        [HttpGet("{OrganisationId}")]
-        [Authorize]
-        public async Task<ProviderClientOutgoing.Organisation> GetOrganisation(string OrganisationId)
-        {
-            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("Start GetOrganisation");
-                    var organisations = await organisationService.GetOrganisationAsync(OrganisationId);
-                    return organisations;
-                }
-                finally
-                {
-                    logger.LogInformation("End GetOrganisation");
-                }
-            }
-        }
-
         [HttpGet("{OrganisationId}/appointments")]
         [Authorize]
         public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)

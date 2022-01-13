@@ -159,7 +159,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web
             SetAuthToken();
             InitHttpClient();
             var providerBasic = await GetServiceProviderOrganisationMemberships();
-            ChosenOrganisationId = providerBasic.Organsiations.First().OrganisationId;
+            ChosenOrganisationId = providerBasic.Organisations.First().OrganisationId;
             ChosenServiceProviderId = providerBasic.ServiceProviderId;
             var sp = await GetServiceProvider();
             var slots = await GetServiceProviderSlots();

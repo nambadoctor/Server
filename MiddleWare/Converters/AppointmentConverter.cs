@@ -21,7 +21,6 @@ namespace MiddleWare.Converters
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
             appointmentData.OrganisationId = appointment.OrganisationId;
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
-            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentType = appointment.AppointmentType.ToString();
             appointmentData.Status = appointment.Status.ToString();
             appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;

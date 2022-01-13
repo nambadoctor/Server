@@ -14,7 +14,6 @@ namespace DataModel.Client.Provider.Incoming
         public string ServiceProviderId { get; set; }
         public string CustomerId { get; set; }
         public string AppointmentType { get; set; }
-        public string AddressId { get; set; }
         public string Status { get; set; }
         public DateTime? ScheduledAppointmentStartTime { get; set; }
         public DateTime? ScheduledAppointmentEndTime { get; set; }

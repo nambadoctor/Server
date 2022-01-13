@@ -18,7 +18,6 @@ namespace MiddleWare.Converters
             mongoCustomerProfile.FirstName = customerProfile.FirstName;
             mongoCustomerProfile.LastName = customerProfile.LastName;
             mongoCustomerProfile.Gender = customerProfile.Gender;
-            mongoCustomerProfile.EmailAddress = customerProfile.EmailAddress;
             mongoCustomerProfile.OrganisationId = customerProfile.OrganisationId;
             mongoCustomerProfile.ServiceProviderId = customerProfile.ServiceProviderId;
 
@@ -45,7 +44,6 @@ namespace MiddleWare.Converters
             clientCustomerProfile.FirstName = customerProfile.FirstName;
             clientCustomerProfile.LastName = customerProfile.LastName;
             clientCustomerProfile.Gender = customerProfile.Gender;
-            clientCustomerProfile.EmailAddress = customerProfile.EmailAddress;
             clientCustomerProfile.OrganisationId = customerProfile.OrganisationId;
             clientCustomerProfile.ServiceProviderId = customerProfile.ServiceProviderId;
 
@@ -100,6 +98,9 @@ namespace MiddleWare.Converters
             mongoDateOfBirth.Day = dateOfBirth.Day;
             mongoDateOfBirth.Month = dateOfBirth.Month;
             mongoDateOfBirth.Year = dateOfBirth.Year;
+
+            mongoDateOfBirth.Age = dateOfBirth.Age;
+            mongoDateOfBirth.CreatedDate = dateOfBirth.CreatedDate;
 
             return mongoDateOfBirth;
         }

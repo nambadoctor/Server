@@ -21,4 +21,8 @@
     <None Remove="Microsoft.ApplicationInsights" />
     <None Remove="Logging\" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Mongo\Other\" />
+  </ItemGroup>
 </Project>
