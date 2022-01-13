@@ -24,41 +24,27 @@ namespace MiddleWare.Services
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
-        public async Task<string> DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(PrescriptionDocumentId) || !ObjectId.TryParse(PrescriptionDocumentId, out ObjectId prescriptionDocumentId))
-                    {
-                        throw new ArgumentException("Prescription Document Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(PrescriptionDocumentId, IdType.Prescription);
+                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
+                    DataValidation.ValidateObject(serviceRequest);
 
                     if (serviceRequest.PrescriptionDocuments == null)
                     {
                         throw new PrescriptionDoesNotExistException($"Prescription documents not found for appointment id :{AppointmentId}");
                     }
 
-                    var indexOfDocumentToDelete = serviceRequest.PrescriptionDocuments.FindIndex(document => document.PrescriptionDocumentId == prescriptionDocumentId);
+                    var indexOfDocumentToDelete = serviceRequest.PrescriptionDocuments.FindIndex(document => document.PrescriptionDocumentId == new ObjectId(PrescriptionDocumentId));
 
                     if (indexOfDocumentToDelete == -1)
                     {
@@ -72,8 +58,6 @@ namespace MiddleWare.Services
                     logger.LogInformation("Setting service request with deleted prescription metadata");
 
                     await datalayer.SetServiceRequest(serviceRequest);
-
-                    return PrescriptionDocumentId;
                 }
                 finally
                 {
@@ -90,22 +74,11 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
+                    DataValidation.ValidateObject(serviceRequest);
 
                     var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
 
@@ -139,39 +112,25 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.PrescriptionDocumentOutgoing> SetPrescriptionDocument(string CustomerId, ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
+        public async Task SetPrescriptionDocument(string CustomerId, ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:SetPrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.ServiceRequestId) || !ObjectId.TryParse(prescriptionDocumentIncoming.ServiceRequestId, out ObjectId serviceRequestId))
-                    {
-                        throw new ArgumentException("Service request Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(prescriptionDocumentIncoming.AppointmentId) || !ObjectId.TryParse(prescriptionDocumentIncoming.AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
+                    DataValidation.ValidateIncomingId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
 
                     var serviceRequestFromDb = await datalayer.GetServiceRequest(prescriptionDocumentIncoming.AppointmentId);
 
-                    if (serviceRequestFromDb == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request does not exist for appointment: {prescriptionDocumentIncoming.AppointmentId}");
-                    }
+                    DataValidation.ValidateObject(serviceRequestFromDb);
 
                     //Construct new service request to write
                     var serviceRequest = new Mongo.ServiceRequest();
                     serviceRequest.CustomerId = CustomerId;
-                    serviceRequest.ServiceRequestId = serviceRequestId;
+                    serviceRequest.ServiceRequestId = new ObjectId(prescriptionDocumentIncoming.ServiceRequestId);
                     serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
 
                     if (serviceRequestFromDb.PrescriptionDocuments != null)
@@ -197,25 +156,10 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Begin setting service request with prescription documents");
 
-                    var response = await datalayer.SetServiceRequest(serviceRequest);
+                    await datalayer.SetServiceRequest(serviceRequest);
 
                     logger.LogInformation("Finished setting service request with prescription documents");
 
-                    //Construct outgoing prescription document which has sas url
-                    var sasUrl = await mediaContainer.DownloadFileFromStorage(prescriptionDocument.PrescriptionDocumentId.ToString());
-
-                    if (sasUrl == null)
-                    {
-                        throw new PrescriptionDoesNotExistException($"Error generating sas url for id : {prescriptionDocument.PrescriptionDocumentId}");
-                    }
-
-                    logger.LogInformation($"Begin data conversion ConvertToClientOutgoingPrescriptionDocument");
-
-                    var outgoingPrescriptionDocument = ConvertToClientOutgoingPrescriptionDocument(prescriptionDocument, sasUrl);
-
-                    logger.LogInformation($"Finished data conversion ConvertToClientOutgoingPrescriptionDocument");
-
-                    return outgoingPrescriptionDocument;
                 }
                 finally
                 {

@@ -49,20 +49,16 @@ namespace RestApi.Controllers.Provider
 
         [HttpPut()]
         [Authorize]
-        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
+        public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            var customerProfileToReturn = await customerService.SetCustomerProfile(customerProfile);
-
-            return customerProfileToReturn;
+            await customerService.SetCustomerProfile(customerProfile);
         }
 
         [HttpPut("appointment")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
+        public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
         {
-            var customerProfileToReturn = await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
-
-            return customerProfileToReturn;
+            await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
         }
 
         [HttpGet("{CustomerId}/report/{AppointmentId}")]
@@ -77,21 +73,16 @@ namespace RestApi.Controllers.Provider
 
         [HttpDelete("{CustomerId}/report/{AppointmentId}/{ReportId}")]
         [Authorize]
-        public async Task<string> DeleteReport(string CustomerId, string AppointmentId, string ReportId)
+        public async Task DeleteReport(string CustomerId, string AppointmentId, string ReportId)
         {
-
-            var reportId = await reportService.DeleteReport(CustomerId, AppointmentId, ReportId);
-
-            return reportId;
+            await reportService.DeleteReport(CustomerId, AppointmentId, ReportId);
         }
 
         [HttpPut("{CustomerId}/report")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.ReportOutgoing> SetReport(string CustomerId, [FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
+        public async Task SetReport(string CustomerId, [FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
         {
-            var report = await reportService.SetReport(CustomerId, reportIncoming);
-
-            return report;
+            await reportService.SetReport(CustomerId, reportIncoming);
         }
 
         [HttpGet("{CustomerId}/prescription/{AppointmentId}")]
@@ -106,21 +97,16 @@ namespace RestApi.Controllers.Provider
 
         [HttpDelete("{CustomerId}/prescription/{AppointmentId}/{PrescriptionDocumentId}")]
         [Authorize]
-        public async Task<string> DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
         {
-
-            var reportId = await prescriptionService.DeletePrescriptionDocument(CustomerId, AppointmentId, PrescriptionDocumentId);
-
-            return reportId;
+            await prescriptionService.DeletePrescriptionDocument(CustomerId, AppointmentId, PrescriptionDocumentId);
         }
 
         [HttpPut("{CustomerId}/prescription")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.PrescriptionDocumentOutgoing> SetPrescriptionDocument(string CustomerId, [FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
+        public async Task SetPrescriptionDocument(string CustomerId, [FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
         {
-            var prescriptionDocument = await prescriptionService.SetPrescriptionDocument(CustomerId, prescriptionDocumentIncoming);
-
-            return prescriptionDocument;
+            await prescriptionService.SetPrescriptionDocument(CustomerId, prescriptionDocumentIncoming);
         }
 
     }

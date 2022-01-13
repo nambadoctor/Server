@@ -1,14 +1,17 @@
 ﻿using System;
 
-[Serializable]
-public class ServiceProviderDoesnotExistsException : Exception
+namespace DataModel.Shared.Exceptions
 {
-    public ServiceProviderDoesnotExistsException(string message)
-        : base(message)
+    [Serializable]
+    public class ServiceProviderDoesnotExistsException : Exception
     {
-    }
-    public ServiceProviderDoesnotExistsException(string message, Exception innerException)
-        : base(message, innerException)
-    {
+        public ServiceProviderDoesnotExistsException(string message)
+            : base(message)
+        {
+        }
+        public ServiceProviderDoesnotExistsException(string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
 }

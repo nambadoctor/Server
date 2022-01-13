@@ -11,7 +11,7 @@ namespace MiddleWare.Services
             throw new NotImplementedException();
         }
 
-        public Task<ProviderClientOutgoing.ServiceRequest> SetServiceRequest(ProviderClientIncoming.ServiceRequest serviceRequest)
+        public Task SetServiceRequest(ProviderClientIncoming.ServiceRequest serviceRequest)
         {
             throw new NotImplementedException();
         }

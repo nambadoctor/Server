@@ -22,7 +22,6 @@ namespace RestApi.Controllers.Provider
         }
 
         [HttpGet("{AppointmentId}/{Serviceproviderid}")]
-        [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string AppointmentId, string ServiceProviderId)
         {
 
@@ -33,11 +32,10 @@ namespace RestApi.Controllers.Provider
 
         [HttpPut("")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task SetAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {
-            var appointmentToReturn = await appointmentService.SetAppointment(appointment);
+            await appointmentService.SetAppointment(appointment);
 
-            return appointmentToReturn;
         }
     }
 }

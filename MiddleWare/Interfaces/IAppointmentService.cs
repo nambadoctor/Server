@@ -7,6 +7,6 @@ namespace MiddleWare.Interfaces
     {
         public Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId);
         public Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds);
-        public Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment);
+        public Task SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment);
     }
 }

@@ -25,45 +25,31 @@ namespace MiddleWare.Services
             this.logger = logger;
         }
 
-        public async Task<string> DeleteReport(string CustomerId, string AppointmentId, string ReportId)
+        public async Task DeleteReport(string CustomerId, string AppointmentId, string ReportId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:DeleteReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(ReportId) || !ObjectId.TryParse(ReportId, out ObjectId reportId))
-                    {
-                        throw new ArgumentException("Report Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(ReportId, IdType.Report);
+                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
+                    DataValidation.ValidateObject(serviceRequest);
 
                     if (serviceRequest.Reports == null)
                     {
                         throw new ReportDoesNotExistException($"Report documents not found for appointment id :{AppointmentId}");
                     }
 
-                    var indexOfDocumentToDelete = serviceRequest.Reports.FindIndex(report => report.ReportId == reportId);
+                    var indexOfDocumentToDelete = serviceRequest.Reports.FindIndex(report => report.ReportId == new ObjectId(ReportId));
 
                     if (indexOfDocumentToDelete == -1)
                     {
-                        throw new ReportDoesNotExistException($"Report document with id {reportId} not found in report list");
+                        throw new ReportDoesNotExistException($"Report document with id {ReportId} not found in report list");
                     }
                     else
                     {
@@ -73,8 +59,6 @@ namespace MiddleWare.Services
                     logger.LogInformation("Setting service request with deleted report metadata");
 
                     await datalayer.SetServiceRequest(serviceRequest);
-
-                    return ReportId;
                 }
                 finally
                 {
@@ -91,22 +75,12 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
 
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
+                    DataValidation.ValidateObject(serviceRequest);
 
                     var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
 
@@ -140,27 +114,16 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.ReportOutgoing> SetReport(string CustomerId, ProviderClientIncoming.ReportIncoming reportIncoming)
+        public async Task SetReport(string CustomerId, ProviderClientIncoming.ReportIncoming reportIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:SetReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(reportIncoming.ServiceRequestId) || !ObjectId.TryParse(reportIncoming.ServiceRequestId, out ObjectId serviceRequestId))
-                    {
-                        throw new ArgumentException("Service request Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(reportIncoming.AppointmentId) || !ObjectId.TryParse(reportIncoming.AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                    DataValidation.ValidateIncomingId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
+                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateIncomingId(reportIncoming.AppointmentId, IdType.Appointment);
 
                     var serviceRequestFromDb = await datalayer.GetServiceRequest(reportIncoming.AppointmentId);
 
@@ -172,7 +135,7 @@ namespace MiddleWare.Services
                     //Construct new service request to write
                     var serviceRequest = new Mongo.ServiceRequest();
                     serviceRequest.CustomerId = CustomerId;
-                    serviceRequest.ServiceRequestId = serviceRequestId;
+                    serviceRequest.ServiceRequestId = new ObjectId(reportIncoming.ServiceRequestId);
                     serviceRequest.Reports = new List<Mongo.Report>();
 
                     if (serviceRequestFromDb.Reports != null)
@@ -202,21 +165,6 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Finished setting service request with report documents");
 
-                    //Construct outgoing prescription document which has sas url
-                    var sasUrl = await mediaContainer.DownloadFileFromStorage(report.ReportId.ToString());
-
-                    if (sasUrl == null)
-                    {
-                        throw new ReportDoesNotExistException($"Error generating sas url for id : {report.ReportId}");
-                    }
-
-                    logger.LogInformation($"Begin data conversion ConvertToClientOutgoingReport");
-
-                    var outgoingPrescriptionDocument = ConvertToClientOutgoingReport(report, sasUrl);
-
-                    logger.LogInformation($"Finish data conversion ConvertToClientOutgoingReport");
-
-                    return outgoingPrescriptionDocument;
                 }
                 finally
                 {

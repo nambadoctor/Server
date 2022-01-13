@@ -7,6 +7,8 @@ using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using Mongo = DataModel.Mongo;
 using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
+using MiddleWare.Utils;
+using DataModel.Shared.Exceptions;
 
 namespace MiddleWare.Services
 {
@@ -27,22 +29,14 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(serviceProviderId) || ObjectId.TryParse(serviceProviderId, out ObjectId spId) == false)
-                    {
-                        throw new ArgumentException("Service provider Id was invalid");
-                    }
 
-                    if (string.IsNullOrWhiteSpace(appointmentId) || ObjectId.TryParse(appointmentId, out ObjectId appId) == false)
-                    {
-                        throw new ArgumentException("Appointment Id was invalid");
-                    }
+                    DataValidation.ValidateIncomingId(serviceProviderId, IdType.ServiceProvider);
+
+                    DataValidation.ValidateIncomingId(appointmentId, IdType.Appointment);
 
                     var appointment = await datalayer.GetAppointment(serviceProviderId, appointmentId);
 
-                    if (appointment == null)
-                    {
-                        throw new Exceptions.AppointmentDoesNotExistException($"Appointment with id:{appointmentId} does not exist");
-                    }
+                    DataValidation.ValidateObject(appointment);
 
                     logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
@@ -67,10 +61,7 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(organsiationId) || ObjectId.TryParse(organsiationId, out ObjectId orgId) == false)
-                    {
-                        throw new ArgumentException("Organisation Id was invalid");
-                    }
+                    DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
 
                     var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
                     //Piece together all the objects
@@ -101,27 +92,16 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:SetAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    if (string.IsNullOrWhiteSpace(appointment.OrganisationId) || ObjectId.TryParse(appointment.OrganisationId, out ObjectId orgId) == false)
-                    {
-                        throw new ArgumentException("Organisation Id was invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(appointment.ServiceProviderId) || ObjectId.TryParse(appointment.ServiceProviderId, out ObjectId spId) == false)
-                    {
-                        throw new ArgumentException("Service provider Id was invalid");
-                    }
-
-                    if (string.IsNullOrWhiteSpace(appointment.CustomerId) || ObjectId.TryParse(appointment.CustomerId, out ObjectId custId) == false)
-                    {
-                        throw new ArgumentException("Customer Id was invalid");
-                    }
+                    DataValidation.ValidateIncomingId(appointment.OrganisationId, IdType.Organisation);
+                    DataValidation.ValidateIncomingId(appointment.ServiceProviderId, IdType.ServiceProvider);
+                    DataValidation.ValidateIncomingId(appointment.CustomerId, IdType.Customer);
 
                     //Here appointment id is allowed to be null but if not then throw error if invalid id
                     if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
@@ -131,17 +111,11 @@ namespace MiddleWare.Services
 
                     var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
 
-                    if (spProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{appointment.ServiceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                    DataValidation.ValidateObject(spProfile);
 
                     var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
 
-                    if (customerProfile == null)
-                    {
-                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                    DataValidation.ValidateObject(customerProfile);
 
 
                     //New appointment
@@ -170,18 +144,10 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var generatedAppointment = await datalayer.SetAppointmentWithServiceRequest(
+                        await datalayer.SetAppointmentWithServiceRequest(
                             mongoAppointment,
                             serviceRequest
                             );
-
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
-
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(generatedAppointment);
-
-                        logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
-
-                        return clientAppointment;
                     }
                     else
                     {
@@ -193,15 +159,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var generatedAppointment = await datalayer.SetAppointment(mongoAppointment);
-
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
-
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(generatedAppointment);
-
-                        logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
-
-                        return clientAppointment;
+                        await datalayer.SetAppointment(mongoAppointment);
                     }
                 }
                 finally
