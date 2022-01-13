@@ -33,7 +33,9 @@ namespace MiddleWare.Converters
         }
 
         public static Mongo.Appointment ConvertToMongoAppointmentData(
-           ProviderClientIncoming.AppointmentIncoming appointment)
+            Mongo.ServiceProviderProfile serviceProviderProfile,
+           ProviderClientIncoming.AppointmentIncoming appointment,
+           Mongo.CustomerProfile customerProfile)
         {
             var appointmentData = new Mongo.Appointment();
 
@@ -47,9 +49,9 @@ namespace MiddleWare.Converters
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
 
-            appointmentData.ServiceProviderName = appointment.ServiceProviderName;
+            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
-            appointmentData.CustomerName = appointment.CustomerName;
+            appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             if (!string.IsNullOrWhiteSpace(appointment.AppointmentId))
                 appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);

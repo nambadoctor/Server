@@ -249,7 +249,16 @@ namespace MiddleWare.Services
 
                     logger.LogInformation("Begin data conversion GenerateDataForSettingCustomerAndAppointment");
 
-                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerProfileWithAppointmentIncoming);
+                    var spProfile = await datalayer.GetServiceProviderProfile(
+                        customerProfileWithAppointmentIncoming.AppointmentIncoming.ServiceProviderId,
+                        customerProfileWithAppointmentIncoming.AppointmentIncoming.OrganisationId);
+
+                    if (spProfile == null)
+                    {
+                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{customerProfileWithAppointmentIncoming.AppointmentIncoming.ServiceProviderId}  OrgId:{customerProfileWithAppointmentIncoming.AppointmentIncoming.OrganisationId} does not exist");
+                    }
+
+                    var parsedData = GenerateDataForSettingCustomerAndAppointment(customerProfileWithAppointmentIncoming, spProfile);
 
                     logger.LogInformation("Finished data conversion GenerateDataForSettingCustomerAndAppointment");
 
@@ -281,7 +290,7 @@ namespace MiddleWare.Services
 
         }
 
-        private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming)
+        private (Mongo.CustomerProfile, Mongo.Appointment, Mongo.ServiceRequest) GenerateDataForSettingCustomerAndAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming, Mongo.ServiceProviderProfile serviceProviderProfile)
         {
             var customerData = customerProfileWithAppointmentIncoming.CustomerProfileIncoming;
             var appointmentData = customerProfileWithAppointmentIncoming.AppointmentIncoming;
@@ -312,8 +321,8 @@ namespace MiddleWare.Services
             appointment.ScheduledAppointmentEndTime = appointmentData.ScheduledAppointmentEndTime;
             appointment.ActualAppointmentStartTime = appointmentData.ActualAppointmentStartTime;
             appointment.ActualAppointmentEndTime = appointmentData.ActualAppointmentEndTime;
-            appointment.ServiceProviderName = appointmentData.ServiceProviderName;
-            appointment.CustomerName = appointmentData?.CustomerName;
+            appointment.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+            appointment.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             var serviceRequest = new Mongo.ServiceRequest();
             serviceRequest.ServiceRequestId = serviceRequestId;

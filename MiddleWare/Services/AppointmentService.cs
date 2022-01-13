@@ -122,11 +122,27 @@ namespace MiddleWare.Services
                     {
                         throw new ArgumentException("Customer Id was invalid");
                     }
+
                     //Here appointment id is allowed to be null but if not then throw error if invalid id
                     if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
                     {
                         throw new ArgumentException("Appointment Id was invalid");
                     }
+
+                    var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
+
+                    if (spProfile == null)
+                    {
+                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{appointment.ServiceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
+                    }
+
+                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+
+                    if (customerProfile == null)
+                    {
+                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
+                    }
+
 
                     //New appointment
                     if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
@@ -150,7 +166,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(appointment);
+                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(spProfile, appointment, customerProfile);
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
@@ -173,7 +189,7 @@ namespace MiddleWare.Services
 
                         logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(appointment);
+                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(spProfile, appointment, customerProfile);
 
                         logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
