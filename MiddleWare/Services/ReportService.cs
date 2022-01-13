@@ -188,8 +188,11 @@ namespace MiddleWare.Services
 
                     logger.LogInformation($"Finished data conversion ConvertToMongoReport");
 
+                    string[] splitFileString = reportIncoming.File.Split(',');
+                    byte[] decodedReport = Convert.FromBase64String(splitFileString.Last());
+
                     //Upload to blob
-                    var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64Decode(reportIncoming.File), report.ReportId.ToString());
+                    var uploaded = await mediaContainer.UploadFileToStorage(decodedReport, report.ReportId.ToString());
 
                     if (uploaded == null)
                     {
