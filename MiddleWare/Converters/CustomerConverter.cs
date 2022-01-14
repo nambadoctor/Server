@@ -62,14 +62,15 @@ namespace MiddleWare.Converters
             return clientCustomerProfile;
         }
 
-        public static List<ProviderClientOutgoing.OutgoingCustomerProfile> ConvertToClientCustomerProfileList(List<Mongo.CustomerProfile> customerList)
+        public static List<ProviderClientOutgoing.OutgoingCustomerProfile> ConvertToClientCustomerProfileList(List<Mongo.CustomerProfile>? customerList)
         {
             var clientCustomerProfiles = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
 
-            foreach (var customer in customerList)
-            {
-                clientCustomerProfiles.Add(ConvertToClientCustomerProfile(customer));
-            }
+            if (customerList != null)
+                foreach (var customer in customerList)
+                {
+                    clientCustomerProfiles.Add(ConvertToClientCustomerProfile(customer));
+                }
 
             return clientCustomerProfiles;
         }

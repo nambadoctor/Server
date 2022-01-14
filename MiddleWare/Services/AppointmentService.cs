@@ -29,6 +29,7 @@ namespace MiddleWare.Services
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
         }
+
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointment"))
@@ -68,18 +69,7 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
-
-                if (!(appointments == null || appointments.Count == 0))
-                {
-
-                    foreach (var appointment in appointments)
-                    {
-                        listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
-                                appointment)
-                                );
-                    }
-                }
+                var listToReturn = AppointmentConverter.ConvertToClientAppointmentDataList(appointments);
 
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
@@ -89,83 +79,77 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task AddAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
-            using (logger.BeginScope("Method: {Method}", "AppointmentService:SetAppointment"))
+            using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
-                    DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
-                    DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
+                var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                    //Here appointment id is allowed to be null but if not then throw error if invalid id
-                    if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                //Generate new service request
+                var serviceRequest = new Mongo.ServiceRequest();
+                var appointmentId = ObjectId.GenerateNewId();
+                var serviceRequestId = ObjectId.GenerateNewId();
 
-                    var spProfile = await serviceProviderRepository.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
+                appointment.AppointmentId = appointmentId.ToString();
+                appointment.ServiceRequestId = serviceRequestId.ToString();
 
-                    DataValidation.ValidateObject(spProfile);
+                serviceRequest.ServiceRequestId = serviceRequestId;
+                serviceRequest.AppointmentId = appointmentId.ToString();
+                serviceRequest.CustomerId = appointment.CustomerId;
+                serviceRequest.OrganisationId = appointment.OrganisationId;
+                serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
 
-                    var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+                logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 
-                    DataValidation.ValidateObject(customerProfile);
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
+                logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                    //New appointment
-                    if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
-                    {
-                        logger.LogInformation("New appointment set, appointment id was null");
+                await appointmenRepository.AddAppointment(mongoAppointment);
 
-                        var serviceRequest = new Mongo.ServiceRequest();
+                await serviceRequestRepository.AddServiceRequest(serviceRequest);
+            }
+        }
 
-                        //Service request and appointment both need Ids
-                        var appointmentId = ObjectId.GenerateNewId();
-                        var serviceRequestId = ObjectId.GenerateNewId();
+        public async Task UpdateAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                        appointment.AppointmentId = appointmentId.ToString();
-                        appointment.ServiceRequestId = serviceRequestId.ToString();
+                logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        serviceRequest.ServiceRequestId = serviceRequestId;
-                        serviceRequest.AppointmentId = appointmentId.ToString();
-                        serviceRequest.CustomerId = appointment.CustomerId;
-                        serviceRequest.OrganisationId = appointment.OrganisationId;
-                        serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
-                        logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
+                logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(spProfile, appointment, customerProfile);
+                await appointmenRepository.UpdateAppointment(mongoAppointment);
+            }
+        }
 
-                        logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
+        private async Task<(Mongo.CustomerProfile, Mongo.ServiceProviderProfile)> VerifyAndGetAppointmentUsers(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
+            DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
+            DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
 
-                        await appointmenRepository.AddAppointment(mongoAppointment);
-
-                        await serviceRequestRepository.AddServiceRequest(serviceRequest);
-
-                    }
-                    else
-                    {
-                        logger.LogInformation($"Update existing appointment, appointment id {appointment.AppointmentId}");
-
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
-
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(spProfile, appointment, customerProfile);
-
-                        logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
-
-                        await appointmenRepository.UpdateAppointment(mongoAppointment);
-                    }
-                }
-                finally
-                {
-
-                }
+            //Here appointment id is allowed to be null but if not then throw error if invalid id
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
+            {
+                throw new ArgumentException("Appointment Id is invalid");
             }
 
+            var spProfile = await serviceProviderRepository.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
 
+            DataValidation.ValidateObject(spProfile);
+
+            var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+
+            DataValidation.ValidateObject(customerProfile);
+
+            return (customerProfile, spProfile);
         }
     }
 }

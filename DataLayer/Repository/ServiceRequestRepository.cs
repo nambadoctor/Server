@@ -26,16 +26,16 @@ namespace MongoDB.GenericRepository.Repository
             await this.AddToSet(nestedFilter, update);
         }
 
-        public async Task<ServiceRequest> GetServiceRequest(string appointmentId)
+        public async Task<ServiceRequest> GetServiceRequest(string serviceRequestId)
         {
             var serviceRequestFilter = Builders<Customer>.Filter.ElemMatch(
                         cust => cust.ServiceRequests,
-                        serviceRequest => serviceRequest.AppointmentId == appointmentId
+                        serviceRequest => serviceRequest.ServiceRequestId == new ObjectId(serviceRequestId)
                         );
 
             var project = Builders<Customer>.Projection.ElemMatch(
                 cust => cust.ServiceRequests,
-                sr => sr.AppointmentId == appointmentId
+                sr => sr.ServiceRequestId == new ObjectId(serviceRequestId)
                 );
 
             var customer = await this.GetSingleByFilterAndProject(serviceRequestFilter, project);

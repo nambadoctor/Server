@@ -7,6 +7,21 @@ namespace MiddleWare.Converters
 {
     public static class AppointmentConverter
     {
+
+        public static List<ProviderClientOutgoing.OutgoingAppointment> ConvertToClientAppointmentDataList(
+            List<Mongo.Appointment> appointments)
+        {
+            var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
+
+            if (appointments != null)
+            {
+                foreach (var appointment in appointments)
+                {
+                    listToReturn.Add(ConvertToClientAppointmentData(appointment));
+                }
+            }
+            return listToReturn;
+        }
         public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
             Mongo.Appointment appointment)
         {
@@ -48,12 +63,11 @@ namespace MiddleWare.Converters
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
 
-            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+            appointmentData.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
-            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId))
-                appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
+            appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
 
             Enum.TryParse(appointment.AppointmentType, out Mongo.AppointmentType appointmentType);
             appointmentData.AppointmentType = appointmentType;

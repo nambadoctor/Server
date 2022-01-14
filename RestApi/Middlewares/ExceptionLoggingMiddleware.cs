@@ -25,45 +25,15 @@ namespace RestApi.Middlewares
             {
                 await _next(context);
             }
-            catch (AppointmentDoesNotExistException ex)
+            catch (ResourceNotFoundException ex)
             {
-                logger.LogError(ex, "Appointment Does Not Exist");
+                logger.LogError(ex, "Resource Does Not Exist");
                 throw new BadHttpRequestException(ex.Message, 501);
             }
-            catch (ServiceRequestDoesNotExistException ex)
-            {
-                logger.LogError(ex, "ServiceRequest Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 502);
-            }
-            catch (CustomerDoesNotExistException ex)
-            {
-                logger.LogError(ex, "Customer Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 503);
-            }
-            catch (ServiceProviderDoesnotExistsException ex)
-            {
-                logger.LogError(ex, "ServiceProvider Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 504);
-            }
-            catch (PrescriptionDoesNotExistException ex)
-            {
-                logger.LogError(ex, "Prescription Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 505);
-            }
-            catch (ReportDoesNotExistException ex)
-            {
-                logger.LogError(ex, "Report Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 506);
-            }
-            catch (PhoneNumberBelongsToServiceProviderException ex)
-            {
-                logger.LogError(ex, "Phone number already in use");
-                throw new BadHttpRequestException(ex.Message, 507);
-            }
-            catch (IOException ex)
+            catch (BlobStorageException ex)
             {
                 logger.LogError(ex, "Error reading or writing to blob");
-                throw new BadHttpRequestException(ex.Message, 508);
+                throw new BadHttpRequestException(ex.Message, 502);
             }
             catch (ArgumentException ex)
             {

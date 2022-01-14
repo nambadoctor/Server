@@ -6,13 +6,13 @@ using System.Threading.Tasks;
 
 namespace DataModel.Shared.Exceptions
 {
-    public class OrganisationDoesNotExistException : Exception
+    public class BlobStorageException : Exception
     {
-        public OrganisationDoesNotExistException(string message)
+        public BlobStorageException(string message)
     : base(message)
         {
         }
-        public OrganisationDoesNotExistException(string message, Exception innerException)
+        public BlobStorageException(string message, Exception innerException)
             : base(message, innerException)
         {
         }

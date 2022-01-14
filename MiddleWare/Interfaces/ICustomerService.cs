@@ -8,7 +8,8 @@ namespace MiddleWare.Interfaces
         public Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfile(string customerId, string organisationId);
         public Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string phoneNumber, string organisationId);
         public Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomerProfiles(string organsiationId, List<string> serviceProviderIds);
-        public Task SetCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile);
+        public Task AddCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile);
+        public Task UpdateCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile);
         public Task SetCustomerProfileWithAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming);
     }
 }

@@ -1,8 +1,5 @@
 ﻿using MongoDB.Bson;
 using Exceptions = DataModel.Shared.Exceptions;
-using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
-using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
-using Mongo = DataModel.Mongo;
 
 namespace MiddleWare.Utils
 {

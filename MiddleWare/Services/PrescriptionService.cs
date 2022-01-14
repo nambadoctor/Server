@@ -7,7 +7,7 @@ using DataLayer;
 using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
 using DataModel.Shared;
-using DataModel.Shared.Exceptions;
+using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using MongoDB.GenericRepository.Interfaces;
 
@@ -25,7 +25,7 @@ namespace MiddleWare.Services
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
-        public async Task DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string CustomerId, string ServiceRequestId, string PrescriptionDocumentId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -34,22 +34,22 @@ namespace MiddleWare.Services
                 {
                     DataValidation.ValidateObjectId(PrescriptionDocumentId, IdType.Prescription);
                     DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
-                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
+                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
 
                     DataValidation.ValidateObject(serviceRequest);
 
                     if (serviceRequest.PrescriptionDocuments == null)
                     {
-                        throw new PrescriptionDoesNotExistException($"Prescription documents not found for appointment id :{AppointmentId}");
+                        throw new Exceptions.ResourceNotFoundException($"Prescription documents not found for ServiceRequestId id :{ServiceRequestId}");
                     }
 
                     var indexOfDocumentToDelete = serviceRequest.PrescriptionDocuments.FindIndex(document => document.PrescriptionDocumentId == new ObjectId(PrescriptionDocumentId));
 
                     if (indexOfDocumentToDelete == -1)
                     {
-                        throw new PrescriptionDoesNotExistException($"Prescription document with id {PrescriptionDocumentId} not found in list of docs");
+                        throw new Exceptions.ResourceNotFoundException($"Prescription document with id {PrescriptionDocumentId} not found in list of docs");
                     }
                     else
                     {
@@ -68,16 +68,16 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string CustomerId, string AppointmentId)
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string CustomerId, string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAppointmentPrescriptions"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 try
                 {
-                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
+                    var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
 
                     DataValidation.ValidateObject(serviceRequest);
 
@@ -97,7 +97,7 @@ namespace MiddleWare.Services
                             }
                             else
                             {
-                                throw new PrescriptionDoesNotExistException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
+                                throw new Exceptions.BlobStorageException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
                             }
 
                         }

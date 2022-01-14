@@ -16,15 +16,11 @@ namespace RestApi.Controllers.Provider
     {
         private NambaDoctorContext nambaDoctorContext;
         private ICustomerService customerService;
-        private IReportService reportService;
-        private IPrescriptionService prescriptionService;
 
-        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService, IReportService reportService, IPrescriptionService prescriptionService)
+        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.customerService = customerService;
-            this.reportService = reportService;
-            this.prescriptionService = prescriptionService;
         }
 
         [HttpGet("{CustomerId}/{OrganisationId}")]
@@ -47,66 +43,25 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpPut()]
+        [HttpPost("add")]
         [Authorize]
-        public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
+        public async Task AddCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            await customerService.SetCustomerProfile(customerProfile);
+            await customerService.AddCustomerProfile(customerProfile);
         }
 
-        [HttpPut("appointment")]
+        [HttpPut("update")]
+        [Authorize]
+        public async Task UpdateCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
+        {
+            await customerService.UpdateCustomerProfile(customerProfile);
+        }
+
+        [HttpPost("appointment")]
         [Authorize]
         public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
         {
             await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
-        }
-
-        [HttpGet("{CustomerId}/report/{AppointmentId}")]
-        [Authorize]
-        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string CustomerId, string AppointmentId)
-        {
-
-            var customerProfile = await reportService.GetAppointmentReports(CustomerId, AppointmentId);
-
-            return customerProfile;
-        }
-
-        [HttpDelete("{CustomerId}/report/{AppointmentId}/{ReportId}")]
-        [Authorize]
-        public async Task DeleteReport(string CustomerId, string AppointmentId, string ReportId)
-        {
-            await reportService.DeleteReport(CustomerId, AppointmentId, ReportId);
-        }
-
-        [HttpPut("{CustomerId}/report")]
-        [Authorize]
-        public async Task SetReport(string CustomerId, [FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
-        {
-            await reportService.SetReport(CustomerId, reportIncoming);
-        }
-
-        [HttpGet("{CustomerId}/prescription/{AppointmentId}")]
-        [Authorize]
-        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptionDocuments(string CustomerId, string AppointmentId)
-        {
-
-            var prescriptionDocuments = await prescriptionService.GetAppointmentPrescriptions(CustomerId, AppointmentId);
-
-            return prescriptionDocuments;
-        }
-
-        [HttpDelete("{CustomerId}/prescription/{AppointmentId}/{PrescriptionDocumentId}")]
-        [Authorize]
-        public async Task DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
-        {
-            await prescriptionService.DeletePrescriptionDocument(CustomerId, AppointmentId, PrescriptionDocumentId);
-        }
-
-        [HttpPut("{CustomerId}/prescription")]
-        [Authorize]
-        public async Task SetPrescriptionDocument(string CustomerId, [FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
-        {
-            await prescriptionService.SetPrescriptionDocument(CustomerId, prescriptionDocumentIncoming);
         }
 
     }

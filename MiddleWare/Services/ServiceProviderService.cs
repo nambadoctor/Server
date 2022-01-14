@@ -6,8 +6,7 @@ using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
-using Client = DataModel.Client.Provider;
-using DataModel.Shared.Exceptions;
+using Exceptions = DataModel.Shared.Exceptions;
 using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
@@ -43,7 +42,7 @@ namespace MiddleWare.Services
                     logger.LogError("No organisation found for service providerId: {0}",
                         serviceProvider.ServiceProviderId);
 
-                    throw new ServiceProviderOrgsDoesnotExistsException
+                    throw new Exceptions.ResourceNotFoundException
                         (string.Format("Service provider {0} is not part of any organisations", serviceProvider.ServiceProviderId));
                 }
 
@@ -73,31 +72,22 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProviderAsync"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    DataValidation.ValidateObjectId(ServiceProviderId, IdType.ServiceProvider);
-                    DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
+                DataValidation.ValidateObjectId(ServiceProviderId, IdType.ServiceProvider);
+                DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
 
-                    NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
-                    NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
+                NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+                NambaDoctorContext.AddTraceContext("ServiceProviderId", ServiceProviderId);
 
-                    var serviceProviderProfile = await serviceProviderRepository.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
+                var serviceProviderProfile = await serviceProviderRepository.GetServiceProviderProfile(ServiceProviderId, OrganisationId);
 
-                    DataValidation.ValidateObject(serviceProviderProfile);
+                DataValidation.ValidateObject(serviceProviderProfile);
 
-                    //Buid client Object
-                    var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
-                        serviceProviderProfile,
-                        organisation,
-                        role
-                        );
+                var clientServiceProvider = ServiceProviderConverter.ConvertToClientServiceProvider(
+                    serviceProviderProfile
+                    );
 
-                    return clientServiceProvider;
-                }
-                finally
-                {
+                return clientServiceProvider;
 
-                }
             }
 
         }
