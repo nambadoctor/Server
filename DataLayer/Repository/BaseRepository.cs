@@ -2,6 +2,7 @@
 using MongoDB.GenericRepository.Interfaces;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace MongoDB.GenericRepository.Repository
@@ -59,10 +60,18 @@ namespace MongoDB.GenericRepository.Repository
             return result;
         }
 
-        public async Task<TEntity> GetSingleByFilterAndProject(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity> project)
+        public async Task<T> GetSingleByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project)
         {
-            var result = await DbSet.Find(filter).Project<TEntity>(project).FirstOrDefaultAsync();
-            return result;
+            var result = await DbSet.Aggregate().Match(filter).Project(project).Limit(1).SingleOrDefaultAsync();
+            var singleObject = result;
+            if (singleObject != null)
+            {
+                return singleObject.FirstOrDefault();
+            }
+            else
+            {
+                return default(T);
+            }
         }
 
         public async Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)

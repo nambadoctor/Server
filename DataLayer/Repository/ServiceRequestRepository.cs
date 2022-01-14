@@ -33,17 +33,13 @@ namespace MongoDB.GenericRepository.Repository
                         serviceRequest => serviceRequest.ServiceRequestId == new ObjectId(serviceRequestId)
                         );
 
-            var project = Builders<Customer>.Projection.ElemMatch(
-                cust => cust.ServiceRequests,
-                sr => sr.ServiceRequestId == new ObjectId(serviceRequestId)
+            var project = Builders<Customer>.Projection.Expression(
+                cust => cust.ServiceRequests.Where(sr => sr.ServiceRequestId == new ObjectId(serviceRequestId))
                 );
 
-            var customer = await this.GetSingleByFilterAndProject(serviceRequestFilter, project);
+            var serviceRequest = await this.GetSingleByFilterAndProject(serviceRequestFilter, project);
 
-            if (customer != null && customer.ServiceRequests != null)
-                return customer.ServiceRequests.FirstOrDefault();
-            else
-                return null;
+            return serviceRequest;
         }
 
         public async Task UpdateServiceRequest(ServiceRequest serviceRequest)

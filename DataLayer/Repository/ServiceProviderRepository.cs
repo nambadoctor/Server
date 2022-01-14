@@ -26,21 +26,17 @@ namespace MongoDB.GenericRepository.Repository
         }
 
 
-        public async Task<ServiceProviderProfile> GetServiceProviderProfile(string organisationId, string serviceProviderId)
+        public async Task<ServiceProviderProfile> GetServiceProviderProfile(string serviceProviderId, string organisationId)
         {
             var spFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
 
-            var project = Builders<ServiceProvider>.Projection.ElemMatch(
-                sp => sp.Profiles,
-                profile => profile.OrganisationId == organisationId
+            var project = Builders<ServiceProvider>.Projection.Expression(
+                sp => sp.Profiles.Where(profile => profile.OrganisationId == organisationId)
                 );
 
-            var serviceProvider = await this.GetSingleByFilterAndProject(spFilter, project);
+            var serviceProviderProfile = await this.GetSingleByFilterAndProject(spFilter, project);
 
-            if (serviceProvider != null && serviceProvider.Profiles != null)
-                return serviceProvider.Profiles.FirstOrDefault();
-            else
-                return null;
+            return serviceProviderProfile;
         }
 
         public async Task<List<ServiceProviderProfile>> GetServiceProviderProfiles(string organisationId, List<string> serviceProviderIds)

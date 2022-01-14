@@ -47,8 +47,8 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
-                    var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemberships();
-                    return serviceProvider;
+            var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemberships();
+            return serviceProvider;
         }
     }
 }

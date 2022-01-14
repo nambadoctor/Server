@@ -27,17 +27,15 @@ namespace MongoDB.GenericRepository.Repository
         {
             var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
 
-            var project = Builders<ServiceProvider>.Projection.ElemMatch(
-                sp => sp.Appointments,
-                appointment => appointment.AppointmentId == new ObjectId(appointmentId)
+            var project = Builders<ServiceProvider>.Projection.Expression(
+                sp => sp.Appointments.Where(
+                        appointment => appointment.AppointmentId == new ObjectId(appointmentId)
+                    )
                 );
 
-            var sp = await this.GetSingleByFilterAndProject(serviceProviderFilter, project);
+            var appointment = await this.GetSingleByFilterAndProject(serviceProviderFilter, project);
 
-            if (sp != null && sp.Appointments != null)
-                return sp.Appointments.FirstOrDefault();
-            else
-                return null;
+            return appointment;
 
         }
 

@@ -13,7 +13,7 @@ namespace MongoDB.GenericRepository.Interfaces
         Task<IEnumerable<TEntity>> GetListByFilter(FilterDefinition<TEntity> filter);
         Task<TEntity> GetSingleByFilter(FilterDefinition<TEntity> filter);
         Task<IEnumerable<T>> GetListByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
-        Task<TEntity> GetSingleByFilterAndProject(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity> project);
+        Task<T> GetSingleByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
         Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
         Task Upsert(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
         void Update(TEntity obj);

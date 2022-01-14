@@ -39,17 +39,13 @@ namespace MongoDB.GenericRepository.Repository
         {
             var filter = Builders<Customer>.Filter.Eq(cust => cust.CustomerId, new ObjectId(customerId));
 
-            var project = Builders<Customer>.Projection.ElemMatch(
-                cust => cust.Profiles,
-                profile => profile.OrganisationId.Equals(organisationId)
+            var project = Builders<Customer>.Projection.Expression(
+                cust => cust.Profiles.Where(profile => profile.OrganisationId.Equals(organisationId))
                 );
 
-            var customer = await this.GetSingleByFilterAndProject(filter, project);
+            var customerProfile = await this.GetSingleByFilterAndProject(filter, project);
 
-            if (customer != null && customer.Profiles != null)
-                return customer.Profiles.FirstOrDefault();
-            else
-                return null;
+            return customerProfile;
         }
 
         public async Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId, List<string> serviceProviderIds)
