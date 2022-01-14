@@ -33,9 +33,9 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(ReportId, IdType.Report);
-                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
-                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(ReportId, IdType.Report);
+                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
@@ -76,8 +76,8 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
-                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
@@ -122,9 +122,9 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
-                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
-                    DataValidation.ValidateIncomingId(reportIncoming.AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
+                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
 
                     var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(reportIncoming.AppointmentId);
 

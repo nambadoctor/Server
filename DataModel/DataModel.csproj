@@ -6,8 +6,11 @@
 
   <ItemGroup>
     <Compile Remove="Client\Consumer\**" />
+    <Compile Remove="Mongo\Other\**" />
     <EmbeddedResource Remove="Client\Consumer\**" />
+    <EmbeddedResource Remove="Mongo\Other\**" />
     <None Remove="Client\Consumer\**" />
+    <None Remove="Mongo\Other\**" />
   </ItemGroup>
 
   <ItemGroup>
@@ -20,9 +23,5 @@
     <None Remove="Microsoft.Extensions.Caching.Memory" />
     <None Remove="Microsoft.ApplicationInsights" />
     <None Remove="Logging\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Mongo\Other\" />
   </ItemGroup>
 </Project>

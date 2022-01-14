@@ -1,5 +1,4 @@
 ﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
-using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ServerModel = DataModel.Mongo;
 
 namespace MiddleWare.Converters

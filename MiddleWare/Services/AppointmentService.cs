@@ -34,29 +34,24 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
 
-                    DataValidation.ValidateIncomingId(serviceProviderId, IdType.ServiceProvider);
 
-                    DataValidation.ValidateIncomingId(appointmentId, IdType.Appointment);
+                DataValidation.ValidateObjectId(serviceProviderId, IdType.ServiceProvider);
 
-                    var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
+                DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
 
-                    DataValidation.ValidateObject(appointment);
+                var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
 
-                    logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
+                DataValidation.ValidateObject(appointment);
 
-                    var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(appointment);
+                logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                    logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
+                var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(appointment);
 
-                    return appointmentData;
-                }
-                finally
-                {
+                logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
-                }
+                return appointmentData;
+
             }
 
         }
@@ -66,35 +61,30 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointments"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
+
+                DataValidation.ValidateObjectId(organsiationId, IdType.Organisation);
+
+                var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
+
+                logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
+
+                var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
+
+                if (!(appointments == null || appointments.Count == 0))
                 {
-                    DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
 
-                    var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
-                    //Piece together all the objects
-                    logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
-
-                    var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
-
-                    if (!(appointments == null || appointments.Count == 0))
+                    foreach (var appointment in appointments)
                     {
-
-                        foreach (var appointment in appointments)
-                        {
-                            listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
-                                    appointment)
-                                    );
-                        }
+                        listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
+                                appointment)
+                                );
                     }
-
-                    logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
-
-                    return listToReturn;
                 }
-                finally
-                {
 
-                }
+                logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
+
+                return listToReturn;
+
             }
 
         }
@@ -106,14 +96,14 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(appointment.OrganisationId, IdType.Organisation);
-                    DataValidation.ValidateIncomingId(appointment.ServiceProviderId, IdType.ServiceProvider);
-                    DataValidation.ValidateIncomingId(appointment.CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
+                    DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
+                    DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
 
                     //Here appointment id is allowed to be null but if not then throw error if invalid id
                     if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
                     {
-                        throw new ArgumentException("Appointment Id was invalid");
+                        throw new ArgumentException("Appointment Id is invalid");
                     }
 
                     var spProfile = await serviceProviderRepository.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);

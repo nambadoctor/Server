@@ -33,26 +33,9 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId)
         {
-            using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderAsync"))
+            var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
 
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("Start GetServiceProviderAsync");
-
-                    var serviceProvider = await serviceProviderService.GetServiceProviderAsync(ServiceProviderId, OrganisationId);
-
-                    logger.LogInformation("End GetServiceProviderAsync");
-
-                    return serviceProvider;
-                }
-                finally
-                {
-                    logger.LogInformation("Finally GetServiceProviderAsync");
-
-                }
-            }
+            return serviceProvider;
 
         }
 
@@ -64,25 +47,8 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
         {
-            using (logger.BeginScope("Method: {Method}", "ServiceProviderController:GetServiceProviderOrganisationMemeberships"))
-
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("Start: GetServiceProviderOrganisationMemberships");
-
                     var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemberships();
-
-                    logger.LogInformation("SP Exists: Ctrl:GetServiceProviderOrganisationMemeberships");
-
                     return serviceProvider;
-                }
-                finally
-                {
-                    logger.LogInformation("End: Ctrl:GetServiceProviderOrganisationMemberships");
-                }
-            }
         }
     }
 }

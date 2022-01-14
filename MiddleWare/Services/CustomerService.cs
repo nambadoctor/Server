@@ -12,6 +12,21 @@ using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
+    /*
+     * No custotmer and No Customer Profiler
+     *  Client calls Inserver Customer 
+     *  Server inserts cutomer and customer profile
+     *  
+     *  Customer Exisits but not profile exists for the given organisaion
+     *      Client calls Insert customer
+     *      Server finds customerId based on Phonenumber. 
+     *      Use above customerId and insert Custormer Profile ( Need to validate there is no profile for that PhoneNUmber+ org combination)
+     *  
+     *  Customer and Profile Exists
+     *      Client calls with CustomerId and CustomerProfileId
+     *      easy update
+    */
+
     public class CustomerService : ICustomerService
     {
         private ILogger logger;
@@ -35,9 +50,9 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(organisationId, IdType.Organisation);
+                    DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
 
-                    DataValidation.ValidateIncomingId(customerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(customerId, IdType.Customer);
 
                     var customerProfile = await customerRepository.GetCustomerProfile(customerId, organisationId);
 
@@ -65,30 +80,26 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(organisationId, IdType.Organisation);
+                    DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
 
-                    DataValidation.ValidateIncomingId(phoneNumber, IdType.Customer);
+                    DataValidation.ValidateObjectId(phoneNumber, IdType.Customer);
 
                     var customer = await customerRepository.GetCustomerFromPhoneNumber(phoneNumber);
 
-                    if (customer != null)
+                    if (customer == null)
                     {
-                        return new ProviderClientOutgoing.OutgoingCustomerProfile();
+                        // throw not found exception
                     }
 
-                    var serviceProvider = await serviceProviderRepository.GetServiceProviderFromPhoneNumber(phoneNumber);
-
-                    if (serviceProvider != null)
-                    {
-                        throw new PhoneNumberBelongsToServiceProviderException($"Phone number : {phoneNumber} belongs to Service provider {serviceProvider.ServiceProviderId}");
-                    }
 
                     var customerProfile = await customerRepository.GetCustomerProfile(customer.CustomerId.ToString(), organisationId);
 
                     if (customerProfile == null)
                     {
-                        return new ProviderClientOutgoing.OutgoingCustomerProfile { CustomerId = customer.CustomerId.ToString() };
+                        // Throw error
                     }
+                    return new ProviderClientOutgoing.OutgoingCustomerProfile { CustomerId = customer.CustomerId.ToString() };
+
 
                     logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
 
@@ -110,41 +121,36 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomers"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
+
+                DataValidation.ValidateObjectId(organsiationId, IdType.Organisation);
+
+                var customerProfiles = await customerRepository.GetCustomersOfOrganisation(organsiationId, serviceProviderIds);
+
+                if (customerProfiles == null)
                 {
-                    DataValidation.ValidateIncomingId(organsiationId, IdType.Organisation);
-
-                    var customerProfiles = await customerRepository.GetCustomersOfOrganisation(organsiationId, serviceProviderIds);
-
-                    if (customerProfiles == null)
-                    {
-                        logger.LogInformation($"No customers for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
-                    }
-                    else
-                    {
-                        logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
-                    }
-
-                    var clientCustomers = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
-
-                    if (customerProfiles != null)
-                    {
-                        logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile list");
-
-                        foreach (var customer in customerProfiles)
-                        {
-                            clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
-                        }
-
-                        logger.LogInformation("End data conversion ConvertToClientCustomerProfile list");
-                    }
-
-                    return clientCustomers;
+                    logger.LogInformation($"No customers for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
                 }
-                finally
+                else
                 {
-
+                    logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
                 }
+
+                var clientCustomers = new List<ProviderClientOutgoing.OutgoingCustomerProfile>();
+
+                if (customerProfiles != null)
+                {
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile list");
+
+                    foreach (var customer in customerProfiles)
+                    {
+                        clientCustomers.Add(CustomerConverter.ConvertToClientCustomerProfile(customer));
+                    }
+
+                    logger.LogInformation("End data conversion ConvertToClientCustomerProfile list");
+                }
+
+                return clientCustomers;
+
             }
 
         }
@@ -218,8 +224,8 @@ namespace MiddleWare.Services
                 throw new ArgumentException("No valid phone number passed");
             }
 
-            DataValidation.ValidateIncomingId(customerProfile.OrganisationId, IdType.Organisation);
-            DataValidation.ValidateIncomingId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
+            DataValidation.ValidateObjectId(customerProfile.OrganisationId, IdType.Organisation);
+            DataValidation.ValidateObjectId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
 
             var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
 

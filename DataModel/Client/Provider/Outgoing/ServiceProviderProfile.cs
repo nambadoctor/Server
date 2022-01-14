@@ -13,5 +13,7 @@ namespace DataModel.Client.Provider.Outgoing
         public string LastName { get; set; }
         public string Type { get; set; }
         public string ProfilePictureUrl { get; set; }
+        public List<string> Roles { get; set; }
+
     }
 }

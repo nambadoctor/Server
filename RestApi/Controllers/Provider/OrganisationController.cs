@@ -37,20 +37,9 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
-            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("Start GetOrganisationAppointments");
-                    var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
-                    return appointments;
-                }
-                finally
-                {
-                    logger.LogInformation("End GetOrganisationAppointments");
-                }
-            }
+
+            var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
+            return appointments;
 
         }
 
@@ -58,22 +47,10 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
         {
-            using (logger.BeginScope("Method: {Method}", "OrganisationController:GetOrganisation"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                try
-                {
-                    logger.LogInformation("Start GetOrganisationCustomers");
+            var customers = await customerService.GetCustomerProfiles(OrganisationId, ServiceProviderIds);
 
-                    var customers = await customerService.GetCustomerProfiles(OrganisationId, ServiceProviderIds);
+            return customers;
 
-                    return customers;
-                }
-                finally
-                {
-                    logger.LogInformation("End GetOrganisationCustomers");
-                }
-            }
         }
 
     }

@@ -32,9 +32,9 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(PrescriptionDocumentId, IdType.Prescription);
-                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
-                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(PrescriptionDocumentId, IdType.Prescription);
+                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
@@ -75,7 +75,7 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
 
                     var serviceRequest = await serviceRequestRepository.GetServiceRequest(AppointmentId);
 
@@ -120,9 +120,9 @@ namespace MiddleWare.Services
             {
                 try
                 {
-                    DataValidation.ValidateIncomingId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
-                    DataValidation.ValidateIncomingId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
-                    DataValidation.ValidateIncomingId(CustomerId, IdType.Customer);
+                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
+                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
+                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
 
                     var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(prescriptionDocumentIncoming.AppointmentId);
 
