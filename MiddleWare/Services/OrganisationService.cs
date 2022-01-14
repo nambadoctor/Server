@@ -12,12 +12,10 @@ namespace MiddleWare.Services
 {
     public class OrganisationService : IOrganisationService
     {
-        private IMongoDbDataLayer datalayer;
         private ILogger logger;
 
-        public OrganisationService(IMongoDbDataLayer dataLayer, ILogger<OrganisationService> logger)
+        public OrganisationService(ILogger<OrganisationService> logger)
         {
-            this.datalayer = dataLayer;
             this.logger = logger;
         }
 

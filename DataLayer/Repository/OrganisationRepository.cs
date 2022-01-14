@@ -1,4 +1,5 @@
 ﻿using DataModel.Mongo;
+using MongoDB.Driver;
 using MongoDB.GenericRepository.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -13,9 +14,13 @@ namespace MongoDB.GenericRepository.Repository
         public OrganisationRepository(IMongoContext context) : base(context)
         {
         }
-        public Task<List<Organisation>> GetOrganisationsOfServiceProvider(string serviceProviderId)
+        public async Task<List<Organisation>> GetOrganisationsOfServiceProvider(string serviceProviderId)
         {
-            throw new NotImplementedException();
+            var orgFilter = Builders<Organisation>.Filter.ElemMatch(org => org.Members, member => member.ServiceProviderId == serviceProviderId);
+
+            var result = await this.GetListByFilter(orgFilter);
+
+            return result.ToList();
         }
     }
 }

@@ -2,11 +2,8 @@
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.GenericRepository.Interfaces;
-using MongoDB.GenericRepository.Repository;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace MongoDB.GenericRepository.Repository
@@ -16,14 +13,32 @@ namespace MongoDB.GenericRepository.Repository
         public AppointmentRepository(IMongoContext context) : base(context)
         {
         }
-        public Task AddAppointment(Appointment appointment)
+        public async Task AddAppointment(Appointment appointment)
         {
-            throw new NotImplementedException();
+
+            var filter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+
+            var update = Builders<ServiceProvider>.Update.AddToSet(sp => sp.Appointments, appointment);
+
+            await this.AddToSet(filter, update);
         }
 
-        public Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
+        public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
-            throw new NotImplementedException();
+            var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+
+            var project = Builders<ServiceProvider>.Projection.ElemMatch(
+                sp => sp.Appointments,
+                appointment => appointment.AppointmentId == new ObjectId(appointmentId)
+                );
+
+            var sp = await this.GetSingleByFilterAndProject(serviceProviderFilter, project);
+
+            if (sp != null && sp.Appointments != null)
+                return sp.Appointments.FirstOrDefault();
+            else
+                return null;
+
         }
 
         public async Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds)
@@ -64,9 +79,78 @@ namespace MongoDB.GenericRepository.Repository
             return result.ToList();
         }
 
-        public Task UpdateAppointment(Appointment appointment)
+        public async Task UpdateAppointment(Appointment appointment)
         {
-            throw new NotImplementedException();
+            var filter = Builders<ServiceProvider>.Filter;
+
+            var nestedFilter = Builders<ServiceProvider>.Filter.And(
+                filter.Eq(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId)),
+                filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId)));
+
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+
+            if (appointment.ServiceRequestId != null)
+            {
+                update = update.Set("Appointments.$.ServiceRequestId", appointment.ServiceRequestId);
+            }
+
+            if (appointment.CustomerId != null)
+            {
+                update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
+            }
+
+            if (appointment.OrganisationId != null)
+            {
+                update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
+            }
+
+            if (appointment.ServiceProviderName != null)
+            {
+                update = update.Set("Appointments.$.ServiceProviderName", appointment.ServiceProviderName);
+            }
+
+            if (appointment.CustomerName != null)
+            {
+                update = update.Set("Appointments.$.CustomerName", appointment.CustomerName);
+            }
+
+            if (appointment.Status != null)
+            {
+                update = update.Set("Appointments.$.Status", appointment.Status);
+            }
+
+            if (appointment.AppointmentType != null)
+            {
+                update = update.Set("Appointments.$.AppointmentType", appointment.AppointmentType);
+            }
+
+            if (appointment.ScheduledAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);
+            }
+
+            if (appointment.ScheduledAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
+            }
+
+            if (appointment.ActualAppointmentStartTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentStartTime", appointment.ActualAppointmentStartTime);
+            }
+
+            if (appointment.ActualAppointmentEndTime != null)
+            {
+                update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
+            }
+
+            if (appointment.Cancellation != null)
+            {
+                appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
+                update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
+            }
+
+            await this.Upsert(nestedFilter, update);
         }
     }
 }

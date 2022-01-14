@@ -68,7 +68,6 @@ namespace NambaDoctorWebApi
             services.AddScoped<IPrescriptionService, PrescriptionService>();
 
             //Init datalayer with telemetry
-            services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();
             services.AddSingleton<IMediaContainer, MediaContainer>();
 
             services.AddScoped<IMongoContext, MongoContext>();
