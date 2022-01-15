@@ -4,7 +4,9 @@
     {
         public static byte[] Base64Decode(string base64EncodedData)
         {
-            return System.Convert.FromBase64String(base64EncodedData);
+            string[] splitFileString = base64EncodedData.Split(',');
+            byte[] decodedPrescription = Convert.FromBase64String(splitFileString.Last());
+            return decodedPrescription;
         }
 
         public static string Base64Encode(byte[] bytes)
