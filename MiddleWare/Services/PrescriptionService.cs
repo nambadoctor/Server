@@ -10,6 +10,7 @@ using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using MongoDB.GenericRepository.Interfaces;
+using MiddleWare.Converters;
 
 namespace MiddleWare.Services
 {
@@ -25,7 +26,7 @@ namespace MiddleWare.Services
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
-        public async Task DeletePrescriptionDocument(string CustomerId, string ServiceRequestId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string ServiceRequestId, string PrescriptionDocumentId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -33,7 +34,6 @@ namespace MiddleWare.Services
                 try
                 {
                     DataValidation.ValidateObjectId(PrescriptionDocumentId, IdType.Prescription);
-                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
                     DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
                     var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
@@ -68,7 +68,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string CustomerId, string ServiceRequestId)
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAppointmentPrescriptions"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -87,12 +87,12 @@ namespace MiddleWare.Services
                     {
                         foreach (var prescDocument in serviceRequest.PrescriptionDocuments)
                         {
-                            var sasUrl = await mediaContainer.DownloadFileFromStorage(prescDocument.PrescriptionDocumentId.ToString());
+                            var sasUrl = await mediaContainer.GetSasUrl(prescDocument.PrescriptionDocumentId.ToString());
 
                             if (sasUrl != null)
                             {
                                 listToReturn.Add(
-                                    ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
+                                    ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
                                 );
                             }
                             else
@@ -113,7 +113,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task SetPrescriptionDocument(string CustomerId, ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
+        public async Task SetPrescriptionDocument(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:SetPrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -122,7 +122,6 @@ namespace MiddleWare.Services
                 {
                     DataValidation.ValidateObjectId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
                     DataValidation.ValidateObjectId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
-                    DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
 
                     var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(prescriptionDocumentIncoming.AppointmentId);
 
@@ -130,7 +129,7 @@ namespace MiddleWare.Services
 
                     //Construct new service request to write
                     var serviceRequest = new Mongo.ServiceRequest();
-                    serviceRequest.CustomerId = CustomerId;
+                    serviceRequest.CustomerId = serviceRequestFromDb.CustomerId;
                     serviceRequest.ServiceRequestId = new ObjectId(prescriptionDocumentIncoming.ServiceRequestId);
                     serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
 
@@ -142,7 +141,7 @@ namespace MiddleWare.Services
                     logger.LogInformation($"Begin data conversion ConvertToMongoPrescriptionDocument");
 
                     //Add new prescription document to list
-                    var prescriptionDocument = ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
+                    var prescriptionDocument = ServiceRequestConverter.ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
                     serviceRequest.PrescriptionDocuments.Add(prescriptionDocument);
 
                     logger.LogInformation($"Finished data conversion ConvertToMongoPrescriptionDocument");
@@ -170,47 +169,5 @@ namespace MiddleWare.Services
 
         }
 
-        private Mongo.PrescriptionDocument ConvertToMongoPrescriptionDocument(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
-        {
-            var mongoPrescriptionDocument = new Mongo.PrescriptionDocument();
-
-            mongoPrescriptionDocument.PrescriptionDocumentId = ObjectId.GenerateNewId();
-
-            var fileInfo = new Mongo.FileInfo();
-            {
-                fileInfo.FileInfoId = ObjectId.GenerateNewId();
-                fileInfo.FileName = prescriptionDocumentIncoming.FileName;
-                fileInfo.FileType = prescriptionDocumentIncoming.FileType;
-            };
-
-            mongoPrescriptionDocument.FileInfo = fileInfo;
-
-            var detail = new Mongo.PrescriptionDetail();
-            detail.Name = prescriptionDocumentIncoming.Details;
-            detail.Type = prescriptionDocumentIncoming.DetailsType;
-            mongoPrescriptionDocument.PrescriptionDetail = detail;
-
-            return mongoPrescriptionDocument;
-        }
-
-        private ProviderClientOutgoing.PrescriptionDocumentOutgoing ConvertToClientOutgoingPrescriptionDocument(Mongo.PrescriptionDocument mongoPrescriptionDocument, string SasUrl)
-        {
-            var prescriptionDocumentOutgoing = new ProviderClientOutgoing.PrescriptionDocumentOutgoing();
-
-            prescriptionDocumentOutgoing.PrescriptionDocumentId = mongoPrescriptionDocument.PrescriptionDocumentId.ToString();
-
-            prescriptionDocumentOutgoing.Name = mongoPrescriptionDocument.FileInfo.FileName;
-            prescriptionDocumentOutgoing.FileType = mongoPrescriptionDocument.FileInfo.FileType;
-
-            if (mongoPrescriptionDocument.PrescriptionDetail != null)
-            {
-                prescriptionDocumentOutgoing.Details = mongoPrescriptionDocument.PrescriptionDetail.Details;
-                prescriptionDocumentOutgoing.DetailsType = mongoPrescriptionDocument.PrescriptionDetail.Type;
-            }
-
-            prescriptionDocumentOutgoing.SasUrl = SasUrl;
-
-            return prescriptionDocumentOutgoing;
-        }
     }
 }

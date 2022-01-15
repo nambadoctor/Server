@@ -38,7 +38,7 @@ namespace ND.DataLayer.Utils.BlobStorage
             return result.ToString();
         }
 
-        public async Task<string> DownloadFileFromStorage(string fileName)
+        public async Task<string> GetSasUrl(string fileName)
         {
             BlobClient blobClient = containerClient.GetBlobClient(fileName);
             var uri = await GetServiceSasUriForBlob(blobClient);

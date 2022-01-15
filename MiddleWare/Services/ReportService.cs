@@ -10,6 +10,7 @@ using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using MongoDB.GenericRepository.Interfaces;
+using MiddleWare.Converters;
 
 namespace MiddleWare.Services
 {
@@ -26,13 +27,12 @@ namespace MiddleWare.Services
             this.logger = logger;
         }
 
-        public async Task DeleteReport(string CustomerId, string ServiceRequestId, string ReportId)
+        public async Task DeleteReport(string ServiceRequestId, string ReportId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:DeleteReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(ReportId, IdType.Report);
-                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
                 DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
                 var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
@@ -62,12 +62,11 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string CustomerId, string ServiceRequestId)
+        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:GetAppointmentReports"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
                 DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
                 var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
@@ -80,12 +79,12 @@ namespace MiddleWare.Services
                 {
                     foreach (var report in serviceRequest.Reports)
                     {
-                        var sasUrl = await mediaContainer.DownloadFileFromStorage(report.ReportId.ToString());
+                        var sasUrl = await mediaContainer.GetSasUrl(report.ReportId.ToString());
 
                         if (sasUrl != null)
                         {
                             listToReturn.Add(
-                                ConvertToClientOutgoingReport(report, sasUrl)
+                                ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
                             );
                         }
                         else
@@ -101,13 +100,12 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task SetReport(string CustomerId, ProviderClientIncoming.ReportIncoming reportIncoming)
+        public async Task SetReport(ProviderClientIncoming.ReportIncoming reportIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:SetReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
-                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
                 DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
 
                 var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(reportIncoming.AppointmentId);
@@ -116,7 +114,7 @@ namespace MiddleWare.Services
 
                 //Construct new service request to write
                 var serviceRequest = new Mongo.ServiceRequest();
-                serviceRequest.CustomerId = CustomerId;
+                serviceRequest.CustomerId = serviceRequestFromDb.CustomerId;
                 serviceRequest.ServiceRequestId = new ObjectId(reportIncoming.ServiceRequestId);
                 serviceRequest.Reports = new List<Mongo.Report>();
 
@@ -128,7 +126,7 @@ namespace MiddleWare.Services
                 logger.LogInformation($"Begin data conversion ConvertToMongoReport");
 
                 //Add new prescription document to list
-                var report = ConvertToMongoReport(reportIncoming);
+                var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
                 serviceRequest.Reports.Add(report);
 
                 logger.LogInformation($"Finished data conversion ConvertToMongoReport");
@@ -150,47 +148,5 @@ namespace MiddleWare.Services
 
         }
 
-        private Mongo.Report ConvertToMongoReport(ProviderClientIncoming.ReportIncoming reportIncoming)
-        {
-            var mongoReport = new Mongo.Report();
-
-            mongoReport.ReportId = ObjectId.GenerateNewId();
-
-            var fileInfo = new Mongo.FileInfo();
-            {
-                fileInfo.FileInfoId = ObjectId.GenerateNewId();
-                fileInfo.FileName = reportIncoming.FileName;
-                fileInfo.FileType = reportIncoming.FileType;
-            };
-
-            mongoReport.FileInfo = fileInfo;
-
-            var detail = new Mongo.ReportDetails();
-            detail.Name = reportIncoming.Details;
-            detail.Type = reportIncoming.DetailsType;
-            mongoReport.Details = detail;
-
-            return mongoReport;
-        }
-
-        private ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl)
-        {
-            var reportOutgoing = new ProviderClientOutgoing.ReportOutgoing();
-
-            reportOutgoing.ReportId = mongoReport.ReportId.ToString();
-
-            reportOutgoing.Name = mongoReport.FileInfo.FileName;
-            reportOutgoing.FileType = mongoReport.FileInfo.FileType;
-
-            if (mongoReport.Details != null)
-            {
-                reportOutgoing.Details = mongoReport.Details.Details;
-                reportOutgoing.DetailsType = mongoReport.Details.Type;
-            }
-
-            reportOutgoing.SasUrl = SasUrl;
-
-            return reportOutgoing;
-        }
     }
 }

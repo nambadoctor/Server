@@ -31,7 +31,7 @@ namespace RestApi.Controllers.Provider
             return appointment;
         }
 
-        [HttpPost("add")]
+        [HttpPost("")]
         [Authorize]
         public async Task AddAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {
@@ -39,7 +39,7 @@ namespace RestApi.Controllers.Provider
 
         }
 
-        [HttpPut("update")]
+        [HttpPut("")]
         [Authorize]
         public async Task UpdateAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {

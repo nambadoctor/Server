@@ -33,7 +33,7 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpGet("CheckByPhoneNumber/{PhoneNumber}/{OrganisationId}")] //Here phone number cannot contain + as its not allowed in .Net query string
+        [HttpGet("phonenumber/{PhoneNumber}/{OrganisationId}")] //Here phone number cannot contain + as its not allowed in .Net query string
         [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
         {
@@ -43,14 +43,14 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpPost("add")]
+        [HttpPost("")]
         [Authorize]
         public async Task AddCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
             await customerService.AddCustomerProfile(customerProfile);
         }
 
-        [HttpPut("update")]
+        [HttpPut("")]
         [Authorize]
         public async Task UpdateCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {

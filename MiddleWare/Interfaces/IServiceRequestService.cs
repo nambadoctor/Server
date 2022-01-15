@@ -5,7 +5,7 @@ namespace MiddleWare.Interfaces
 {
     public interface IServiceRequestService
     {
-        public Task<ProviderClientOutgoing.ServiceRequest> GetServiceRequest(string customerId, string appointmentId);
-        public Task UpdateServiceRequest(ProviderClientIncoming.ServiceRequest serviceRequest);
+        public Task<ProviderClientOutgoing.VitalsOutgoing> GetVitals(string serviceRequestId);
+        public Task UpdateVitals(ProviderClientIncoming.VitalsIncoming vitalsIncoming);
     }
 }
