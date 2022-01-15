@@ -6,6 +6,7 @@ using DataModel.Client.Provider.Incoming;
 using MongoDB.GenericRepository.Interfaces;
 using DataModel.Shared;
 using MiddleWare.Converters;
+using MiddleWare.Utils;
 
 namespace MiddleWare.Services
 {
@@ -26,6 +27,8 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "ServiceRequestService:GetVitals"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
+                DataValidation.ValidateObjectId(serviceRequestId, IdType.ServiceRequest);
+
                 var serviceRequest = await serviceRequestRepository.GetServiceRequest(serviceRequestId);
 
                 var vitals = ServiceRequestConverter.ConvertToClientOutgoingVitals(serviceRequest.Vitals, serviceRequestId);
@@ -39,8 +42,15 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "ServiceRequestService:UpdateVitals"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
+                DataValidation.ValidateObjectId(vitalsIncoming.ServiceRequestId, IdType.ServiceRequest);
+
+                var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(vitalsIncoming.ServiceRequestId);
+
+                DataValidation.ValidateObject(serviceRequestFromDb);
+
                 //Construct service request with vitals and ID
                 var serviceRequest = new Mongo.ServiceRequest();
+                serviceRequest.CustomerId = serviceRequestFromDb.CustomerId;
                 serviceRequest.ServiceRequestId = new MongoDB.Bson.ObjectId(vitalsIncoming.ServiceRequestId);
                 serviceRequest.Vitals = ServiceRequestConverter.ConvertToMongoVitals(vitalsIncoming);
 

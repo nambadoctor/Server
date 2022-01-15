@@ -206,6 +206,13 @@ namespace MiddleWare.Services
                 customer = await GenerateAndAddNewCustomer(customerProfile.PhoneNumbers.First());
             }
 
+            var alreadyExistingProfileWithOrganisation = customer.Profiles.Where(profile => profile.OrganisationId == customerProfile.OrganisationId).Any();
+
+            if (alreadyExistingProfileWithOrganisation)
+            {
+                throw new ArgumentException("A profile with this organisation already exists");
+            }
+
             customerProfile.CustomerId = customer.CustomerId.ToString();
 
             logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");
@@ -239,6 +246,21 @@ namespace MiddleWare.Services
             if (customer.CustomerId.ToString() != customerProfile.CustomerId)
             {
                 throw new ArgumentException("Customer ID does not match the phone number");
+            }
+
+            var alreadyExistingProfileWithOrganisation = customer.Profiles.Where(profile => profile.OrganisationId == customerProfile.OrganisationId).Any();
+
+            if (alreadyExistingProfileWithOrganisation)
+            {
+                customerProfile.CustomerProfileId = customer.Profiles.Where(
+                    profile => profile.OrganisationId == customerProfile.OrganisationId)
+                    .First()
+                    .CustomerProfileId
+                    .ToString();
+            }
+            else
+            {
+                throw new Exceptions.InvalidDataException("No profile exists for this organisation");
             }
 
             logger.LogInformation("Begin data conversion ConvertToMongoCustomerProfile");

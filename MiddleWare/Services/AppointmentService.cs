@@ -84,6 +84,9 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
+                DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
+                DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
+
                 var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
                 //Generate new service request
@@ -117,6 +120,11 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
+                DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
+                DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
+                DataValidation.ValidateObjectId(appointment.ServiceRequestId, IdType.ServiceRequest);
+                DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
+
                 var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
                 logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");

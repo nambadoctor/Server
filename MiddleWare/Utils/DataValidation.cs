@@ -6,7 +6,7 @@ namespace MiddleWare.Utils
     public static class DataValidation
     {
 
-        public static void ValidateObjectId(string Id, IdType type)
+        public static void ValidateObjectId(string? Id, IdType type)
         {
             if (string.IsNullOrWhiteSpace(Id) || ObjectId.TryParse(Id, out ObjectId custId) == false)
             {

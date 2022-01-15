@@ -15,6 +15,8 @@ namespace MiddleWare.Converters
             mongoCustomerProfile.CustomerId = customerProfile.CustomerId;
             if (!string.IsNullOrWhiteSpace(customerProfile.CustomerProfileId))
                 mongoCustomerProfile.CustomerProfileId = new ObjectId(customerProfile.CustomerProfileId);
+            else
+                mongoCustomerProfile.CustomerProfileId = ObjectId.GenerateNewId();
             mongoCustomerProfile.FirstName = customerProfile.FirstName;
             mongoCustomerProfile.LastName = customerProfile.LastName;
             mongoCustomerProfile.Gender = customerProfile.Gender;

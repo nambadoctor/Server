@@ -53,6 +53,15 @@ namespace MiddleWare.Converters
         {
             var appointmentData = new Mongo.Appointment();
 
+            if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
+            {
+                appointmentData.AppointmentId = ObjectId.GenerateNewId();
+            }
+            else
+            {
+                appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
+            }
+
             appointmentData.ServiceProviderId = appointment.ServiceProviderId;
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
@@ -66,8 +75,6 @@ namespace MiddleWare.Converters
             appointmentData.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
-
-            appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
 
             Enum.TryParse(appointment.AppointmentType, out Mongo.AppointmentType appointmentType);
             appointmentData.AppointmentType = appointmentType;
