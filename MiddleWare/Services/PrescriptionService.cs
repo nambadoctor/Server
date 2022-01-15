@@ -146,11 +146,8 @@ namespace MiddleWare.Services
 
                     logger.LogInformation($"Finished data conversion ConvertToMongoPrescriptionDocument");
 
-                    string[] splitFileString = prescriptionDocumentIncoming.File.Split(',');
-                    byte[] decodedPrescription = Convert.FromBase64String(splitFileString.Last());
-
                     //Upload to blob
-                    var uploaded = await mediaContainer.UploadFileToStorage(decodedPrescription, prescriptionDocument.PrescriptionDocumentId.ToString());
+                    var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64Decode(prescriptionDocumentIncoming.File), prescriptionDocument.PrescriptionDocumentId.ToString());
 
                     if (uploaded == null)
                     {
