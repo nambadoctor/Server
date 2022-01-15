@@ -81,9 +81,7 @@ namespace MongoDB.GenericRepository.Repository
         {
             var filter = Builders<ServiceProvider>.Filter;
 
-            var nestedFilter = Builders<ServiceProvider>.Filter.And(
-                filter.Eq(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId)),
-                filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId)));
+            var nestedFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId));
 
             var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
 

@@ -46,9 +46,7 @@ namespace MongoDB.GenericRepository.Repository
         {
             var filter = Builders<Customer>.Filter;
 
-            var nestedFilter = filter.And(
-                filter.Eq(cust => cust.CustomerId, new ObjectId(serviceRequest.CustomerId)),
-                filter.ElemMatch(cust => cust.ServiceRequests, sr => sr.ServiceRequestId == serviceRequest.ServiceRequestId));
+            var nestedFilter = filter.ElemMatch(cust => cust.ServiceRequests, sr => sr.ServiceRequestId == serviceRequest.ServiceRequestId);
 
             var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, new ObjectId(serviceRequest.CustomerId));
 
