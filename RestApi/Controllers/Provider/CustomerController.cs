@@ -16,8 +16,8 @@ namespace RestApi.Controllers.Provider
     {
         private NambaDoctorContext nambaDoctorContext;
         private ICustomerService customerService;
-
-        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService)
+        private IAppointmentService appointmentService;
+        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService, IAppointmentService appointmentService)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.customerService = customerService;
@@ -61,7 +61,8 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
         {
-            await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
+            await customerService.AddCustomerProfile(customerProfileWithAppointment.CustomerProfileIncoming);
+            await appointmentService.AddAppointment(customerProfileWithAppointment.AppointmentIncoming);
         }
 
     }

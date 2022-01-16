@@ -77,7 +77,7 @@ namespace MongoDB.GenericRepository.Repository
             return result.ToList();
         }
 
-        public async Task UpdateAppointment(Appointment appointment)
+        public async Task CancelAppointment(Appointment appointment)
         {
             var filter = Builders<ServiceProvider>.Filter;
 
@@ -85,68 +85,47 @@ namespace MongoDB.GenericRepository.Repository
 
             var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
 
-            if (appointment.ServiceRequestId != null)
-            {
-                update = update.Set("Appointments.$.ServiceRequestId", appointment.ServiceRequestId);
-            }
+            update = update.Set("Appointments.$.Status", AppointmentStatus.Cancelled);
 
-            if (appointment.CustomerId != null)
-            {
-                update = update.Set("Appointments.$.CustomerId", appointment.CustomerId);
-            }
-
-            if (appointment.OrganisationId != null)
-            {
-                update = update.Set("Appointments.$.OrganisationId", appointment.OrganisationId);
-            }
-
-            if (appointment.ServiceProviderName != null)
-            {
-                update = update.Set("Appointments.$.ServiceProviderName", appointment.ServiceProviderName);
-            }
-
-            if (appointment.CustomerName != null)
-            {
-                update = update.Set("Appointments.$.CustomerName", appointment.CustomerName);
-            }
-
-            if (appointment.Status != null)
-            {
-                update = update.Set("Appointments.$.Status", appointment.Status);
-            }
-
-            if (appointment.AppointmentType != null)
-            {
-                update = update.Set("Appointments.$.AppointmentType", appointment.AppointmentType);
-            }
-
-            if (appointment.ScheduledAppointmentStartTime != null)
-            {
-                update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);
-            }
-
-            if (appointment.ScheduledAppointmentEndTime != null)
-            {
-                update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
-            }
-
-            if (appointment.ActualAppointmentStartTime != null)
-            {
-                update = update.Set("Appointments.$.ActualAppointmentStartTime", appointment.ActualAppointmentStartTime);
-            }
-
-            if (appointment.ActualAppointmentEndTime != null)
-            {
-                update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
-            }
-
-            if (appointment.Cancellation != null)
-            {
-                appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
-                update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
-            }
+            appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
+            update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
 
             await this.Upsert(nestedFilter, update);
+
+        }
+
+
+        // There is no UI for this yet. Will discuss and complete this later
+        public async Task RescheduleAppointment(Appointment appointment)
+        {
+            var filter = Builders<ServiceProvider>.Filter;
+
+            var nestedFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId));
+
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));            
+            update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);            
+            update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
+
+            await this.Upsert(nestedFilter, update);
+
+        }
+        public async Task EndAppointment(Appointment appointment)
+        {
+            var filter = Builders<ServiceProvider>.Filter;
+
+            var nestedFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId));
+
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+            update = update.Set("Appointments.$.Status", AppointmentStatus.Finished);
+            update = update.Set("Appointments.$.ActualAppointmentStartTime", appointment.ActualAppointmentStartTime);
+            update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
+
+            await this.Upsert(nestedFilter, update);
+        }
+
+        Task IAppointmentRepository.UpdateAppointment(Appointment appointment)
+        {
+            throw new System.NotImplementedException();
         }
     }
 }

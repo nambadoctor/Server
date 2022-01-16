@@ -87,10 +87,6 @@ namespace MongoDB.GenericRepository.Repository
 
             var update = Builders<Customer>.Update.Set(cust => cust.CustomerId, new ObjectId(customerProfile.CustomerId));
 
-            if (customerProfile.CustomerId != null)
-            {
-                update = update.Set("Profiles.$.CustomerId", customerProfile.CustomerId);
-            }
 
             if (customerProfile.FirstName != null)
             {
@@ -112,20 +108,6 @@ namespace MongoDB.GenericRepository.Repository
                 update = update.Set("Profiles.$.DateOfBirth", customerProfile.DateOfBirth);
             }
 
-            if (customerProfile.PhoneNumbers != null)
-            {
-                update = update.Set("Profiles.$.PhoneNumbers", customerProfile.PhoneNumbers);
-            }
-
-            if (customerProfile.OrganisationId != null)
-            {
-                update = update.Set("Profiles.$.OrganisationId", customerProfile.OrganisationId);
-            }
-
-            if (customerProfile.ServiceProviderId != null)
-            {
-                update = update.Set("Profiles.$.ServiceProviderId", customerProfile.ServiceProviderId);
-            }
 
             await this.Upsert(nestedFilter, update);
         }
