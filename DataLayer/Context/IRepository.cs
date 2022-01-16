@@ -14,7 +14,9 @@ namespace MongoDB.GenericRepository.Interfaces
         Task<TEntity> GetSingleByFilter(FilterDefinition<TEntity> filter);
         Task<IEnumerable<T>> GetListByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
         Task<T> GetSingleByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
+        Task<T> GetSingleNestedByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, T> project);
         Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
+        Task RemoveFromSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
         Task Upsert(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
         void Update(TEntity obj);
         void Remove(string id);

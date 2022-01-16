@@ -39,11 +39,27 @@ namespace RestApi.Controllers.Provider
 
         }
 
-        [HttpPut("")]
+        [HttpPut("reschedule")]
         [Authorize]
-        public async Task UpdateAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task RescheduleAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {
-            await appointmentService.AddAppointment(appointment);
+            await appointmentService.RescheduleAppointment(appointment);
+
+        }
+
+        [HttpPut("cancel")]
+        [Authorize]
+        public async Task CancelAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            await appointmentService.CancelAppointment(appointment);
+
+        }
+
+        [HttpPut("end")]
+        [Authorize]
+        public async Task EndAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            await appointmentService.EndAppointment(appointment);
 
         }
     }

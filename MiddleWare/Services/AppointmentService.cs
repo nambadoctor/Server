@@ -84,8 +84,6 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
-                DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
 
                 var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
@@ -111,18 +109,15 @@ namespace MiddleWare.Services
 
                 await appointmenRepository.AddAppointment(mongoAppointment);
 
-                await serviceRequestRepository.AddServiceRequest(serviceRequest);
+                await serviceRequestRepository.Add(serviceRequest);
             }
         }
 
-        public async Task UpdateAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task CancelAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
-                DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
-                DataValidation.ValidateObjectId(appointment.ServiceRequestId, IdType.ServiceRequest);
                 DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
 
                 var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
@@ -133,15 +128,45 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                await appointmenRepository.UpdateAppointment(mongoAppointment);
+                await appointmenRepository.CancelAppointment(mongoAppointment);
             }
+        }
+
+        public async Task RescheduleAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
+
+            var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
+
+            logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
+
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
+
+            logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
+
+            await appointmenRepository.RescheduleAppointment(mongoAppointment);
+        }
+
+        public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
+
+            var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
+
+            logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
+
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
+
+            logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
+
+            await appointmenRepository.EndAppointment(mongoAppointment);
         }
 
         private async Task<(Mongo.CustomerProfile, Mongo.ServiceProviderProfile)> VerifyAndGetAppointmentUsers(ProviderClientIncoming.AppointmentIncoming appointment)
         {
-            DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
             DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
             DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
+            DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
 
             //Here appointment id is allowed to be null but if not then throw error if invalid id
             if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
@@ -159,5 +184,6 @@ namespace MiddleWare.Services
 
             return (customerProfile, spProfile);
         }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using DataModel.Mongo;
+using MongoDB.GenericRepository.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,8 @@ using System.Threading.Tasks;
 
 namespace MongoDB.GenericRepository.Interfaces
 {
-    public interface IServiceRequestRepository : IRepository<Customer>
+    public interface IServiceRequestRepository : IRepository<ServiceRequest>
     {
-        public Task<ServiceRequest> GetServiceRequest(string serviceRequestId);
-        public Task AddServiceRequest(ServiceRequest serviceRequest);
-        public Task UpdateServiceRequest(ServiceRequest serviceRequest);
+
     }
 }

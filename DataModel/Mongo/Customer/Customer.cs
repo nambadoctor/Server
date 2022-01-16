@@ -12,7 +12,6 @@ namespace DataModel.Mongo
         public ObjectId CustomerId { get; set; }
         public List<CustomerProfile> Profiles { get; set; }
         public List<AuthInfo> AuthInfos { get; set; }
-        public List<ServiceRequest> ServiceRequests { get; set; }
         public bool IsDeleted { get; set; }
     }
 }

@@ -102,8 +102,8 @@ namespace MongoDB.GenericRepository.Repository
 
             var nestedFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.Appointments, a => a.AppointmentId.Equals(appointment.AppointmentId));
 
-            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));            
-            update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);            
+            var update = Builders<ServiceProvider>.Update.Set(sp => sp.ServiceProviderId, new ObjectId(appointment.ServiceProviderId));
+            update = update.Set("Appointments.$.ScheduledAppointmentStartTime", appointment.ScheduledAppointmentStartTime);
             update = update.Set("Appointments.$.ScheduledAppointmentEndTime", appointment.ScheduledAppointmentEndTime);
 
             await this.Upsert(nestedFilter, update);
@@ -121,11 +121,6 @@ namespace MongoDB.GenericRepository.Repository
             update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
 
             await this.Upsert(nestedFilter, update);
-        }
-
-        Task IAppointmentRepository.UpdateAppointment(Appointment appointment)
-        {
-            throw new System.NotImplementedException();
         }
     }
 }

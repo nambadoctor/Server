@@ -271,7 +271,6 @@ namespace MiddleWare.Services
 
             customer.AuthInfos.Add(authInfo);
             customer.Profiles = new List<Mongo.CustomerProfile>();
-            customer.ServiceRequests = new List<Mongo.ServiceRequest>();
 
             await customerRepository.Add(customer);
 
@@ -294,7 +293,7 @@ namespace MiddleWare.Services
             appointment.ScheduledAppointmentEndTime = appointmentData.ScheduledAppointmentEndTime;
             appointment.ActualAppointmentStartTime = appointmentData.ActualAppointmentStartTime;
             appointment.ActualAppointmentEndTime = appointmentData.ActualAppointmentEndTime;
-            appointment.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+            appointment.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
             appointment.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             var serviceRequest = new Mongo.ServiceRequest();

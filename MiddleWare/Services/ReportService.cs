@@ -16,13 +16,13 @@ namespace MiddleWare.Services
 {
     public class ReportService : IReportService
     {
-        private IServiceRequestRepository serviceRequestRepository;
+        private IReportRepository reportRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IReportRepository reportRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
-            this.serviceRequestRepository = serviceRequestRepository;
+            this.reportRepository = reportRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -35,29 +35,8 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(ReportId, IdType.Report);
                 DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
+                await reportRepository.DeleteReport(ServiceRequestId, ReportId);
 
-                DataValidation.ValidateObject(serviceRequest);
-
-                if (serviceRequest.Reports == null)
-                {
-                    throw new Exceptions.ResourceNotFoundException($"Report documents not found for ServiceRequest id :{ServiceRequestId}");
-                }
-
-                var indexOfDocumentToDelete = serviceRequest.Reports.FindIndex(report => report.ReportId == new ObjectId(ReportId));
-
-                if (indexOfDocumentToDelete == -1)
-                {
-                    throw new Exceptions.ResourceNotFoundException($"Report document with id {ReportId} not found in report list");
-                }
-                else
-                {
-                    serviceRequest.Reports.RemoveAt(indexOfDocumentToDelete);
-                }
-
-                logger.LogInformation("Setting service request with deleted report metadata");
-
-                await serviceRequestRepository.UpdateServiceRequest(serviceRequest);
             }
 
         }
@@ -69,30 +48,27 @@ namespace MiddleWare.Services
             {
                 DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                var serviceRequest = await serviceRequestRepository.GetServiceRequest(ServiceRequestId);
+                var reports = await reportRepository.GetServiceRequestReports(ServiceRequestId);
 
-                DataValidation.ValidateObject(serviceRequest);
+                DataValidation.ValidateObject(reports);
 
                 var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
 
-                if (serviceRequest.Reports != null)
+                foreach (var report in reports)
                 {
-                    foreach (var report in serviceRequest.Reports)
+                    var sasUrl = await mediaContainer.GetSasUrl(report.ReportId.ToString());
+
+                    if (sasUrl != null)
                     {
-                        var sasUrl = await mediaContainer.GetSasUrl(report.ReportId.ToString());
-
-                        if (sasUrl != null)
-                        {
-                            listToReturn.Add(
-                                ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
-                            );
-                        }
-                        else
-                        {
-                            throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
-                        }
-
+                        listToReturn.Add(
+                            ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
+                        );
                     }
+                    else
+                    {
+                        throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
+                    }
+
                 }
 
                 return listToReturn;
@@ -108,42 +84,10 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
                 DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
 
-                var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(reportIncoming.AppointmentId);
-
-                DataValidation.ValidateObject(serviceRequestFromDb);
-
-                //Construct new service request to write
-                var serviceRequest = new Mongo.ServiceRequest();
-                serviceRequest.CustomerId = serviceRequestFromDb.CustomerId;
-                serviceRequest.ServiceRequestId = new ObjectId(reportIncoming.ServiceRequestId);
-                serviceRequest.Reports = new List<Mongo.Report>();
-
-                if (serviceRequestFromDb.Reports != null)
-                {
-                    serviceRequest.Reports.AddRange(serviceRequestFromDb.Reports);
-                }
-
-                logger.LogInformation($"Begin data conversion ConvertToMongoReport");
-
-                //Add new prescription document to list
                 var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
-                serviceRequest.Reports.Add(report);
 
-                logger.LogInformation($"Finished data conversion ConvertToMongoReport");
+                await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 
-                //Upload to blob
-                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64Decode(reportIncoming.File), report.ReportId.ToString());
-
-                if (uploaded == null)
-                {
-                    throw new IOException("Unable to write file to blob storage");
-                }
-
-                logger.LogInformation("Begin setting service request with report documents");
-
-                await serviceRequestRepository.UpdateServiceRequest(serviceRequest);
-
-                logger.LogInformation("Finished setting service request with report documents");
             }
 
         }

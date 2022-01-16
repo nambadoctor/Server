@@ -10,6 +10,5 @@ namespace MiddleWare.Interfaces
         public Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomerProfiles(string organsiationId, List<string> serviceProviderIds);
         public Task AddCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile);
         public Task UpdateCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile);
-        public Task SetCustomerProfileWithAppointment(ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointmentIncoming);
     }
 }

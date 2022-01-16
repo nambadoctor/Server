@@ -13,12 +13,12 @@ namespace MiddleWare.Services
     public class ServiceRequestService : IServiceRequestService
     {
 
-        private IServiceRequestRepository serviceRequestRepository;
+        private IVitalsRepository vitalsRepository;
         private ILogger logger;
 
-        public ServiceRequestService(IServiceRequestRepository serviceRequestRepository, ILogger<ServiceProviderService> logger)
+        public ServiceRequestService(IVitalsRepository vitalsRepository, ILogger<ServiceProviderService> logger)
         {
-            this.serviceRequestRepository = serviceRequestRepository;
+            this.vitalsRepository = vitalsRepository;
             this.logger = logger;
         }
 
@@ -29,11 +29,11 @@ namespace MiddleWare.Services
             {
                 DataValidation.ValidateObjectId(serviceRequestId, IdType.ServiceRequest);
 
-                var serviceRequest = await serviceRequestRepository.GetServiceRequest(serviceRequestId);
+                var vitals = await vitalsRepository.GetServiceRequestVitals(serviceRequestId);
 
-                var vitals = ServiceRequestConverter.ConvertToClientOutgoingVitals(serviceRequest.Vitals, serviceRequestId);
+                var vitalsToReturn = ServiceRequestConverter.ConvertToClientOutgoingVitals(vitals, serviceRequestId);
 
-                return vitals;
+                return vitalsToReturn;
             }
         }
 
@@ -44,17 +44,9 @@ namespace MiddleWare.Services
             {
                 DataValidation.ValidateObjectId(vitalsIncoming.ServiceRequestId, IdType.ServiceRequest);
 
-                var serviceRequestFromDb = await serviceRequestRepository.GetServiceRequest(vitalsIncoming.ServiceRequestId);
+                var vitals = ServiceRequestConverter.ConvertToMongoVitals(vitalsIncoming);
 
-                DataValidation.ValidateObject(serviceRequestFromDb);
-
-                //Construct service request with vitals and ID
-                var serviceRequest = new Mongo.ServiceRequest();
-                serviceRequest.CustomerId = serviceRequestFromDb.CustomerId;
-                serviceRequest.ServiceRequestId = new MongoDB.Bson.ObjectId(vitalsIncoming.ServiceRequestId);
-                serviceRequest.Vitals = ServiceRequestConverter.ConvertToMongoVitals(vitalsIncoming);
-
-                await serviceRequestRepository.UpdateServiceRequest(serviceRequest);
+                await vitalsRepository.UpdateVitals(vitals, vitalsIncoming.ServiceRequestId);
             }
         }
     }

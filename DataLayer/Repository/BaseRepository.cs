@@ -79,6 +79,11 @@ namespace MongoDB.GenericRepository.Repository
             await DbSet.UpdateOneAsync(filter, updateDefinition, new UpdateOptions { IsUpsert = true });
         }
 
+        public async Task RemoveFromSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)
+        {
+            await DbSet.UpdateOneAsync(filter, updateDefinition, new UpdateOptions { IsUpsert = true });
+        }
+
         public async Task Upsert(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)
         {
             await DbSet.UpdateOneAsync(filter, updateDefinition, new UpdateOptions { IsUpsert = true });
@@ -98,5 +103,10 @@ namespace MongoDB.GenericRepository.Repository
             Context?.Dispose();
         }
 
+        public async Task<T> GetSingleNestedByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, T> project)
+        {
+            var result = await DbSet.Aggregate().Match(filter).Project(project).SingleOrDefaultAsync();
+            return result;
+        }
     }
 }
