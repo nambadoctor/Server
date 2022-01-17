@@ -62,16 +62,25 @@ namespace MongoDB.GenericRepository.Repository
 
         public async Task<T> GetSingleByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project)
         {
-            var result = await DbSet.Aggregate().Match(filter).Project(project).Limit(1).SingleOrDefaultAsync();
-            var singleObject = result;
-            if (singleObject != null)
+            try
             {
-                return singleObject.FirstOrDefault();
-            }
-            else
+                var result = await DbSet.Aggregate().Match(filter).Project(project).SingleOrDefaultAsync();
+
+                var singleObject = result.FirstOrDefault();
+                if (singleObject != null)
+                {
+                    return singleObject;
+                }
+                else
+                {
+                    return default(T);
+                }
+            } catch (Exception e)
             {
+                string str = e.Message;
                 return default(T);
             }
+            
         }
 
         public async Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)

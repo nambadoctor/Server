@@ -56,15 +56,19 @@ namespace MiddleWare.Services
 
                 var customerProfile = await customerRepository.GetCustomerProfile(customerId, organisationId);
 
-                DataValidation.ValidateObject(customerProfile);
+                if (customerProfile == null)
+                {
+                    return null;
+                } else
+                {
+                    logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
 
-                logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
+                    var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
 
-                var clientCustomer = CustomerConverter.ConvertToClientCustomerProfile(customerProfile);
+                    logger.LogInformation("Finished data conversion ConvertToClientCustomerProfile");
 
-                logger.LogInformation("Finished data conversion ConvertToClientCustomerProfile");
-
-                return clientCustomer;
+                    return clientCustomer;
+                }
             }
         }
 
