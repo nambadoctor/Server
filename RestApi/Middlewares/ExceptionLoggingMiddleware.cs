@@ -28,7 +28,7 @@ namespace RestApi.Middlewares
             catch (ResourceNotFoundException ex)
             {
                 logger.LogError(ex, "Resource Does Not Exist");
-                throw new BadHttpRequestException(ex.Message, 501);
+                throw new BadHttpRequestException(ex.Message, 404);
             }
             catch (BlobStorageException ex)
             {
@@ -38,7 +38,7 @@ namespace RestApi.Middlewares
             catch (ArgumentException ex)
             {
                 logger.LogError(ex, "Invalid argument passed");
-                throw new BadHttpRequestException(ex.Message, 401);
+                throw new BadHttpRequestException(ex.Message, 500);
             }
             catch (KeyNotFoundException ex)
             {

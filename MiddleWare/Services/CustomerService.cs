@@ -74,7 +74,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string phoneNumber, string organisationId)
+        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile?> GetCustomerProfileFromPhoneNumber(string phoneNumber, string organisationId)
         {
             using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomer"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -87,7 +87,8 @@ namespace MiddleWare.Services
 
                 if (customer == null)
                 {
-                    throw new Exceptions.ResourceNotFoundException("No customer found for this phone number");
+                    logger.LogInformation($"No customers for PhoneNumber:{phoneNumber} OrganisationId:{organisationId}");
+                    return null;
                 }
 
                 return await GetCustomerProfileInternal(customer.CustomerId.ToString(), organisationId);
