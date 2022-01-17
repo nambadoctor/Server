@@ -126,12 +126,12 @@ namespace MiddleWare.Services
         #endregion
 
         #region AddCustomerProfile
-        public async Task AddCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
+        public async Task<string> AddCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
             using (logger.BeginScope("Method: {Method}", "CustomerService:AddCustomerProfile"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                await AddNewCustomerProfile(customerProfile);
+                return await AddNewCustomerProfile(customerProfile);
             }
         }
 

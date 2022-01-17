@@ -61,7 +61,8 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
         {
-            await customerService.AddCustomerProfile(customerProfileWithAppointment.CustomerProfileIncoming);
+            var customerId = await customerService.AddCustomerProfile(customerProfileWithAppointment.CustomerProfileIncoming);
+            customerProfileWithAppointment.AppointmentIncoming.CustomerId = customerId;
             await appointmentService.AddAppointment(customerProfileWithAppointment.AppointmentIncoming);
         }
 
