@@ -86,6 +86,11 @@ namespace MiddleWare.Services
 
                 var prescriptionDocument = ServiceRequestConverter.ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
 
+                string[] splitFileString = prescriptionDocumentIncoming.File.Split(",");
+                byte[] decodedPrescription = Convert.FromBase64String(splitFileString.Last());
+                //Upload to blob
+                var uploaded = await mediaContainer.UploadFileToStorage(decodedPrescription, prescriptionDocument.PrescriptionDocumentId.ToString());
+
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
 

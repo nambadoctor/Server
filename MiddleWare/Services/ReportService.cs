@@ -86,6 +86,11 @@ namespace MiddleWare.Services
 
                 var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
 
+                string[] splitFileString = reportIncoming.File.Split(",");
+                byte[] decodedReport = Convert.FromBase64String(splitFileString.Last());
+                //Upload to blob
+                var uploaded = await mediaContainer.UploadFileToStorage(decodedReport, report.ReportId.ToString());
+
                 await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 
             }
