@@ -100,6 +100,9 @@ namespace MiddleWare.Services
                 serviceRequest.CustomerId = appointment.CustomerId;
                 serviceRequest.OrganisationId = appointment.OrganisationId;
                 serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
+                serviceRequest.Reports = new List<Mongo.Report>();
+                serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
+                serviceRequest.Vitals = new Mongo.Vitals();
 
                 logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 

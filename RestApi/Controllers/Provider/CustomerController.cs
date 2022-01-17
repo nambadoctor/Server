@@ -21,6 +21,7 @@ namespace RestApi.Controllers.Provider
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.customerService = customerService;
+            this.appointmentService = appointmentService;
         }
 
         [HttpGet("{CustomerId}/{OrganisationId}")]
