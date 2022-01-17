@@ -81,7 +81,7 @@ namespace MiddleWare.Services
             {
                 DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
 
-                DataValidation.ValidateObjectId(phoneNumber, IdType.Customer);
+                DataValidation.ValidateObject(phoneNumber);
 
                 var customer = await customerRepository.GetCustomerFromPhoneNumber(phoneNumber);
 

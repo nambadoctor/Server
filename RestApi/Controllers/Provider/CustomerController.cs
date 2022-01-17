@@ -33,7 +33,7 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpGet("phonenumber/{PhoneNumber}/{OrganisationId}")] //Here phone number cannot contain + as its not allowed in .Net query string
+        [HttpGet("phonenumber/{PhoneNumber}/{OrganisationId}")] 
         [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
         {
