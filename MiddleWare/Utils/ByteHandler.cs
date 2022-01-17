@@ -2,7 +2,7 @@
 {
     public class ByteHandler
     {
-        public static byte[] Base64Decode(string base64EncodedData)
+        public static byte[] Base64DecodeFileString(string base64EncodedData)
         {
             string[] splitFileString = base64EncodedData.Split(',');
             byte[] decodedPrescription = Convert.FromBase64String(splitFileString.Last());

@@ -22,7 +22,7 @@ namespace MongoDB.GenericRepository.Repository
 
         public virtual async Task Add(TEntity obj)
         {
-            Context.AddCommand(async () => await DbSet.InsertOneAsync(obj));
+            await DbSet.InsertOneAsync(obj);
         }
 
         public virtual async Task<TEntity> GetById(string id)

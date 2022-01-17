@@ -246,19 +246,6 @@ namespace MiddleWare.Services
             return customer.CustomerId.ToString();
         }
 
-        private async Task<string> UpsertCustomerProfile(ProviderClientIncoming.CustomerProfileIncoming customerProfile)
-        {
-            if (string.IsNullOrWhiteSpace(customerProfile.CustomerId))
-            {
-                //Assume New customer
-                return await AddNewCustomerProfile(customerProfile);
-            }
-            else
-            {
-                return await UpdateExistingCustomerProfile(customerProfile);
-            }
-        }
-
         private async Task<Mongo.Customer> GenerateAndAddNewCustomer(DataModel.Client.Provider.Common.PhoneNumber phoneNumber)
         {
             var customer = new Mongo.Customer();
@@ -276,39 +263,6 @@ namespace MiddleWare.Services
             await customerRepository.Add(customer);
 
             return customer;
-        }
-
-        private (Mongo.Appointment, Mongo.ServiceRequest) GenerateAppointmentAndServiceRequest(ProviderClientIncoming.AppointmentIncoming appointmentData, Mongo.CustomerProfile customerProfile, Mongo.ServiceProviderProfile serviceProviderProfile)
-        {
-
-            var appointment = new Mongo.Appointment();
-            var appointmentId = ObjectId.GenerateNewId();
-            var serviceRequestId = ObjectId.GenerateNewId();
-
-            appointment.AppointmentId = appointmentId;
-            appointment.ServiceProviderId = appointmentData.ServiceProviderId;
-            appointment.ServiceRequestId = serviceRequestId.ToString();
-            appointment.CustomerId = appointmentData.CustomerId;
-            appointment.OrganisationId = appointmentData.OrganisationId;
-            appointment.ScheduledAppointmentStartTime = appointmentData.ScheduledAppointmentStartTime;
-            appointment.ScheduledAppointmentEndTime = appointmentData.ScheduledAppointmentEndTime;
-            appointment.ActualAppointmentStartTime = appointmentData.ActualAppointmentStartTime;
-            appointment.ActualAppointmentEndTime = appointmentData.ActualAppointmentEndTime;
-            appointment.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
-            appointment.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
-
-            var serviceRequest = new Mongo.ServiceRequest();
-            serviceRequest.ServiceRequestId = serviceRequestId;
-            serviceRequest.AppointmentId = appointmentId.ToString();
-            serviceRequest.ServiceProviderId = appointmentData.ServiceProviderId;
-            serviceRequest.OrganisationId = appointmentData.OrganisationId;
-            serviceRequest.CustomerId = appointmentData.CustomerId;
-
-            return (
-                appointment,
-                serviceRequest
-                );
-
         }
 
         #endregion Private methods
