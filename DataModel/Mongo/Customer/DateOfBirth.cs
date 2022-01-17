@@ -1,5 +1,6 @@
 ﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace DataModel.Mongo
 {
@@ -14,6 +15,9 @@ namespace DataModel.Mongo
         public int? Month { get; set; } //1-12
 
         public int? Year { get; set; } //YYYY
+
+        public string? Age { get; set; }
+        public DateTime CreatedDate { get; set; }
 
     }
 }

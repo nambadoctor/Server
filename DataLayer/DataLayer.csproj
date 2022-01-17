@@ -29,10 +29,6 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Folder Include="Utils\Notifications\" />
-	</ItemGroup>
-
-	<ItemGroup>
 	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
 	</ItemGroup>
 </Project>

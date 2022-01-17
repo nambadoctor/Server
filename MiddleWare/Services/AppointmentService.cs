@@ -7,69 +7,52 @@ using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using Mongo = DataModel.Mongo;
 using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
+using MiddleWare.Utils;
+using DataModel.Shared.Exceptions;
+using MongoDB.GenericRepository.Interfaces;
 
 namespace MiddleWare.Services
 {
     public class AppointmentService : IAppointmentService
     {
-        private IMongoDbDataLayer datalayer;
+        private IServiceProviderRepository serviceProviderRepository;
+        private ICustomerRepository customerRepository;
+        private IAppointmentRepository appointmenRepository;
+        private IServiceRequestRepository serviceRequestRepository;
         private ILogger logger;
 
-        public AppointmentService(IMongoDbDataLayer dataLayer, ILogger<AppointmentService> logger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger)
         {
-            this.datalayer = dataLayer;
             this.logger = logger;
+            this.serviceProviderRepository = serviceProviderRepository;
+            this.customerRepository = customerRepository;
+            this.appointmenRepository = appointmenRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
         }
+
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(serviceProviderId) || ObjectId.TryParse(serviceProviderId, out ObjectId spId) == false)
-                    {
-                        throw new ArgumentException("Service provider Id was invalid");
-                    }
 
-                    if (string.IsNullOrWhiteSpace(appointmentId) || ObjectId.TryParse(appointmentId, out ObjectId appId) == false)
-                    {
-                        throw new ArgumentException("Appointment Id was invalid");
-                    }
 
-                    var appointment = await datalayer.GetAppointment(serviceProviderId, appointmentId);
+                DataValidation.ValidateObjectId(serviceProviderId, IdType.ServiceProvider);
 
-                    if (appointment == null)
-                    {
-                        throw new Exceptions.AppointmentDoesNotExistException($"Appointment with id:{appointmentId} does not exist");
-                    }
+                DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
 
-                    var serviceProviderProfile = await datalayer.GetServiceProviderProfile(serviceProviderId, appointment.OrganisationId);
+                var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
 
-                    if (serviceProviderProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{serviceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                DataValidation.ValidateObject(appointment);
 
-                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+                logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                    if (customerProfile == null)
-                    {
-                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(appointment);
 
-                    logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
+                logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
-                    var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(serviceProviderProfile, appointment, customerProfile);
+                return appointmentData;
 
-                    logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
-
-                    return appointmentData;
-                }
-                finally
-                {
-
-                }
             }
 
         }
@@ -79,199 +62,128 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointments"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(organsiationId) || ObjectId.TryParse(organsiationId, out ObjectId orgId) == false)
-                    {
-                        throw new ArgumentException("Organisation Id was invalid");
-                    }
 
-                    var appointments = await datalayer.GetAppointmentsForServiceProvider(organsiationId, serviceProviderIds);
+                DataValidation.ValidateObjectId(organsiationId, IdType.Organisation);
 
-                    List<Mongo.ServiceProviderProfile> serviceProviderProfiles = await datalayer.GetServiceProviderProfiles(serviceProviderIds, organsiationId);
+                var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
 
-                    //Get customers
+                logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                    var customerIdsToFetch = new List<string>();
+                var listToReturn = AppointmentConverter.ConvertToClientAppointmentDataList(appointments);
 
-                    foreach (var appointment in appointments)
-                    {
-                        if (!string.IsNullOrWhiteSpace(appointment.CustomerId))
-                            customerIdsToFetch.Add(appointment.CustomerId);
-                    }
+                logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
-                    var customerProfiles = await datalayer.GetCustomerProfiles(customerIdsToFetch, organsiationId);
+                return listToReturn;
 
-                    //Piece together all the objects
-                    logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
-
-                    var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
-
-                    if (!(appointments == null || appointments.Count == 0))
-                    {
-                        if (serviceProviderProfiles == null || customerProfiles == null)
-                        {
-                            throw new Exceptions.InvalidDataException("Appointments data is corrupted");
-                        }
-
-                        foreach (var appointment in appointments)
-                        {
-                            if (!string.IsNullOrWhiteSpace(appointment.ServiceProviderId) && !string.IsNullOrWhiteSpace(appointment.CustomerId))
-                            {
-                                var spProfile = (from sp in serviceProviderProfiles
-                                                 where sp.ServiceProviderId == appointment.ServiceProviderId
-                                                 select sp).FirstOrDefault();
-
-                                var custProfile = (from cust in customerProfiles
-                                                   where cust.CustomerId == appointment.CustomerId
-                                                   select cust).FirstOrDefault();
-
-                                if (spProfile == null)
-                                {
-                                    throw new ServiceProviderDoesnotExistsException($"Service provider with id: {appointment.ServiceProviderId} does not exist");
-                                }
-
-                                if (custProfile == null)
-                                {
-                                    throw new ServiceProviderDoesnotExistsException($"Customer with id: {appointment.CustomerId} does not exist");
-                                }
-
-
-                                listToReturn.Add(AppointmentConverter.ConvertToClientAppointmentData(
-                                    spProfile,
-                                    appointment,
-                                    custProfile)
-                                    );
-                            }
-                        }
-                    }
-
-                    logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
-
-                    return listToReturn;
-                }
-                finally
-                {
-
-                }
             }
 
         }
 
-        public async Task<ProviderClientOutgoing.OutgoingAppointment> SetAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        public async Task AddAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
-            using (logger.BeginScope("Method: {Method}", "AppointmentService:SetAppointment"))
+            using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(appointment.OrganisationId) || ObjectId.TryParse(appointment.OrganisationId, out ObjectId orgId) == false)
-                    {
-                        throw new ArgumentException("Organisation Id was invalid");
-                    }
 
-                    if (string.IsNullOrWhiteSpace(appointment.ServiceProviderId) || ObjectId.TryParse(appointment.ServiceProviderId, out ObjectId spId) == false)
-                    {
-                        throw new ArgumentException("Service provider Id was invalid");
-                    }
+                var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                    if (string.IsNullOrWhiteSpace(appointment.CustomerId) || ObjectId.TryParse(appointment.CustomerId, out ObjectId custId) == false)
-                    {
-                        throw new ArgumentException("Customer Id was invalid");
-                    }
-                    //Here appointment id is allowed to be null but if not then throw error if invalid id
-                    if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
-                    {
-                        throw new ArgumentException("Appointment Id was invalid");
-                    }
+                //Generate new service request
+                var serviceRequest = new Mongo.ServiceRequest();
+                var appointmentId = ObjectId.GenerateNewId();
+                var serviceRequestId = ObjectId.GenerateNewId();
 
-                    var spProfile = await datalayer.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
+                appointment.AppointmentId = appointmentId.ToString();
+                appointment.ServiceRequestId = serviceRequestId.ToString();
 
-                    if (spProfile == null)
-                    {
-                        throw new ServiceProviderDoesnotExistsException($"Service provider profile with id:{appointment.ServiceProviderId}  OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                serviceRequest.ServiceRequestId = serviceRequestId;
+                serviceRequest.AppointmentId = appointmentId.ToString();
+                serviceRequest.CustomerId = appointment.CustomerId;
+                serviceRequest.OrganisationId = appointment.OrganisationId;
+                serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
 
-                    var customerProfile = await datalayer.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+                logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 
-                    if (customerProfile == null)
-                    {
-                        throw new Exceptions.CustomerDoesNotExistException($"Customer profile with id:{appointment.CustomerId} OrgId:{appointment.OrganisationId} does not exist");
-                    }
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
-                    //New appointment
-                    if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
-                    {
-                        logger.LogInformation("New appointment set, appointment id was null");
+                logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var serviceRequest = new Mongo.ServiceRequest();
+                await appointmenRepository.AddAppointment(mongoAppointment);
 
-                        //Service request and appointment both need Ids
-                        var appointmentId = ObjectId.GenerateNewId();
-                        var serviceRequestId = ObjectId.GenerateNewId();
+                await serviceRequestRepository.Add(serviceRequest);
+            }
+        }
 
-                        appointment.AppointmentId = appointmentId.ToString();
-                        appointment.ServiceRequestId = serviceRequestId.ToString();
+        public async Task CancelAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
 
-                        serviceRequest.ServiceRequestId = serviceRequestId;
-                        serviceRequest.AppointmentId = appointmentId.ToString();
-                        serviceRequest.CustomerId = appointment.CustomerId;
-                        serviceRequest.OrganisationId = appointment.OrganisationId;
-                        serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
+                var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                        logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
+                logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(appointment);
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
-                        logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
+                logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var generatedAppointment = await datalayer.SetAppointmentWithServiceRequest(
-                            mongoAppointment,
-                            serviceRequest
-                            );
+                await appointmenRepository.CancelAppointment(mongoAppointment);
+            }
+        }
 
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
+        public async Task RescheduleAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
 
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                            $"{spProfile.FirstName} {spProfile.LastName}",
-                            generatedAppointment,
-                            $"{customerProfile.FirstName} {customerProfile.LastName}");
+            var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                        logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
+            logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        return clientAppointment;
-                    }
-                    else
-                    {
-                        logger.LogInformation($"Update existing appointment, appointment id {appointment.AppointmentId}");
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
+            logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(appointment);
+            await appointmenRepository.RescheduleAppointment(mongoAppointment);
+        }
 
-                        logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
+        public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.AppointmentId, IdType.Appointment);
 
-                        var generatedAppointment = await datalayer.SetAppointment(mongoAppointment);
+            var users = await VerifyAndGetAppointmentUsers(appointment); //Validate customer and service provider
 
-                        logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
+            logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                        var clientAppointment = AppointmentConverter.ConvertToClientAppointmentData(
-                            $"{spProfile.FirstName} {spProfile.LastName}",
-                            generatedAppointment,
-                            $"{customerProfile.FirstName} {customerProfile.LastName}");
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
-                        logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
+            logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
-                        return clientAppointment;
-                    }
-                }
-                finally
-                {
+            await appointmenRepository.EndAppointment(mongoAppointment);
+        }
 
-                }
+        private async Task<(Mongo.CustomerProfile, Mongo.ServiceProviderProfile)> VerifyAndGetAppointmentUsers(ProviderClientIncoming.AppointmentIncoming appointment)
+        {
+            DataValidation.ValidateObjectId(appointment.ServiceProviderId, IdType.ServiceProvider);
+            DataValidation.ValidateObjectId(appointment.CustomerId, IdType.Customer);
+            DataValidation.ValidateObjectId(appointment.OrganisationId, IdType.Organisation);
+
+            //Here appointment id is allowed to be null but if not then throw error if invalid id
+            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId) && ObjectId.TryParse(appointment.AppointmentId, out ObjectId appId) == false)
+            {
+                throw new ArgumentException("Appointment Id is invalid");
             }
 
+            var spProfile = await serviceProviderRepository.GetServiceProviderProfile(appointment.ServiceProviderId, appointment.OrganisationId);
 
+            DataValidation.ValidateObject(spProfile);
+
+            var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+
+            DataValidation.ValidateObject(customerProfile);
+
+            return (customerProfile, spProfile);
         }
+
     }
 }

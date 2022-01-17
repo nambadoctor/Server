@@ -1,5 +1,4 @@
 ﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
-using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ServerModel = DataModel.Mongo;
 
 namespace MiddleWare.Converters
@@ -38,15 +37,11 @@ namespace MiddleWare.Converters
 
             return organisationBasic;
         }
-        public static ProviderClientOutgoing.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProviderProfile mongoServiceProvider, ServerModel.Organisation organisation, ServerModel.Member member)
+        public static ProviderClientOutgoing.ServiceProvider ConvertToClientServiceProvider(ServerModel.ServiceProviderProfile mongoServiceProvider)
         {
             var clientSp = new ProviderClientOutgoing.ServiceProvider();
 
             clientSp.ServiceProviderId = mongoServiceProvider.ServiceProviderId;
-            clientSp.OrganisationId = organisation.OrganisationId.ToString();
-
-            clientSp.Roles = new List<string>();
-            clientSp.Roles.Add(member.Role);
 
             //Set profile values
             var clientSpProfile = new ProviderClientOutgoing.ServiceProviderProfile();
@@ -57,6 +52,7 @@ namespace MiddleWare.Converters
             clientSpProfile.ServiceProviderId = mongoServiceProvider.ServiceProviderId;
             clientSpProfile.OrganisationId = mongoServiceProvider.OrganisationId;
             clientSpProfile.ServiceProviderProfileId = mongoServiceProvider.ServiceProviderProfileId.ToString();
+            clientSpProfile.Roles = mongoServiceProvider.Roles;
 
             clientSp.ServiceProviderProfile = clientSpProfile;
 
@@ -74,6 +70,8 @@ namespace MiddleWare.Converters
             clientSp.LastName = mongoServiceProviderProfile.LastName;
             clientSp.ProfilePictureUrl = mongoServiceProviderProfile.ProfilePictureUrl;
             clientSp.Type = mongoServiceProviderProfile.ServiceProviderType;
+
+            clientSp.Roles = mongoServiceProviderProfile.Roles;
 
             return clientSp;
         }

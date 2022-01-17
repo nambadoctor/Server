@@ -10,6 +10,10 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using MiddleWare.Interfaces;
 using MiddleWare.Services;
+using MongoDB.GenericRepository.Context;
+using MongoDB.GenericRepository.Interfaces;
+using MongoDB.GenericRepository.Repository;
+using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
 using RestApi.Middlewares;
 using System;
@@ -62,10 +66,21 @@ namespace NambaDoctorWebApi
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IPrescriptionService, PrescriptionService>();
+            services.AddScoped<IServiceRequestService, ServiceRequestService>();
 
             //Init datalayer with telemetry
-            services.AddSingleton<IMongoDbDataLayer, BaseMongoDBDataLayer>();
             services.AddSingleton<IMediaContainer, MediaContainer>();
+
+            services.AddScoped<IMongoContext, MongoContext>();
+            services.AddScoped<IUnitOfWork, UnitOfWork>();
+            services.AddScoped<ICustomerRepository, CustomerRepository>();
+            services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
+            services.AddScoped<IAppointmentRepository, AppointmentRepository>();
+            services.AddScoped<IOrganisationRepository, OrganisationRepository>();
+            services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
+            services.AddScoped<IReportRepository, ReportRepository>();
+            services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+            services.AddScoped<IVitalsRepository, VitalsRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

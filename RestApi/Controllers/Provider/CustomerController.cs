@@ -16,15 +16,11 @@ namespace RestApi.Controllers.Provider
     {
         private NambaDoctorContext nambaDoctorContext;
         private ICustomerService customerService;
-        private IReportService reportService;
-        private IPrescriptionService prescriptionService;
-
-        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService, IReportService reportService, IPrescriptionService prescriptionService)
+        private IAppointmentService appointmentService;
+        public CustomerController(NambaDoctorContext nambaDoctorContext, ICustomerService customerService, IAppointmentService appointmentService)
         {
             this.nambaDoctorContext = nambaDoctorContext;
             this.customerService = customerService;
-            this.reportService = reportService;
-            this.prescriptionService = prescriptionService;
         }
 
         [HttpGet("{CustomerId}/{OrganisationId}")]
@@ -37,7 +33,7 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpGet("CheckByPhoneNumber/{PhoneNumber}/{OrganisationId}")] //Here phone number cannot contain + as its not allowed in .Net query string
+        [HttpGet("phonenumber/{PhoneNumber}/{OrganisationId}")] 
         [Authorize]
         public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> GetCustomerProfileFromPhoneNumber(string PhoneNumber, string OrganisationId)
         {
@@ -47,80 +43,27 @@ namespace RestApi.Controllers.Provider
             return customerProfile;
         }
 
-        [HttpPut()]
+        [HttpPost("")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.OutgoingCustomerProfile> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
+        public async Task AddCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            var customerProfileToReturn = await customerService.SetCustomerProfile(customerProfile);
-
-            return customerProfileToReturn;
+            await customerService.AddCustomerProfile(customerProfile);
         }
 
-        [HttpPut("appointment")]
+        [HttpPut("")]
         [Authorize]
-        public async Task<ProviderClientOutgoing.CustomerWithAppointmentDataOutgoing> SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
+        public async Task UpdateCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            var customerProfileToReturn = await customerService.SetCustomerProfileWithAppointment(customerProfileWithAppointment);
-
-            return customerProfileToReturn;
+            await customerService.UpdateCustomerProfile(customerProfile);
         }
 
-        [HttpGet("{CustomerId}/report/{AppointmentId}")]
+        [HttpPost("appointment")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string CustomerId, string AppointmentId)
+        public async Task SetCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileWithAppointmentIncoming customerProfileWithAppointment)
         {
-
-            var customerProfile = await reportService.GetAppointmentReports(CustomerId, AppointmentId);
-
-            return customerProfile;
-        }
-
-        [HttpDelete("{CustomerId}/report/{AppointmentId}/{ReportId}")]
-        [Authorize]
-        public async Task<string> DeleteReport(string CustomerId, string AppointmentId, string ReportId)
-        {
-
-            var reportId = await reportService.DeleteReport(CustomerId, AppointmentId, ReportId);
-
-            return reportId;
-        }
-
-        [HttpPut("{CustomerId}/report")]
-        [Authorize]
-        public async Task<ProviderClientOutgoing.ReportOutgoing> SetReport(string CustomerId, [FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
-        {
-            var report = await reportService.SetReport(CustomerId, reportIncoming);
-
-            return report;
-        }
-
-        [HttpGet("{CustomerId}/prescription/{AppointmentId}")]
-        [Authorize]
-        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptionDocuments(string CustomerId, string AppointmentId)
-        {
-
-            var prescriptionDocuments = await prescriptionService.GetAppointmentPrescriptions(CustomerId, AppointmentId);
-
-            return prescriptionDocuments;
-        }
-
-        [HttpDelete("{CustomerId}/prescription/{AppointmentId}/{PrescriptionDocumentId}")]
-        [Authorize]
-        public async Task<string> DeletePrescriptionDocument(string CustomerId, string AppointmentId, string PrescriptionDocumentId)
-        {
-
-            var reportId = await prescriptionService.DeletePrescriptionDocument(CustomerId, AppointmentId, PrescriptionDocumentId);
-
-            return reportId;
-        }
-
-        [HttpPut("{CustomerId}/prescription")]
-        [Authorize]
-        public async Task<ProviderClientOutgoing.PrescriptionDocumentOutgoing> SetPrescriptionDocument(string CustomerId, [FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming)
-        {
-            var prescriptionDocument = await prescriptionService.SetPrescriptionDocument(CustomerId, prescriptionDocumentIncoming);
-
-            return prescriptionDocument;
+            var customerId = await customerService.AddCustomerProfile(customerProfileWithAppointment.CustomerProfileIncoming);
+            customerProfileWithAppointment.AppointmentIncoming.CustomerId = customerId;
+            await appointmentService.AddAppointment(customerProfileWithAppointment.AppointmentIncoming);
         }
 
     }

@@ -7,47 +7,32 @@ namespace MiddleWare.Converters
 {
     public static class AppointmentConverter
     {
-        public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
-            Mongo.ServiceProviderProfile serviceProviderProfile,
-            Mongo.Appointment appointment,
-            Mongo.CustomerProfile customerProfile)
+
+        public static List<ProviderClientOutgoing.OutgoingAppointment> ConvertToClientAppointmentDataList(
+            List<Mongo.Appointment> appointments)
         {
-            var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
+            var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
 
-            appointmentData.ServiceProviderId = serviceProviderProfile.ServiceProviderId;
-            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
-
-            appointmentData.CustomerId = customerProfile.CustomerId;
-            appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
-
-            appointmentData.AppointmentId = appointment.AppointmentId.ToString();
-            appointmentData.OrganisationId = appointment.OrganisationId;
-            appointmentData.ServiceRequestId = appointment.ServiceRequestId;
-            appointmentData.AddressId = appointment.AddressId;
-            appointmentData.AppointmentType = appointment.AppointmentType.ToString();
-            appointmentData.Status = appointment.Status.ToString();
-            appointmentData.ScheduledAppointmentStartTime = appointment.ScheduledAppointmentStartTime;
-            appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
-            appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
-            appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
-
-            return appointmentData;
+            if (appointments != null)
+            {
+                foreach (var appointment in appointments)
+                {
+                    listToReturn.Add(ConvertToClientAppointmentData(appointment));
+                }
+            }
+            return listToReturn;
         }
-
         public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
-            string serviceProviderName,
-            Mongo.Appointment appointment,
-            string customerName)
+            Mongo.Appointment appointment)
         {
             var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
 
             appointmentData.ServiceProviderId = appointment.ServiceProviderId;
-            appointmentData.ServiceProviderName = serviceProviderName;
+            appointmentData.ServiceProviderName = appointment.ServiceProviderName;
 
             appointmentData.CustomerId = appointment.CustomerId;
-            appointmentData.CustomerName = customerName;
+            appointmentData.CustomerName = appointment.CustomerName;
 
-            appointmentData.AddressId = appointment.AddressId;
             appointmentData.AppointmentId = appointment.AppointmentId.ToString();
             appointmentData.OrganisationId = appointment.OrganisationId;
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
@@ -62,9 +47,20 @@ namespace MiddleWare.Converters
         }
 
         public static Mongo.Appointment ConvertToMongoAppointmentData(
-           ProviderClientIncoming.AppointmentIncoming appointment)
+            Mongo.ServiceProviderProfile serviceProviderProfile,
+           ProviderClientIncoming.AppointmentIncoming appointment,
+           Mongo.CustomerProfile customerProfile)
         {
             var appointmentData = new Mongo.Appointment();
+
+            if (string.IsNullOrWhiteSpace(appointment.AppointmentId))
+            {
+                appointmentData.AppointmentId = ObjectId.GenerateNewId();
+            }
+            else
+            {
+                appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
+            }
 
             appointmentData.ServiceProviderId = appointment.ServiceProviderId;
 
@@ -76,8 +72,9 @@ namespace MiddleWare.Converters
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
 
-            if (!string.IsNullOrWhiteSpace(appointment.AppointmentId))
-                appointmentData.AppointmentId = new ObjectId(appointment.AppointmentId);
+            appointmentData.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+
+            appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
             Enum.TryParse(appointment.AppointmentType, out Mongo.AppointmentType appointmentType);
             appointmentData.AppointmentType = appointmentType;

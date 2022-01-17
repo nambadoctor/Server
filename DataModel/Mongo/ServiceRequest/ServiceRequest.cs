@@ -13,15 +13,7 @@ namespace DataModel.Mongo
         public string OrganisationId { get; set; } //For denormal
         public string ServiceProviderId { get; set; } // Consider adding serviceprovider datetime?
         public string AppointmentId { get; set; } //For denormal
-        public string Reason { get; set; }
-        public Examination Examination { get; set; }
-        public List<Allergy> Allergies { get; set; }
-        public List<History> Histories { get; set; }
-        public Diagnosis Diagnosis { get; set; }
         public Vitals Vitals { get; set; }
-        public List<AdditionalDetail> AdditionalDetails { get; set; }
-        public List<Advice> Advices { get; set; }
-        public List<Medicine> MedicineList { get; set; }
         public List<PrescriptionDocument> PrescriptionDocuments { get; set; }
         public List<Report> Reports { get; set; }
         public bool IsDeleted { get; set; }

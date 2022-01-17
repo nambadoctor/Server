@@ -7,269 +7,93 @@ using DataLayer;
 using ND.DataLayer.Utils.BlobStorage;
 using MongoDB.Bson;
 using DataModel.Shared;
-using DataModel.Shared.Exceptions;
+using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
+using MongoDB.GenericRepository.Interfaces;
+using MiddleWare.Converters;
 
 namespace MiddleWare.Services
 {
     public class ReportService : IReportService
     {
-        private IMongoDbDataLayer datalayer;
+        private IReportRepository reportRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IMongoDbDataLayer dataLayer, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IReportRepository reportRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
-            this.datalayer = dataLayer;
+            this.reportRepository = reportRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
 
-        public async Task<string> DeleteReport(string CustomerId, string AppointmentId, string ReportId)
+        public async Task DeleteReport(string ServiceRequestId, string ReportId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:DeleteReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(ReportId) || !ObjectId.TryParse(ReportId, out ObjectId reportId))
-                    {
-                        throw new ArgumentException("Report Id is invalid");
-                    }
+                DataValidation.ValidateObjectId(ReportId, IdType.Report);
+                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
+                await reportRepository.DeleteReport(ServiceRequestId, ReportId);
 
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
-
-                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
-
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
-
-                    if (serviceRequest.Reports == null)
-                    {
-                        throw new ReportDoesNotExistException($"Report documents not found for appointment id :{AppointmentId}");
-                    }
-
-                    var indexOfDocumentToDelete = serviceRequest.Reports.FindIndex(report => report.ReportId == reportId);
-
-                    if (indexOfDocumentToDelete == -1)
-                    {
-                        throw new ReportDoesNotExistException($"Report document with id {reportId} not found in report list");
-                    }
-                    else
-                    {
-                        serviceRequest.Reports.RemoveAt(indexOfDocumentToDelete);
-                    }
-
-                    logger.LogInformation("Setting service request with deleted report metadata");
-
-                    await datalayer.SetServiceRequest(serviceRequest);
-
-                    return ReportId;
-                }
-                finally
-                {
-
-                }
             }
 
         }
 
-        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string CustomerId, string AppointmentId)
+        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:GetAppointmentReports"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
+                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
+
+                var reports = await reportRepository.GetServiceRequestReports(ServiceRequestId);
+
+                DataValidation.ValidateObject(reports);
+
+                var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
+
+                foreach (var report in reports)
                 {
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
+                    var sasUrl = await mediaContainer.GetSasUrl(report.ReportId.ToString());
+
+                    if (sasUrl != null)
                     {
-                        throw new ArgumentException("Customer Id is invalid");
+                        listToReturn.Add(
+                            ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
+                        );
                     }
-
-                    if (string.IsNullOrWhiteSpace(AppointmentId) || !ObjectId.TryParse(AppointmentId, out ObjectId appointmentId))
+                    else
                     {
-                        throw new ArgumentException("Appointment Id is invalid");
+                        throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
                     }
-
-                    var serviceRequest = await datalayer.GetServiceRequest(AppointmentId);
-
-                    if (serviceRequest == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException($"Service request not found for appointment id :{AppointmentId}");
-                    }
-
-                    var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
-
-                    if (serviceRequest.Reports != null)
-                    {
-                        foreach (var report in serviceRequest.Reports)
-                        {
-                            var sasUrl = await mediaContainer.DownloadFileFromStorage(report.ReportId.ToString());
-
-                            if (sasUrl != null)
-                            {
-                                listToReturn.Add(
-                                    ConvertToClientOutgoingReport(report, sasUrl)
-                                );
-                            }
-                            else
-                            {
-                                throw new ReportDoesNotExistException($"Report not found in blob:{report.ReportId}");
-                            }
-
-                        }
-                    }
-
-                    return listToReturn;
-                }
-                finally
-                {
 
                 }
+
+                return listToReturn;
             }
 
         }
 
-        public async Task<ProviderClientOutgoing.ReportOutgoing> SetReport(string CustomerId, ProviderClientIncoming.ReportIncoming reportIncoming)
+        public async Task SetReport(ProviderClientIncoming.ReportIncoming reportIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:SetReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                try
-                {
-                    if (string.IsNullOrWhiteSpace(reportIncoming.ServiceRequestId) || !ObjectId.TryParse(reportIncoming.ServiceRequestId, out ObjectId serviceRequestId))
-                    {
-                        throw new ArgumentException("Service request Id is invalid");
-                    }
+                DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
+                DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
 
-                    if (string.IsNullOrWhiteSpace(CustomerId) || !ObjectId.TryParse(CustomerId, out ObjectId customerId))
-                    {
-                        throw new ArgumentException("Customer Id is invalid");
-                    }
+                var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
 
-                    if (string.IsNullOrWhiteSpace(reportIncoming.AppointmentId) || !ObjectId.TryParse(reportIncoming.AppointmentId, out ObjectId appointmentId))
-                    {
-                        throw new ArgumentException("Appointment Id is invalid");
-                    }
+                //Upload to blob
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(reportIncoming.File), report.ReportId.ToString());
 
-                    var serviceRequestFromDb = await datalayer.GetServiceRequest(reportIncoming.AppointmentId);
+                await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 
-                    if (serviceRequestFromDb == null)
-                    {
-                        throw new ServiceRequestDoesNotExistException("Service request does not exist");
-                    }
-
-                    //Construct new service request to write
-                    var serviceRequest = new Mongo.ServiceRequest();
-                    serviceRequest.CustomerId = CustomerId;
-                    serviceRequest.ServiceRequestId = serviceRequestId;
-                    serviceRequest.Reports = new List<Mongo.Report>();
-
-                    if (serviceRequestFromDb.Reports != null)
-                    {
-                        serviceRequest.Reports.AddRange(serviceRequestFromDb.Reports);
-                    }
-
-                    logger.LogInformation($"Begin data conversion ConvertToMongoReport");
-
-                    //Add new prescription document to list
-                    var report = ConvertToMongoReport(reportIncoming);
-                    serviceRequest.Reports.Add(report);
-
-                    logger.LogInformation($"Finished data conversion ConvertToMongoReport");
-
-                    string[] splitFileString = reportIncoming.File.Split(',');
-                    byte[] decodedReport = Convert.FromBase64String(splitFileString.Last());
-
-                    //Upload to blob
-                    var uploaded = await mediaContainer.UploadFileToStorage(decodedReport, report.ReportId.ToString());
-
-                    if (uploaded == null)
-                    {
-                        throw new IOException("Unable to write file to blob storage");
-                    }
-
-                    logger.LogInformation("Begin setting service request with report documents");
-
-                    var response = await datalayer.SetServiceRequest(serviceRequest);
-
-                    logger.LogInformation("Finished setting service request with report documents");
-
-                    //Construct outgoing prescription document which has sas url
-                    var sasUrl = await mediaContainer.DownloadFileFromStorage(report.ReportId.ToString());
-
-                    if (sasUrl == null)
-                    {
-                        throw new ReportDoesNotExistException($"Error generating sas url for id : {report.ReportId}");
-                    }
-
-                    logger.LogInformation($"Begin data conversion ConvertToClientOutgoingReport");
-
-                    var outgoingPrescriptionDocument = ConvertToClientOutgoingReport(report, sasUrl);
-
-                    logger.LogInformation($"Finish data conversion ConvertToClientOutgoingReport");
-
-                    return outgoingPrescriptionDocument;
-                }
-                finally
-                {
-
-                }
             }
 
         }
 
-        private Mongo.Report ConvertToMongoReport(ProviderClientIncoming.ReportIncoming reportIncoming)
-        {
-            var mongoReport = new Mongo.Report();
-
-            mongoReport.ReportId = ObjectId.GenerateNewId();
-
-            var fileInfo = new Mongo.FileInfo();
-            {
-                fileInfo.FileInfoId = ObjectId.GenerateNewId();
-                fileInfo.FileName = reportIncoming.FileName;
-                fileInfo.FileType = reportIncoming.FileType;
-            };
-
-            mongoReport.FileInfo = fileInfo;
-
-            var detail = new Mongo.ReportDetails();
-            detail.Name = reportIncoming.Details;
-            detail.Type = reportIncoming.DetailsType;
-            mongoReport.Details = detail;
-
-            return mongoReport;
-        }
-
-        private ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl)
-        {
-            var reportOutgoing = new ProviderClientOutgoing.ReportOutgoing();
-
-            reportOutgoing.ReportId = mongoReport.ReportId.ToString();
-
-            reportOutgoing.Name = mongoReport.FileInfo.FileName;
-            reportOutgoing.FileType = mongoReport.FileInfo.FileType;
-
-            if (mongoReport.Details != null)
-            {
-                reportOutgoing.Details = mongoReport.Details.Details;
-                reportOutgoing.DetailsType = mongoReport.Details.Type;
-            }
-
-            reportOutgoing.SasUrl = SasUrl;
-
-            return reportOutgoing;
-        }
     }
 }
