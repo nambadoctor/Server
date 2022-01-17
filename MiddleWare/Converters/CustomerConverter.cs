@@ -86,6 +86,7 @@ namespace MiddleWare.Converters
             clientDateOfBirth.Day = dateOfBirth.Day;
             clientDateOfBirth.Month = dateOfBirth.Month;
             clientDateOfBirth.Year = dateOfBirth.Year;
+            clientDateOfBirth.Age = dateOfBirth.Age;
 
             return clientDateOfBirth;
         }
