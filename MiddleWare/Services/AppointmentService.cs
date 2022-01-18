@@ -130,7 +130,6 @@ namespace MiddleWare.Services
                 logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
                 var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
-                mongoAppointment.Status = Mongo.AppointmentStatus.Cancelled;
                 mongoAppointment.Cancellation = new Mongo.Cancellation();
                 mongoAppointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
                 //Will move to converter once client supports cancellation object
@@ -165,7 +164,6 @@ namespace MiddleWare.Services
             logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
             var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
-            mongoAppointment.Status = Mongo.AppointmentStatus.Finished;
 
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
