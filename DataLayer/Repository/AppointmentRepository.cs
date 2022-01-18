@@ -87,9 +87,6 @@ namespace MongoDB.GenericRepository.Repository
 
             update = update.Set("Appointments.$.Status", AppointmentStatus.Cancelled);
 
-            appointment.Cancellation = new Cancellation();
-
-            appointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
             update = update.Set("Appointments.$.Cancellation", appointment.Cancellation);
 
             await this.Upsert(nestedFilter, update);

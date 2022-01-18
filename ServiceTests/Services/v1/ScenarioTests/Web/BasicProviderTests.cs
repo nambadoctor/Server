@@ -59,16 +59,6 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web
             }
         }
 
-        private async Task<List<ProviderClientOutgoing.GeneratedSlot>> GetServiceProviderSlots()
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/serviceprovider/{ChosenServiceProviderId}/slots/{ChosenOrganisationId}"))
-            {
-                var response = await httpClient.SendAsync(request);
-                var slots = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.GeneratedSlot>>(await response.Content.ReadAsStringAsync());
-                return slots;
-            }
-        }
-
         private async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrgAppointments()
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/organisation/{ChosenOrganisationId}/appointments"))
@@ -162,7 +152,6 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web
             ChosenOrganisationId = providerBasic.Organisations.First().OrganisationId;
             ChosenServiceProviderId = providerBasic.ServiceProviderId;
             var sp = await GetServiceProvider();
-            var slots = await GetServiceProviderSlots();
             var OrgAppointments = await GetOrgAppointments();
             var OrgCustomers = await GetOrgCustomers();
             var SpAppointments = await GetServiceProviderAppointments();
