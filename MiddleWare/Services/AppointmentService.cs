@@ -67,6 +67,8 @@ namespace MiddleWare.Services
 
                 var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
 
+                appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
+
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
                 var listToReturn = AppointmentConverter.ConvertToClientAppointmentDataList(appointments);
@@ -128,6 +130,7 @@ namespace MiddleWare.Services
                 logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
                 var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
+                mongoAppointment.Status = Mongo.AppointmentStatus.Cancelled;
 
                 logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
@@ -159,6 +162,7 @@ namespace MiddleWare.Services
             logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
             var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
+            mongoAppointment.Status = Mongo.AppointmentStatus.Finished;
 
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
