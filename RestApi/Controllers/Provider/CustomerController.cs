@@ -48,7 +48,7 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task AddCustomerProfile([FromBody] ProviderClientIncoming.CustomerProfileIncoming customerProfile)
         {
-            await customerService.AddCustomerProfile(customerProfile);
+            await customerService.AddCustomerProfile(customerProfile);  
         }
 
         [HttpPut("")]
