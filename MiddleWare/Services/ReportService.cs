@@ -50,6 +50,11 @@ namespace MiddleWare.Services
 
                 var reports = await reportRepository.GetServiceRequestReports(ServiceRequestId);
 
+                if (reports == null)
+                {
+                    return null;
+                }
+
                 DataValidation.ValidateObject(reports);
 
                 var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
