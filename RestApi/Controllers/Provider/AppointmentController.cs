@@ -52,7 +52,6 @@ namespace RestApi.Controllers.Provider
         public async Task CancelAppointment([FromBody] ProviderClientIncoming.AppointmentIncoming appointment)
         {
             await appointmentService.CancelAppointment(appointment);
-
         }
 
         [HttpPut("end")]

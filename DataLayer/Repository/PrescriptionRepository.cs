@@ -38,15 +38,21 @@ namespace MongoDB.GenericRepository.Repository
 
         public async Task<List<PrescriptionDocument>> GetServiceRequestPrescriptionDocuments(string serviceRequestId)
         {
-            var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
+            try
+            {
+                var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
 
-            var project = Builders<ServiceRequest>.Projection.Expression(
-                sr => sr.PrescriptionDocuments.Where(_ => true)
-                );
+                var project = Builders<ServiceRequest>.Projection.Expression(
+                    sr => sr.PrescriptionDocuments.Where(_ => true)
+                    );
 
-            var result = await this.GetListByFilterAndProject(filter, project);
+                var result = await this.GetListByFilterAndProject(filter, project);
 
-            return result.ToList();
+                return result.ToList();
+            } catch (Exception e)
+            {
+                return null;
+            }
         }
     }
 }

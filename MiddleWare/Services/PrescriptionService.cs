@@ -48,6 +48,11 @@ namespace MiddleWare.Services
 
                 var prescriptionDocuments = await prescriptionRepository.GetServiceRequestPrescriptionDocuments(ServiceRequestId);
 
+                if (prescriptionDocuments == null)
+                {
+                    return null;
+                }
+
                 DataValidation.ValidateObject(prescriptionDocuments);
 
                 var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
