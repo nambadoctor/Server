@@ -61,7 +61,7 @@ namespace MiddleWare.Services
 
                 foreach (var report in reports)
                 {
-                    var sasUrl = await mediaContainer.GetSasUrl(report.ReportId.ToString());
+                    var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
 
                     if (sasUrl != null)
                     {
