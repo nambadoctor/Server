@@ -38,7 +38,6 @@ namespace MiddleWare.Services
                 await reportRepository.DeleteReport(ServiceRequestId, ReportId);
 
             }
-
         }
 
         public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string ServiceRequestId)
