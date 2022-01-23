@@ -50,7 +50,7 @@ namespace MongoDB.GenericRepository.Context
             }
 
             // Configure mongo (You can inject the config, just to simplify)
-            MongoClient = new MongoClient("mongodb+srv://naren:mangoApple101@cluster0.fdske.mongodb.net/myFirstDatabase?retryWrites=true&w=majority");
+            MongoClient = new MongoClient("mongodb://ndproduction:fcPK6mih6BsfbI5myOEahSqnGZmudxsNhmUa08axzmJU6OABa0aUZEgB2w9SOaydcl0CB90CUUxAack56ZzlfA==@ndproduction.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@ndproduction@");
 
             Database = MongoClient.GetDatabase("NambaDoctor");
         }
