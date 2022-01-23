@@ -61,7 +61,7 @@ namespace MiddleWare.Services
 
                 foreach (var prescDocument in prescriptionDocuments)
                 {
-                    var sasUrl = await mediaContainer.GetSasUrl(prescDocument.PrescriptionDocumentId.ToString());
+                    var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
 
                     if (sasUrl != null)
                     {
