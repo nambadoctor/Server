@@ -82,12 +82,6 @@ namespace MiddleWare.Converters
             prescriptionDocumentOutgoing.Name = mongoPrescriptionDocument.FileInfo.FileName;
             prescriptionDocumentOutgoing.FileType = mongoPrescriptionDocument.FileInfo.FileType;
 
-            if (mongoPrescriptionDocument.PrescriptionDetail != null)
-            {
-                prescriptionDocumentOutgoing.Details = mongoPrescriptionDocument.PrescriptionDetail.Details;
-                prescriptionDocumentOutgoing.DetailsType = mongoPrescriptionDocument.PrescriptionDetail.Type;
-            }
-
             prescriptionDocumentOutgoing.SasUrl = SasUrl;
 
             return prescriptionDocumentOutgoing;
