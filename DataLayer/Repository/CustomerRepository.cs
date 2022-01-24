@@ -28,7 +28,7 @@ namespace MongoDB.GenericRepository.Repository
 
         public async Task<Customer> GetCustomerFromPhoneNumber(string phoneNumber)
         {
-            var custFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.AuthInfos, authInfo => authInfo.AuthId == phoneNumber);
+            var custFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.AuthInfos, authInfo => authInfo.AuthId.Contains(phoneNumber));
 
             var result = await this.GetSingleByFilter(custFilter);
 
