@@ -342,3 +342,4 @@ healthchecksdb
 #FCM Secrets
 NambaDoctorDataLayer/fcmsecrets.json
 NambaDoctorService/fcmsecrets.json
+RestApi/Properties/ServiceDependencies/ndapi - Zip Deploy/profile.arm.json
