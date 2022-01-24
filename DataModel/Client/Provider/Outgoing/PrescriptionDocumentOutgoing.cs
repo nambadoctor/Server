@@ -9,8 +9,9 @@ namespace DataModel.Client.Provider.Outgoing
     public class PrescriptionDocumentOutgoing
     {
         public string PrescriptionDocumentId { get; set; }
-        public string Name { get; set; }
+        public string FileName { get; set; }
         public string FileType { get; set; } //Pdf, Img
         public string SasUrl { get; set; }
+        public DateTime UploadedDateTime { get; set; }
     }
 }

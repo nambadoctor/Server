@@ -10,6 +10,5 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface IServiceRequestRepository : IRepository<ServiceRequest>
     {
-
     }
 }

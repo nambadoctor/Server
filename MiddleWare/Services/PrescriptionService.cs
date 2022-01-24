@@ -39,6 +39,26 @@ namespace MiddleWare.Services
 
         }
 
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAllPrescriptions(string organisationId, string customerId)
+        {
+            using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAllPrescriptions"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
+                DataValidation.ValidateObjectId(customerId, IdType.Customer);
+
+                var prescriptionDocuments = await prescriptionRepository.GetAllPrescriptions(organisationId, customerId);
+
+                if (prescriptionDocuments == null)
+                {
+                    logger.LogInformation("No prescriptions available");
+                    return new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+                }
+
+                return await GetOutgoingPrescriptionDocumentsWithSasUrl(prescriptionDocuments);
+            }
+        }
+
         public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAppointmentPrescriptions"))
@@ -50,33 +70,11 @@ namespace MiddleWare.Services
 
                 if (prescriptionDocuments == null)
                 {
-                    return null;
+                    logger.LogInformation("No prescriptions available");
+                    return new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
                 }
 
-                DataValidation.ValidateObject(prescriptionDocuments);
-
-                var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
-
-                //Generate sas for each file
-
-                foreach (var prescDocument in prescriptionDocuments)
-                {
-                    var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
-
-                    if (sasUrl != null)
-                    {
-                        listToReturn.Add(
-                            ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
-                        );
-                    }
-                    else
-                    {
-                        throw new Exceptions.BlobStorageException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
-                    }
-
-                }
-
-                return listToReturn;
+                return await GetOutgoingPrescriptionDocumentsWithSasUrl(prescriptionDocuments);
             }
 
         }
@@ -96,6 +94,32 @@ namespace MiddleWare.Services
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
 
+        }
+
+        private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments)
+        {
+            var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+
+            //Generate sas for each file
+
+            foreach (var prescDocument in prescriptionDocuments)
+            {
+                var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
+
+                if (sasUrl != null)
+                {
+                    listToReturn.Add(
+                        ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
+                    );
+                }
+                else
+                {
+                    throw new Exceptions.BlobStorageException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
+                }
+
+            }
+
+            return listToReturn;
         }
 
     }

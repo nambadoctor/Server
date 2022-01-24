@@ -30,6 +30,16 @@ namespace RestApi.Controllers.Provider
             return prescriptionDocuments;
         }
 
+        [HttpGet("all/{OrganisationId}/{CustomerId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetPrescriptions(string OrganisationId, string CustomerId)
+        {
+
+            var prescriptionDocuments = await prescriptionService.GetAllPrescriptions(OrganisationId, CustomerId);
+
+            return prescriptionDocuments;
+        }
+
         [HttpDelete("{ServiceRequestId}/{PrescriptionDocumentId}")]
         [Authorize]
         public async Task DeletePrescriptionDocument(string ServiceRequestId, string PrescriptionDocumentId)

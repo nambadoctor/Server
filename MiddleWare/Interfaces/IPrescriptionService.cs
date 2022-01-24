@@ -5,6 +5,7 @@ namespace MiddleWare.Interfaces
 {
     public interface IPrescriptionService
     {
+        public Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAllPrescriptions(string organisationId, string customerId);
         public Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string ServiceRequestId);
         public Task SetPrescriptionDocument(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming);
         public Task DeletePrescriptionDocument(string ServiceRequestId, string PrescriptionDocumentId);
