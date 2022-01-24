@@ -50,9 +50,9 @@ namespace MongoDB.GenericRepository.Context
             }
 
             // Configure mongo (You can inject the config, just to simplify)
-            MongoClient = new MongoClient("mongodb://ndproduction:fcPK6mih6BsfbI5myOEahSqnGZmudxsNhmUa08axzmJU6OABa0aUZEgB2w9SOaydcl0CB90CUUxAack56ZzlfA==@ndproduction.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@ndproduction@");
+            MongoClient = new MongoClient("mongodb://nambadoctorppedb:jDqohESaSsmpS9aDusWioPZZpuJThfDSptQooRacoSB8GC6hLBnx1CwsxuYozN17bXpTgoUPdCO317OH7eur7w==@nambadoctorppedb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@nambadoctorppedb@");
 
-            Database = MongoClient.GetDatabase("NambaDoctor"); 
+            Database = MongoClient.GetDatabase("NambaDoctorTest"); 
         }
 
         public IMongoCollection<T> GetCollection<T>(string name)
