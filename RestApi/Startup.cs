@@ -80,7 +80,6 @@ namespace NambaDoctorWebApi
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-            services.AddScoped<IVitalsRepository, VitalsRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
