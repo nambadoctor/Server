@@ -49,26 +49,13 @@ namespace MiddleWare.Services
 
                 var prescriptionDocuments = await prescriptionRepository.GetAllPrescriptions(organisationId, customerId);
 
-                var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
-
-                foreach (var prescriptionDocument in prescriptionDocuments)
+                if (prescriptionDocuments == null)
                 {
-                    var sasUrl = await mediaContainer.GetSasUrl(prescriptionDocument.FileInfo.FileInfoId.ToString());
-
-                    if (sasUrl != null)
-                    {
-                        listToReturn.Add(
-                            ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescriptionDocument, sasUrl)
-                        );
-                    }
-                    else
-                    {
-                        throw new Exceptions.BlobStorageException($"Prescription not found in blob:{prescriptionDocument.FileInfo.FileInfoId}");
-                    }
-
+                    logger.LogInformation("No prescriptions available");
+                    return new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
                 }
 
-                return listToReturn;
+                return await GetOutgoingPrescriptionDocumentsWithSasUrl(prescriptionDocuments);
             }
         }
 
@@ -83,33 +70,11 @@ namespace MiddleWare.Services
 
                 if (prescriptionDocuments == null)
                 {
-                    return null;
+                    logger.LogInformation("No prescriptions available");
+                    return new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
                 }
 
-                DataValidation.ValidateObject(prescriptionDocuments);
-
-                var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
-
-                //Generate sas for each file
-
-                foreach (var prescDocument in prescriptionDocuments)
-                {
-                    var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
-
-                    if (sasUrl != null)
-                    {
-                        listToReturn.Add(
-                            ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
-                        );
-                    }
-                    else
-                    {
-                        throw new Exceptions.BlobStorageException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
-                    }
-
-                }
-
-                return listToReturn;
+                return await GetOutgoingPrescriptionDocumentsWithSasUrl(prescriptionDocuments);
             }
 
         }
@@ -129,6 +94,32 @@ namespace MiddleWare.Services
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
 
+        }
+
+        private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments)
+        {
+            var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+
+            //Generate sas for each file
+
+            foreach (var prescDocument in prescriptionDocuments)
+            {
+                var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
+
+                if (sasUrl != null)
+                {
+                    listToReturn.Add(
+                        ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
+                    );
+                }
+                else
+                {
+                    throw new Exceptions.BlobStorageException($"Prescription document not found in blob:{prescDocument.PrescriptionDocumentId}");
+                }
+
+            }
+
+            return listToReturn;
         }
 
     }

@@ -22,9 +22,9 @@ namespace MiddleWare.Converters
 
             mongoReport.FileInfo = fileInfo;
 
+
             var detail = new Mongo.ReportDetails();
-            detail.Name = reportIncoming.Details;
-            detail.Type = reportIncoming.DetailsType;
+            detail.UploadedDateTime = DateTime.UtcNow;
             mongoReport.Details = detail;
 
             return mongoReport;
@@ -36,15 +36,16 @@ namespace MiddleWare.Converters
 
             reportOutgoing.ReportId = mongoReport.ReportId.ToString();
 
-            reportOutgoing.Name = mongoReport.FileInfo.FileName;
+            reportOutgoing.FileName = mongoReport.FileInfo.FileName;
             reportOutgoing.FileType = mongoReport.FileInfo.FileType;
 
             if (mongoReport.Details != null)
             {
-                reportOutgoing.Details = mongoReport.Details.Details;
-                reportOutgoing.DetailsType = mongoReport.Details.Type;
+                if (mongoReport.Details.UploadedDateTime.HasValue)
+                {
+                    reportOutgoing.UploadedDateTime = mongoReport.Details.UploadedDateTime.Value;
+                }
             }
-
             reportOutgoing.SasUrl = SasUrl;
 
             return reportOutgoing;
@@ -66,8 +67,7 @@ namespace MiddleWare.Converters
             mongoPrescriptionDocument.FileInfo = fileInfo;
 
             var detail = new Mongo.PrescriptionDetail();
-            detail.Name = prescriptionDocumentIncoming.Details;
-            detail.Type = prescriptionDocumentIncoming.DetailsType;
+            detail.UploadedDateTime = DateTime.UtcNow;
             mongoPrescriptionDocument.PrescriptionDetail = detail;
 
             return mongoPrescriptionDocument;
@@ -79,166 +79,19 @@ namespace MiddleWare.Converters
 
             prescriptionDocumentOutgoing.PrescriptionDocumentId = mongoPrescriptionDocument.PrescriptionDocumentId.ToString();
 
-            prescriptionDocumentOutgoing.Name = mongoPrescriptionDocument.FileInfo.FileName;
             prescriptionDocumentOutgoing.FileType = mongoPrescriptionDocument.FileInfo.FileType;
+
+            if (mongoPrescriptionDocument.PrescriptionDetail != null)
+            {
+                if (mongoPrescriptionDocument.PrescriptionDetail.UploadedDateTime.HasValue)
+                {
+                    prescriptionDocumentOutgoing.UploadedDateTime = mongoPrescriptionDocument.PrescriptionDetail.UploadedDateTime.Value;
+                }
+            }
 
             prescriptionDocumentOutgoing.SasUrl = SasUrl;
 
             return prescriptionDocumentOutgoing;
-        }
-
-        public static ProviderClientOutgoing.VitalsOutgoing ConvertToClientOutgoingVitals(Mongo.Vitals mongoVitals, string serviceRequestId)
-        {
-            var vitals = new ProviderClientOutgoing.VitalsOutgoing();
-
-            vitals.ServiceRequestId = serviceRequestId;
-
-            if (mongoVitals == null)
-            {
-                return vitals;
-            }
-
-            if (mongoVitals.Weight != null)
-            {
-                var weight = new DataModel.Client.Provider.Common.Weight();
-                weight.Type = mongoVitals.Weight.Type;
-                weight.Value = mongoVitals.Weight.Value;
-                vitals.Weight = weight;
-            }
-            if (mongoVitals.BloodSugar != null)
-            {
-                var BloodSugar = new DataModel.Client.Provider.Common.BloodSugar();
-                BloodSugar.Type = mongoVitals.BloodSugar.Type;
-                BloodSugar.Value = mongoVitals.BloodSugar.Value;
-                vitals.BloodSugar = BloodSugar;
-            }
-            if (mongoVitals.Temperature != null)
-            {
-                var Temperature = new DataModel.Client.Provider.Common.Temperature();
-                Temperature.Type = mongoVitals.Temperature.Type;
-                Temperature.Value = mongoVitals.Temperature.Value;
-                vitals.Temperature = Temperature;
-            }
-            if (mongoVitals.BadHabit != null)
-            {
-                var BadHabit = new DataModel.Client.Provider.Common.Habit();
-                BadHabit.AlcoholDetails = mongoVitals.BadHabit.AlcoholDetails;
-                BadHabit.SmokingDetails = mongoVitals.BadHabit.SmokingDetails;
-                vitals.BadHabit = BadHabit;
-            }
-            if (mongoVitals.RespiratoryRate != null)
-            {
-                var RespiratoryRate = new DataModel.Client.Provider.Common.RespiratoryRate();
-                RespiratoryRate.Type = mongoVitals.RespiratoryRate.Type;
-                RespiratoryRate.Value = mongoVitals.RespiratoryRate.Value;
-                vitals.RespiratoryRate = RespiratoryRate;
-            }
-            if (mongoVitals.BloodPressure != null)
-            {
-                var BloodPressure = new DataModel.Client.Provider.Common.BloodPressure();
-                BloodPressure.Type = mongoVitals.BloodPressure.Type;
-                BloodPressure.Value = mongoVitals.BloodPressure.Value;
-                vitals.BloodPressure = BloodPressure;
-            }
-            if (mongoVitals.Saturation != null)
-            {
-                var Saturation = new DataModel.Client.Provider.Common.Saturation();
-                Saturation.Type = mongoVitals.Saturation.Type;
-                Saturation.Value = mongoVitals.Saturation.Value;
-                vitals.Saturation = Saturation;
-            }
-            if (mongoVitals.Height != null)
-            {
-                var Height = new DataModel.Client.Provider.Common.Height();
-                Height.Type = mongoVitals.Height.Type;
-                Height.Value = mongoVitals.Height.Value;
-                vitals.Height = Height;
-            }
-            if (mongoVitals.Pulse != null)
-            {
-                var Pulse = new DataModel.Client.Provider.Common.Pulse();
-                Pulse.Type = mongoVitals.Pulse.Type;
-                Pulse.Value = mongoVitals.Pulse.Value;
-                vitals.Pulse = Pulse;
-            }
-
-            return vitals;
-        }
-
-        public static Mongo.Vitals ConvertToMongoVitals(ProviderClientIncoming.VitalsIncoming vitalsIncoming)
-        {
-            var vitals = new Mongo.Vitals();
-
-            if (vitalsIncoming == null)
-            {
-                return vitals;
-            }
-
-            if (vitalsIncoming.Weight != null)
-            {
-                var weight = new Mongo.Weight();
-                weight.Type = vitalsIncoming.Weight.Type;
-                weight.Value = vitalsIncoming.Weight.Value;
-                vitals.Weight = weight;
-            }
-            if (vitalsIncoming.BloodSugar != null)
-            {
-                var BloodSugar = new Mongo.BloodSugar();
-                BloodSugar.Type = vitalsIncoming.BloodSugar.Type;
-                BloodSugar.Value = vitalsIncoming.BloodSugar.Value;
-                vitals.BloodSugar = BloodSugar;
-            }
-            if (vitalsIncoming.Temperature != null)
-            {
-                var Temperature = new Mongo.Temperature();
-                Temperature.Type = vitalsIncoming.Temperature.Type;
-                Temperature.Value = vitalsIncoming.Temperature.Value;
-                vitals.Temperature = Temperature;
-            }
-            if (vitalsIncoming.BadHabit != null)
-            {
-                var BadHabit = new Mongo.Habit();
-                BadHabit.AlcoholDetails = vitalsIncoming.BadHabit.AlcoholDetails;
-                BadHabit.SmokingDetails = vitalsIncoming.BadHabit.SmokingDetails;
-                vitals.BadHabit = BadHabit;
-            }
-            if (vitalsIncoming.RespiratoryRate != null)
-            {
-                var RespiratoryRate = new Mongo.RespiratoryRate();
-                RespiratoryRate.Type = vitalsIncoming.RespiratoryRate.Type;
-                RespiratoryRate.Value = vitalsIncoming.RespiratoryRate.Value;
-                vitals.RespiratoryRate = RespiratoryRate;
-            }
-            if (vitalsIncoming.BloodPressure != null)
-            {
-                var BloodPressure = new Mongo.BloodPressure();
-                BloodPressure.Type = vitalsIncoming.BloodPressure.Type;
-                BloodPressure.Value = vitalsIncoming.BloodPressure.Value;
-                vitals.BloodPressure = BloodPressure;
-            }
-            if (vitalsIncoming.Saturation != null)
-            {
-                var Saturation = new Mongo.Saturation();
-                Saturation.Type = vitalsIncoming.Saturation.Type;
-                Saturation.Value = vitalsIncoming.Saturation.Value;
-                vitals.Saturation = Saturation;
-            }
-            if (vitalsIncoming.Height != null)
-            {
-                var Height = new Mongo.Height();
-                Height.Type = vitalsIncoming.Height.Type;
-                Height.Value = vitalsIncoming.Height.Value;
-                vitals.Height = Height;
-            }
-            if (vitalsIncoming.Pulse != null)
-            {
-                var Pulse = new Mongo.Pulse();
-                Pulse.Type = vitalsIncoming.Pulse.Type;
-                Pulse.Value = vitalsIncoming.Pulse.Value;
-                vitals.Pulse = Pulse;
-            }
-
-            return vitals;
         }
 
     }

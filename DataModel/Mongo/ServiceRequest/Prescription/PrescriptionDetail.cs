@@ -9,8 +9,6 @@ namespace DataModel.Mongo
     {
         [BsonId]
         public ObjectId PrescriptionDetailId { get; set; }
-        public string Name { get; set; }
-        public string Type { get; set; }
-        public string Details { get; set; }
+        public DateTime? UploadedDateTime { get; set; }
     }
 }

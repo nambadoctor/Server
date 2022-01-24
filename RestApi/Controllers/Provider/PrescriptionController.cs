@@ -30,7 +30,7 @@ namespace RestApi.Controllers.Provider
             return prescriptionDocuments;
         }
 
-        [HttpGet("GetAllPrescriptions/{OrganisationId}/{CustomerId}")]
+        [HttpGet("all/{OrganisationId}/{CustomerId}")]
         [Authorize]
         public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetPrescriptions(string OrganisationId, string CustomerId)
         {

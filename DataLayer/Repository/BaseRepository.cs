@@ -53,10 +53,12 @@ namespace MongoDB.GenericRepository.Repository
         {
             var list = await DbSet.Aggregate().Match(filter).Project(project).ToListAsync();
             var result = new List<T>();
-            foreach (var item in list)
-            {
-                result.AddRange(item);
-            }
+
+            if (list != null)
+                foreach (var item in list)
+                {
+                    result.AddRange(item);
+                }
             return result;
         }
 
@@ -75,12 +77,13 @@ namespace MongoDB.GenericRepository.Repository
                 {
                     return default(T);
                 }
-            } catch (Exception e)
+            }
+            catch (Exception e)
             {
                 string str = e.Message;
                 return default(T);
             }
-            
+
         }
 
         public async Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition)

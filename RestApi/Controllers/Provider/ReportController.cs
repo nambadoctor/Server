@@ -32,7 +32,7 @@ namespace RestApi.Controllers.Provider
             return reports;
         }
 
-        [HttpGet("GetAllReports/{OrganisationId}/{CustomerId}")]
+        [HttpGet("all/{OrganisationId}/{CustomerId}")]
         [Authorize]
         public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetReports(string OrganisationId, string CustomerId)
         {

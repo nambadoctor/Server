@@ -50,26 +50,13 @@ namespace MiddleWare.Services
 
                 var reports = await reportRepository.GetAllReports(organisationId, customerId);
 
-                var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
-
-                foreach (var report in reports)
+                if (reports == null)
                 {
-                    var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
-
-                    if (sasUrl != null)
-                    {
-                        listToReturn.Add(
-                            ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
-                        );
-                    }
-                    else
-                    {
-                        throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
-                    }
-
+                    logger.LogInformation("No reports available");
+                    return new List<ProviderClientOutgoing.ReportOutgoing>();
                 }
 
-                return listToReturn;
+                return await GetOutgoingReportsWithSasUrl(reports);
             }
         }
 
@@ -84,31 +71,11 @@ namespace MiddleWare.Services
 
                 if (reports == null)
                 {
-                    return null;
+                    logger.LogInformation("No reports available");
+                    return new List<ProviderClientOutgoing.ReportOutgoing>();
                 }
 
-                DataValidation.ValidateObject(reports);
-
-                var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
-
-                foreach (var report in reports)
-                {
-                    var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
-
-                    if (sasUrl != null)
-                    {
-                        listToReturn.Add(
-                            ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
-                        );
-                    }
-                    else
-                    {
-                        throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
-                    }
-
-                }
-
-                return listToReturn;
+                return await GetOutgoingReportsWithSasUrl(reports);
             }
 
         }
@@ -130,6 +97,30 @@ namespace MiddleWare.Services
 
             }
 
+        }
+
+        private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetOutgoingReportsWithSasUrl(List<Mongo.Report> reports)
+        {
+            var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
+
+            foreach (var report in reports)
+            {
+                var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
+
+                if (sasUrl != null)
+                {
+                    listToReturn.Add(
+                        ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
+                    );
+                }
+                else
+                {
+                    throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
+                }
+
+            }
+
+            return listToReturn;
         }
 
     }

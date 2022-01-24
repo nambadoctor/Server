@@ -9,11 +9,9 @@ namespace DataModel.Client.Provider.Outgoing
     public class ReportOutgoing
     {
         public string ReportId { get; set; }
-        public string Name { get; set; }
+        public string FileName { get; set; }
         public string FileType { get; set; } //Pdf, Img
-        public string Details { get; set; }
-        public string DetailsType { get; set; }
         public string SasUrl { get; set; }
-        public DateTime ReportUploadedTime { get; set; }
+        public DateTime UploadedDateTime { get; set; }
     }
 }

@@ -38,46 +38,32 @@ namespace MongoDB.GenericRepository.Repository
 
         public async Task<List<Report>> GetServiceRequestReports(string serviceRequestId)
         {
-            try
-            {
-                var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
+            var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
 
-                var project = Builders<ServiceRequest>.Projection.Expression(
-                    sr => sr.Reports.Where(_ => true)
-                    );
+            var project = Builders<ServiceRequest>.Projection.Expression(
+                sr => sr.Reports.Where(_ => true)
+                );
 
-                var result = await this.GetListByFilterAndProject(filter, project);
+            var result = await this.GetListByFilterAndProject(filter, project);
 
-                return result.ToList();
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            return result.ToList();
         }
 
         public async Task<List<Report>> GetAllReports(string organisationId, string customerId)
         {
-            try
-            {
-                var organisationFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.OrganisationId, organisationId);
+            var organisationFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.OrganisationId, organisationId);
 
-                var customerFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.CustomerId, customerId);
+            var customerFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.CustomerId, customerId);
 
-                var combinedFilter = organisationFilter & customerFilter;
+            var combinedFilter = organisationFilter & customerFilter;
 
-                var project = Builders<ServiceRequest>.Projection.Expression(
-                    sr => sr.Reports.Where(_ => true)
-                    );
+            var project = Builders<ServiceRequest>.Projection.Expression(
+                sr => sr.Reports.Where(_ => true)
+                );
 
-                var result = await this.GetListByFilterAndProject(combinedFilter, project);
+            var result = await this.GetListByFilterAndProject(combinedFilter, project);
 
-                return result.ToList();
-            }
-            catch (Exception e)
-            {
-                return null;
-            }
+            return result.ToList();
         }
     }
 }

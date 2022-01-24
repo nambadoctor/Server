@@ -66,7 +66,6 @@ namespace NambaDoctorWebApi
             services.AddScoped<IAppointmentService, AppointmentService>();
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<IPrescriptionService, PrescriptionService>();
-            services.AddScoped<IServiceRequestService, ServiceRequestService>();
 
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
@@ -80,7 +79,6 @@ namespace NambaDoctorWebApi
             services.AddScoped<IServiceRequestRepository, ServiceRequestRepository>();
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
-            services.AddScoped<IVitalsRepository, VitalsRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
