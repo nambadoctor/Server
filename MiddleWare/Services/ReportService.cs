@@ -40,6 +40,39 @@ namespace MiddleWare.Services
             }
         }
 
+        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAllReports(string organisationId, string customerId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ReportService:GetAllReports"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
+                DataValidation.ValidateObjectId(customerId, IdType.Customer);
+
+                var reports = await reportRepository.GetAllReports(organisationId, customerId);
+
+                var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
+
+                foreach (var report in reports)
+                {
+                    var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
+
+                    if (sasUrl != null)
+                    {
+                        listToReturn.Add(
+                            ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
+                        );
+                    }
+                    else
+                    {
+                        throw new Exceptions.BlobStorageException($"Report not found in blob:{report.ReportId}");
+                    }
+
+                }
+
+                return listToReturn;
+            }
+        }
+
         public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:GetAppointmentReports"))
@@ -91,7 +124,7 @@ namespace MiddleWare.Services
                 var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
 
                 //Upload to blob
-                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(reportIncoming.File), report.ReportId.ToString());
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(reportIncoming.File), report.FileInfo.FileInfoId.ToString());
 
                 await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 

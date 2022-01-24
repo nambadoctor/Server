@@ -54,5 +54,29 @@ namespace MongoDB.GenericRepository.Repository
                 return null;
             }
         }
+
+        public async Task<List<PrescriptionDocument>> GetAllPrescriptions(string organisationId, string customerId)
+        {
+            try
+            {
+                var organisationFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.OrganisationId, organisationId);
+
+                var customerFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.CustomerId, customerId);
+
+                var combinedFilter = organisationFilter & customerFilter;
+
+                var project = Builders<ServiceRequest>.Projection.Expression(
+                    sr => sr.PrescriptionDocuments.Where(_ => true)
+                    );
+
+                var result = await this.GetListByFilterAndProject(combinedFilter, project);
+
+                return result.ToList();
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
     }
 }

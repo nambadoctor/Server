@@ -11,6 +11,5 @@ namespace DataModel.Mongo
         public ObjectId ReportId { set; get; } //This will be the filename in blob
         public FileInfo FileInfo { get; set; }
         public ReportDetails Details { get; set; }
-
     }
 }

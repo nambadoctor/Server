@@ -14,5 +14,6 @@ namespace DataModel.Client.Provider.Outgoing
         public string Details { get; set; }
         public string DetailsType { get; set; }
         public string SasUrl { get; set; }
+        public DateTime ReportUploadedTime { get; set; }
     }
 }

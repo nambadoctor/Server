@@ -27,9 +27,19 @@ namespace RestApi.Controllers.Provider
         public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetAppointmentReports(string ServiceRequestId)
         {
 
-            var customerProfile = await reportService.GetAppointmentReports(ServiceRequestId);
+            var reports = await reportService.GetAppointmentReports(ServiceRequestId);
 
-            return customerProfile;
+            return reports;
+        }
+
+        [HttpGet("GetAllReports/{OrganisationId}/{CustomerId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetReports(string OrganisationId, string CustomerId)
+        {
+
+            var reports = await reportService.GetAllReports(OrganisationId, CustomerId);
+
+            return reports;
         }
 
         [HttpDelete("{ServiceRequestId}/{ReportId}")]

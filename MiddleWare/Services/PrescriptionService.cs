@@ -39,6 +39,39 @@ namespace MiddleWare.Services
 
         }
 
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAllPrescriptions(string organisationId, string customerId)
+        {
+            using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAllPrescriptions"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
+                DataValidation.ValidateObjectId(customerId, IdType.Customer);
+
+                var prescriptionDocuments = await prescriptionRepository.GetAllPrescriptions(organisationId, customerId);
+
+                var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+
+                foreach (var prescriptionDocument in prescriptionDocuments)
+                {
+                    var sasUrl = await mediaContainer.GetSasUrl(prescriptionDocument.FileInfo.FileInfoId.ToString());
+
+                    if (sasUrl != null)
+                    {
+                        listToReturn.Add(
+                            ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescriptionDocument, sasUrl)
+                        );
+                    }
+                    else
+                    {
+                        throw new Exceptions.BlobStorageException($"Prescription not found in blob:{prescriptionDocument.FileInfo.FileInfoId}");
+                    }
+
+                }
+
+                return listToReturn;
+            }
+        }
+
         public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetAppointmentPrescriptions(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:GetAppointmentPrescriptions"))
@@ -91,7 +124,7 @@ namespace MiddleWare.Services
 
                 var prescriptionDocument = ServiceRequestConverter.ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
                 //Upload to blob
-                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(prescriptionDocumentIncoming.File), prescriptionDocument.PrescriptionDocumentId.ToString());
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(prescriptionDocumentIncoming.File), prescriptionDocument.FileInfo.FileInfoId.ToString());
 
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
