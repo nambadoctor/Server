@@ -13,7 +13,6 @@ namespace DataModel.Mongo
         public List<AuthInfo> AuthInfos { get; set; }
         public List<ServiceProviderProfile> Profiles { get; set; }
         public List<Appointment> Appointments { get; set; }
-        public List<ServiceProviderAvailability> Availabilities { get; set; }
         public bool IsDeleted { get; set; }
     }
 }
