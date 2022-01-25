@@ -129,6 +129,28 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return prescriptions;
             }
         }
+
+        public async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetCustomerReports(string CustomerId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/report/all/{OrganisationId}/{CustomerId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var reports = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.ReportOutgoing>>(value);
+                return reports;
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetCustomerPrescriptions(string CustomerId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/prescription/all/{OrganisationId}/{CustomerId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var prescriptions = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>>(value);
+                return prescriptions;
+            }
+        }
         #endregion GET
 
         #region POST
