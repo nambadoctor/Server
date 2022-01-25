@@ -7,8 +7,11 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<Compile Remove="Data\**" />
 		<Compile Remove="Services\v1\ScenarioTests\Data\**" />
+		<EmbeddedResource Remove="Data\**" />
 		<EmbeddedResource Remove="Services\v1\ScenarioTests\Data\**" />
+		<None Remove="Data\**" />
 		<None Remove="Services\v1\ScenarioTests\Data\**" />
 	</ItemGroup>
 
@@ -38,11 +41,6 @@
 
 	<ItemGroup>
 		<ProjectReference Include="..\DataModel\DataModel.csproj" />
-	</ItemGroup>
-
-
-	<ItemGroup>
-	  <Folder Include="Data\" />
 	</ItemGroup>
 
 </Project>
