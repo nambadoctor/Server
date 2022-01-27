@@ -36,9 +36,24 @@ namespace MongoDB.GenericRepository.Repository
             var appointment = await this.GetSingleByFilterAndProject(serviceProviderFilter, project);
 
             return appointment;
-
         }
 
+        public async Task<Appointment> GetAppointmentByType(string serviceProviderId, string customerId, AppointmentType appointmentType)
+        {
+            var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+
+            var project = Builders<ServiceProvider>.Projection.Expression(
+                sp => sp.Appointments.Where(
+                    appointment => (appointment.CustomerId == customerId && appointment.AppointmentType == AppointmentType.CustomerManagement)
+                    )
+                );
+
+            var appointment = await this.GetSingleByFilterAndProject(serviceProviderFilter, project);
+
+            return appointment;
+        }
+
+         
         public async Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds)
         {
 

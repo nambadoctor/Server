@@ -3,6 +3,7 @@
     public enum AppointmentType
     {
         Online,
-        Inperson
+        Inperson,
+        CustomerManagement
     }
 }

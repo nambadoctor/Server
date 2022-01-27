@@ -17,12 +17,14 @@ namespace MiddleWare.Services
     public class ReportService : IReportService
     {
         private IReportRepository reportRepository;
+        private IAppointmentRepository appointmentRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IReportRepository reportRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IReportRepository reportRepository, IAppointmentRepository appointmentRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
             this.reportRepository = reportRepository;
+            this.appointmentRepository = appointmentRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -98,6 +100,39 @@ namespace MiddleWare.Services
             }
 
         }
+
+        public async Task SetStrayReport(ProviderClientIncoming.ReportIncoming reportIncoming, string ServiceProviderId, string CustomerId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                if (!string.IsNullOrEmpty(reportIncoming.AppointmentId))
+                {
+                    DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
+                }
+
+                if (!string.IsNullOrEmpty(reportIncoming.ServiceRequestId))
+                {
+                    DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
+                }
+
+                DataValidation.ValidateObjectId(ServiceProviderId, IdType.ServiceProvider);
+                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+
+                var customerManagementAppointment = await appointmentRepository.GetAppointmentByType(ServiceProviderId, CustomerId, Mongo.AppointmentType.CustomerManagement);
+
+                if (customerManagementAppointment != null)
+                {
+                    reportIncoming.ServiceRequestId = customerManagementAppointment.ServiceRequestId;
+                    reportIncoming.AppointmentId = customerManagementAppointment.AppointmentId.ToString();
+                    await SetReport(reportIncoming);
+                } else
+                {
+                    //TODO: Make Appointment and Set Report
+                }
+            }
+        }
+
 
         private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetOutgoingReportsWithSasUrl(List<Mongo.Report> reports)
         {
