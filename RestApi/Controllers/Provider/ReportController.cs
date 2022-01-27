@@ -56,11 +56,11 @@ namespace RestApi.Controllers.Provider
             await reportService.SetReport(reportIncoming);
         }
 
-        [HttpPost("Stray/{ServiceProviderId}/{CustomerId}")]
+        [HttpPost("Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}")]
         [Authorize]
-        public async Task SetStrayReport([FromBody] ProviderClientIncoming.ReportIncoming reportIncoming, string ServiceProviderId, string CustomerId)
+        public async Task SetStrayReport([FromBody] ProviderClientIncoming.ReportIncoming reportIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
-            await reportService.SetStrayReport(reportIncoming, ServiceProviderId, CustomerId);
+            await reportService.SetStrayReport(reportIncoming, OrganisationId, ServiceProviderId, CustomerId);
         }
     }
 }

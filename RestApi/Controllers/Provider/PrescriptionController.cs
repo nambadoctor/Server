@@ -53,5 +53,12 @@ namespace RestApi.Controllers.Provider
         {
             await prescriptionService.SetPrescriptionDocument(prescriptionDocumentIncoming);
         }
+
+        [HttpPost("Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}")]
+        [Authorize]
+        public async Task SetStrayPrescription([FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
+        {
+            await prescriptionService.SetStrayPrescription(prescriptionDocumentIncoming, OrganisationId, ServiceProviderId, CustomerId);
+        }
     }
 }

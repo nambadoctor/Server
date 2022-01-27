@@ -18,13 +18,15 @@ namespace MiddleWare.Services
     {
         private IReportRepository reportRepository;
         private IAppointmentRepository appointmentRepository;
+        private IServiceRequestRepository serviceRequestRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IReportRepository reportRepository, IAppointmentRepository appointmentRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IReportRepository reportRepository, IAppointmentRepository appointmentRepository, IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
             this.reportRepository = reportRepository;
             this.appointmentRepository = appointmentRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -98,10 +100,9 @@ namespace MiddleWare.Services
                 await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 
             }
-
         }
 
-        public async Task SetStrayReport(ProviderClientIncoming.ReportIncoming reportIncoming, string ServiceProviderId, string CustomerId)
+        public async Task SetStrayReport(ProviderClientIncoming.ReportIncoming reportIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -128,7 +129,36 @@ namespace MiddleWare.Services
                     await SetReport(reportIncoming);
                 } else
                 {
-                    //TODO: Make Appointment and Set Report
+                    var appointment = new Mongo.Appointment();
+
+                    //Generate new service request
+                    var serviceRequest = new Mongo.ServiceRequest();
+                    var appointmentId = ObjectId.GenerateNewId();
+                    var serviceRequestId = ObjectId.GenerateNewId();
+
+                    appointment.AppointmentId = appointmentId;
+                    appointment.ServiceRequestId = serviceRequestId.ToString();
+                    appointment.ServiceProviderId = ServiceProviderId;
+                    appointment.CustomerId = CustomerId;
+                    appointment.AppointmentType = Mongo.AppointmentType.CustomerManagement;
+                    appointment.OrganisationId = OrganisationId;
+
+                    serviceRequest.ServiceRequestId = serviceRequestId;
+                    serviceRequest.AppointmentId = appointmentId.ToString();
+                    serviceRequest.CustomerId = appointment.CustomerId;
+                    serviceRequest.OrganisationId = appointment.OrganisationId;
+                    serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
+                    serviceRequest.Reports = new List<Mongo.Report>();
+                    serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
+
+                    await appointmentRepository.AddAppointment(appointment);
+
+                    await serviceRequestRepository.Add(serviceRequest);
+
+                    reportIncoming.ServiceRequestId = serviceRequestId.ToString();
+                    reportIncoming.AppointmentId = appointment.AppointmentId.ToString();
+
+                    await SetReport(reportIncoming);
                 }
             }
         }
