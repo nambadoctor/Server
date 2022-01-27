@@ -13,12 +13,14 @@ namespace DataModel.Mongo
     {
         [BsonId]
         public ObjectId TreatmentPlanId { get; set; }
+        public ObjectId TreatmentPlanName { get; set; }
+
         public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string CustomerId { get; set; }
         public string CustomerName { get; set; }
         public string ServiceProviderName { get; set; }
-        public string OriginServiceRequestId { get; set; }
+        public string SourceServiceRequestId { get; set; }
         public List<Treatment> Treatments { get; set; }
         public DateTime CreatedDateTime { get; set; }
     }
