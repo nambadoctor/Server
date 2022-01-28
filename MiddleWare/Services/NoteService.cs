@@ -1,35 +1,23 @@
 ﻿using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using Mongo = DataModel.Mongo;
-
 using MiddleWare.Interfaces;
-using DataLayer;
-using ND.DataLayer.Utils.BlobStorage;
-using MongoDB.Bson;
 using DataModel.Shared;
 using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using MongoDB.GenericRepository.Interfaces;
 using MiddleWare.Converters;
-using DataModel.Client.Provider.Outgoing;
-using DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Services
 {
     public class NoteService : INoteService
     {
         private INoteRepository noteRepository;
-        private IAppointmentRepository appointmentRepository;
-        private IServiceRequestRepository serviceRequestRepository;
-        private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public NoteService(INoteRepository noteRepository, IAppointmentRepository appointmentRepository, IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public NoteService(INoteRepository noteRepository, ILogger<ReportService> logger)
         {
             this.noteRepository = noteRepository;
-            this.appointmentRepository = appointmentRepository;
-            this.serviceRequestRepository = serviceRequestRepository;
-            this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
 
@@ -42,10 +30,12 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
                 await noteRepository.DeleteNote(ServiceRequestId, NoteId);
+
+                logger.LogInformation($"Deleted note with id:{NoteId}");
             }
         }
 
-        public async Task<List<NoteOutgoing>> GetAllNotes(string organisationId, string customerId)
+        public async Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAllNotes(string organisationId, string customerId)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:GetAllNotes"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -57,15 +47,21 @@ namespace MiddleWare.Services
 
                 if (notes == null)
                 {
-                    logger.LogInformation("No reports available");
+                    logger.LogInformation("No notes available");
                     return new List<ProviderClientOutgoing.NoteOutgoing>();
                 }
 
-                return ServiceRequestConverter.ConvertToClientOutGoingNotes(notes);
+                logger.LogInformation($"Received {notes.Count} notes from db");
+
+                var outgoingNotes = ServiceRequestConverter.ConvertToClientOutGoingNotes(notes);
+
+                logger.LogInformation("Converted mongo notes to outgoing notes successfully");
+
+                return outgoingNotes;
             }
         }
 
-        public async Task<List<NoteOutgoing>> GetAppointmentNote(string ServiceRequestId)
+        public async Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAppointmentNotes(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:GetAppointmentNote"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -80,33 +76,37 @@ namespace MiddleWare.Services
                     return new List<ProviderClientOutgoing.NoteOutgoing>();
                 }
 
-                return ServiceRequestConverter.ConvertToClientOutGoingNotes(notes);
+                logger.LogInformation($"Received {notes.Count} notes from db");
+
+                var outgoingNotes = ServiceRequestConverter.ConvertToClientOutGoingNotes(notes);
+
+                logger.LogInformation("Converted mongo notes to outgoing notes successfully");
+
+                return outgoingNotes;
             }
 
         }
 
-        public async Task SetNote(NoteIncoming noteIncoming)
+        public async Task SetNote(ProviderClientIncoming.NoteIncoming noteIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:SetNote"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(noteIncoming.ServiceRequestId, IdType.ServiceRequest);
                 DataValidation.ValidateObjectId(noteIncoming.AppointmentId, IdType.Appointment);
+                DataValidation.ValidateObjectId(noteIncoming.NoteId, IdType.Note);
 
-                if (!string.IsNullOrEmpty(noteIncoming.NoteId))
-                {
-                    DataValidation.ValidateObjectId(noteIncoming.NoteId, IdType.Note);
-                }
+                var mongoNote = ServiceRequestConverter.ConvertToMongoNote(noteIncoming);
 
-                var note = ServiceRequestConverter.ConvertToMongoNote(noteIncoming);
+                logger.LogInformation("Converted to mongo mote successfully");
 
-                note.LastModifiedTime = DateTime.UtcNow;
+                await noteRepository.AddNote(mongoNote, noteIncoming.ServiceRequestId);
 
-                await noteRepository.AddNote(note, noteIncoming.ServiceRequestId);
+                logger.LogInformation($"Added note with id {mongoNote.NoteId} successfully");
             }
         }
 
-        public async Task SetStrayNote(NoteIncoming noteIncoming, string AppointmentId, string ServiceRequestId)
+        public async Task SetStrayNote(ProviderClientIncoming.NoteIncoming noteIncoming, string AppointmentId, string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:SetStrayNote"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))

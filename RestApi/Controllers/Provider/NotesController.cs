@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
-using MongoDB.GenericRepository.Interfaces;
 
 namespace RestApi.Controllers.Provider
 {
@@ -30,7 +29,7 @@ namespace RestApi.Controllers.Provider
         public async Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAppointmentNotes(string ServiceRequestId)
         {
 
-            var notes = await noteService.GetAppointmentNote(ServiceRequestId);
+            var notes = await noteService.GetAppointmentNotes(ServiceRequestId);
 
             return notes;
         }
@@ -63,7 +62,7 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task SetStrayNote([FromBody] ProviderClientIncoming.NoteIncoming noteIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
-            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId, DataModel.Mongo.AppointmentType.CustomerManagement);
+            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId);
             await noteService.SetStrayNote(noteIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
         }
     }

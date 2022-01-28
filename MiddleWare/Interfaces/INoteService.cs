@@ -5,7 +5,7 @@ namespace MiddleWare.Interfaces
 {
     public interface INoteService
     {
-        public Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAppointmentNote(string ServiceRequestId);
+        public Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAppointmentNotes(string ServiceRequestId);
         public Task SetNote(ProviderClientIncoming.NoteIncoming noteIncoming);
         public Task SetStrayNote(ProviderClientIncoming.NoteIncoming noteIncoming, string AppointmentId, string ServiceRequestId);
         public Task DeleteNote(string ServiceRequestId, string ReportId);
