@@ -114,7 +114,7 @@ namespace NambaDoctorWebApi
                                             "https://localhost:3000",
                                             "https://test.nambadoctor.com", 
                                             "https://www.nambadoctor.com", 
-                                            "https://nambadoctor.com" })
+                                            "https://nambadoctor.com", "*" })
                                             .AllowAnyHeader()
                                             .AllowAnyMethod();
                     });
