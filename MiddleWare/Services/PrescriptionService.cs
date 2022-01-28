@@ -17,12 +17,16 @@ namespace MiddleWare.Services
     public class PrescriptionService : IPrescriptionService
     {
         private IPrescriptionRepository prescriptionRepository;
+        private IAppointmentRepository appointmentRepository;
+        private IServiceRequestRepository serviceRequestRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public PrescriptionService(IPrescriptionRepository prescriptionRepository, IMediaContainer mediaContainer, ILogger<PrescriptionService> logger)
+        public PrescriptionService(IPrescriptionRepository prescriptionRepository, IAppointmentRepository appointmentRepository, IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<PrescriptionService> logger)
         {
             this.prescriptionRepository = prescriptionRepository;
+            this.appointmentRepository = appointmentRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -94,6 +98,30 @@ namespace MiddleWare.Services
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
 
+        }
+
+        public async Task SetStrayPrescription(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string appointmentId, string serviceRequestId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                if (!string.IsNullOrEmpty(prescriptionDocumentIncoming.AppointmentId))
+                {
+                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
+                }
+
+                if (!string.IsNullOrEmpty(prescriptionDocumentIncoming.ServiceRequestId))
+                {
+                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
+                }
+
+                DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
+                DataValidation.ValidateObjectId(serviceRequestId, IdType.ServiceRequest);
+
+                prescriptionDocumentIncoming.AppointmentId = appointmentId;
+                prescriptionDocumentIncoming.ServiceRequestId = serviceRequestId;
+                await SetPrescriptionDocument(prescriptionDocumentIncoming);
+            }
         }
 
         private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments)

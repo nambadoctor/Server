@@ -15,10 +15,12 @@ namespace RestApi.Controllers.Provider
     {
 
         private IReportService reportService;
+        private IAppointmentService appointmentService;
 
-        public ReportController(IReportService reportService)
+        public ReportController(IReportService reportService, IAppointmentService appointmentService)
         {
             this.reportService = reportService;
+            this.appointmentService = appointmentService;
         }
 
 
@@ -54,6 +56,14 @@ namespace RestApi.Controllers.Provider
         public async Task SetReport([FromBody] ProviderClientIncoming.ReportIncoming reportIncoming)
         {
             await reportService.SetReport(reportIncoming);
+        }
+
+        [HttpPost("Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}")]
+        [Authorize]
+        public async Task SetStrayReport([FromBody] ProviderClientIncoming.ReportIncoming reportIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
+        {
+            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId, DataModel.Mongo.AppointmentType.CustomerManagement);
+            await reportService.SetStrayReport(reportIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
         }
     }
 }
