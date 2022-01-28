@@ -114,14 +114,15 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task<Appointment> UpsertAppointmentForStrayDocuments (string OrganisationId, string ServiceProviderId, string CustomerId, AppointmentType appointmentType)
+        public async Task<Mongo.Appointment> UpsertAppointmentForStrayDocuments(string OrganisationId, string ServiceProviderId, string CustomerId, Mongo.AppointmentType appointmentType)
         {
             var appointment = await appointmenRepository.GetAppointmentByType(OrganisationId, ServiceProviderId, CustomerId, Mongo.AppointmentType.CustomerManagement);
 
             if (appointment != null)
             {
                 return appointment;
-            } else
+            }
+            else
             {
                 var appointmentToCreate = new Mongo.Appointment();
 
