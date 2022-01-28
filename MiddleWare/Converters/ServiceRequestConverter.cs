@@ -94,5 +94,49 @@ namespace MiddleWare.Converters
             return prescriptionDocumentOutgoing;
         }
 
+
+        public static Mongo.Note ConvertToMongoNote(ProviderClientIncoming.NoteIncoming noteIncoming)
+        {
+            var mongoNote = new Mongo.Note();
+
+            if (string.IsNullOrEmpty(noteIncoming.NoteId))
+            {
+                mongoNote.NoteId = ObjectId.GenerateNewId();
+                mongoNote.CreatedTime = DateTime.UtcNow;
+            }
+            else
+            {
+                mongoNote.NoteId = new ObjectId(noteIncoming.NoteId);
+            }
+
+            mongoNote.NoteText = noteIncoming.Note;
+            mongoNote.LastModifiedTime = DateTime.UtcNow;
+            return mongoNote;
+        }
+
+        public static ProviderClientOutgoing.NoteOutgoing ConvertToClientOutgoingNote(Mongo.Note mongoNote)
+        {
+            var noteOutgoing = new ProviderClientOutgoing.NoteOutgoing();
+
+            noteOutgoing.NoteId = mongoNote.NoteId.ToString();
+            noteOutgoing.Note = mongoNote.NoteText;
+            noteOutgoing.CreatedDateTime = mongoNote.CreatedTime;
+            noteOutgoing.LastModifiedDateTime = mongoNote.LastModifiedTime;
+
+            return noteOutgoing;
+        }
+
+        public static List<ProviderClientOutgoing.NoteOutgoing> ConvertToClientOutGoingNotes(List<Mongo.Note> mongoNotes)
+        {
+            var listOfNotes = new List<ProviderClientOutgoing.NoteOutgoing>();
+
+            foreach (var note in mongoNotes)
+            {
+                listOfNotes.Add(ConvertToClientOutgoingNote(note));
+            }
+
+            return listOfNotes;
+        }
+
     }
 }

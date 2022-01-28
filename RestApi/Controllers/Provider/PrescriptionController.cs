@@ -61,7 +61,7 @@ namespace RestApi.Controllers.Provider
         public async Task SetStrayPrescription([FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
 
-            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId, DataModel.Mongo.AppointmentType.CustomerManagement);
+            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId);
             await prescriptionService.SetStrayPrescription(prescriptionDocumentIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
         }
     }

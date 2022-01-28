@@ -15,6 +15,7 @@ namespace DataModel.Mongo
         public string AppointmentId { get; set; } //For denormal
         public List<PrescriptionDocument> PrescriptionDocuments { get; set; }
         public List<Report> Reports { get; set; }
+        public List<Note> Notes { get; set; }
         public bool IsDeleted { get; set; }
     }
 }
