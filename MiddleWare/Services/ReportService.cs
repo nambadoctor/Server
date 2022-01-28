@@ -17,12 +17,16 @@ namespace MiddleWare.Services
     public class ReportService : IReportService
     {
         private IReportRepository reportRepository;
+        private IAppointmentRepository appointmentRepository;
+        private IServiceRequestRepository serviceRequestRepository;
         private IMediaContainer mediaContainer;
         private ILogger logger;
 
-        public ReportService(IReportRepository reportRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
+        public ReportService(IReportRepository reportRepository, IAppointmentRepository appointmentRepository, IServiceRequestRepository serviceRequestRepository, IMediaContainer mediaContainer, ILogger<ReportService> logger)
         {
             this.reportRepository = reportRepository;
+            this.appointmentRepository = appointmentRepository;
+            this.serviceRequestRepository = serviceRequestRepository;
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
@@ -96,8 +100,32 @@ namespace MiddleWare.Services
                 await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 
             }
-
         }
+
+        public async Task SetStrayReport(ProviderClientIncoming.ReportIncoming reportIncoming, string AppointmentId, string ServiceRequestId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                if (!string.IsNullOrEmpty(reportIncoming.AppointmentId))
+                {
+                    DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
+                }
+
+                if (!string.IsNullOrEmpty(reportIncoming.ServiceRequestId))
+                {
+                    DataValidation.ValidateObjectId(reportIncoming.ServiceRequestId, IdType.ServiceRequest);
+                }
+
+                DataValidation.ValidateObjectId(AppointmentId, IdType.Appointment);
+                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
+
+                reportIncoming.ServiceRequestId = ServiceRequestId;
+                reportIncoming.AppointmentId = AppointmentId;
+                await SetReport(reportIncoming);
+            }
+        }
+
 
         private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetOutgoingReportsWithSasUrl(List<Mongo.Report> reports)
         {

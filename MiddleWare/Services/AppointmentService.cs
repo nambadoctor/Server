@@ -10,6 +10,7 @@ using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using DataModel.Shared.Exceptions;
 using MongoDB.GenericRepository.Interfaces;
+using DataModel.Mongo;
 
 namespace MiddleWare.Services
 {
@@ -78,7 +79,6 @@ namespace MiddleWare.Services
                 return listToReturn;
 
             }
-
         }
 
         public async Task AddAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
@@ -114,6 +114,45 @@ namespace MiddleWare.Services
                 await appointmenRepository.AddAppointment(mongoAppointment);
 
                 await serviceRequestRepository.Add(serviceRequest);
+            }
+        }
+
+        public async Task<Appointment> UpsertAppointmentForStrayDocuments (string OrganisationId, string ServiceProviderId, string CustomerId, AppointmentType appointmentType)
+        {
+            var appointment = await appointmenRepository.GetAppointmentByType(OrganisationId, ServiceProviderId, CustomerId, Mongo.AppointmentType.CustomerManagement);
+
+            if (appointment != null)
+            {
+                return appointment;
+            } else
+            {
+                var appointmentToCreate = new Mongo.Appointment();
+
+                //Generate new service request
+                var serviceRequest = new Mongo.ServiceRequest();
+                var appointmentId = ObjectId.GenerateNewId();
+                var serviceRequestId = ObjectId.GenerateNewId();
+
+                appointmentToCreate.AppointmentId = appointmentId;
+                appointmentToCreate.ServiceRequestId = serviceRequestId.ToString();
+                appointmentToCreate.ServiceProviderId = ServiceProviderId;
+                appointmentToCreate.CustomerId = CustomerId;
+                appointmentToCreate.AppointmentType = appointmentType;
+                appointmentToCreate.OrganisationId = OrganisationId;
+
+                serviceRequest.ServiceRequestId = serviceRequestId;
+                serviceRequest.AppointmentId = appointmentId.ToString();
+                serviceRequest.CustomerId = appointmentToCreate.CustomerId;
+                serviceRequest.OrganisationId = appointmentToCreate.OrganisationId;
+                serviceRequest.ServiceProviderId = appointmentToCreate.ServiceProviderId;
+                serviceRequest.Reports = new List<Mongo.Report>();
+                serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
+
+                await appointmenRepository.AddAppointment(appointmentToCreate);
+
+                await serviceRequestRepository.Add(serviceRequest);
+
+                return appointmentToCreate;
             }
         }
 
