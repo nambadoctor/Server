@@ -48,32 +48,15 @@ namespace MongoDB.GenericRepository.Repository
             return customerProfile;
         }
 
-        public async Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId, List<string> serviceProviderIds)
+        public async Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId)
         {
             var organisationFilter = Builders<Customer>.Filter.ElemMatch(cust => cust.Profiles, profile => profile.OrganisationId == organisationId);
-
-            var spFilter = Builders<CustomerProfile>.Filter.In(custProfile => custProfile.ServiceProviderId, serviceProviderIds);
-
-            var serviceProviderFilter = Builders<Customer>.Filter.ElemMatch(
-                cust => cust.Profiles,
-                spFilter
-                );
-
-            FilterDefinition<Customer> combinedFilter;
-            if (serviceProviderIds.Count == 0)
-            {
-                combinedFilter = organisationFilter;
-            }
-            else
-            {
-                combinedFilter = organisationFilter & serviceProviderFilter;
-            }
 
             var project = Builders<Customer>.Projection.Expression(
                 cust => cust.Profiles.Where(profile => profile.OrganisationId == organisationId)
                 );
 
-            var result = await this.GetListByFilterAndProject(combinedFilter, project);
+            var result = await this.GetListByFilterAndProject(organisationFilter, project);
 
             return result.ToList();
 

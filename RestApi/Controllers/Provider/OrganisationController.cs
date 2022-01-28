@@ -45,9 +45,9 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}/customers")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetOrganisationCustomers(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetOrganisationCustomers(string OrganisationId)
         {
-            var customers = await customerService.GetCustomerProfiles(OrganisationId, ServiceProviderIds);
+            var customers = await customerService.GetCustomerProfiles(OrganisationId);
 
             return customers;
 

@@ -1,14 +1,13 @@
-﻿using MiddleWare.Converters;
+
+﻿using DataModel.Shared;
+using MiddleWare.Converters;
 using MiddleWare.Interfaces;
-using MongoDB.Bson;
-using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
-using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
-using Mongo = DataModel.Mongo;
-using DataModel.Shared;
-using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
-using DataModel.Shared.Exceptions;
+using MongoDB.Bson;
 using MongoDB.GenericRepository.Interfaces;
+using Mongo = DataModel.Mongo;
+using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
+using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
 
 namespace MiddleWare.Services
 {
@@ -121,6 +120,7 @@ namespace MiddleWare.Services
         }
 
         public async Task<Mongo.Appointment> UpsertAppointmentForStrayDocuments(string OrganisationId, string ServiceProviderId, string CustomerId)
+
         {
             DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
             DataValidation.ValidateObjectId(ServiceProviderId, IdType.ServiceProvider);
