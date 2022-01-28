@@ -110,7 +110,11 @@ namespace NambaDoctorWebApi
                 options.AddDefaultPolicy(
                     builder =>
                     {
-                        builder.WithOrigins("https://localhost:3000")
+                        builder.WithOrigins(new string[] { 
+                                            "https://localhost:3000",
+                                            "https://test.nambadoctor.com", 
+                                            "https://www.nambadoctor.com", 
+                                            "https://nambadoctor.com" })
                                             .AllowAnyHeader()
                                             .AllowAnyMethod();
                     });
