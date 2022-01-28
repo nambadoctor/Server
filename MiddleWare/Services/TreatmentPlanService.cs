@@ -29,6 +29,11 @@ namespace MiddleWare.Services
             throw new NotImplementedException();
         }
 
+        public Task AddTreatmentPlan(TreatmentPlanIncoming treatmentPlanIncoming)
+        {
+            throw new NotImplementedException();
+        }
+
         public Task DeleteTreatment(string TreatmentPlanId, string TreatmentId)
         {
             throw new NotImplementedException();

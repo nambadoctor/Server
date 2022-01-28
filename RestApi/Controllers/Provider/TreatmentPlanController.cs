@@ -39,6 +39,16 @@ namespace RestApi.Controllers.Provider
             return treatments;
         }
 
+
+        [HttpPost("")]
+        [Authorize]
+        public async Task AddTreatmentPlan([FromBody] ProviderClientIncoming.TreatmentPlanIncoming treatmentPlanIncoming)
+        {
+
+            await treatmentPlanService.AddTreatmentPlan(treatmentPlanIncoming);
+
+        }
+
         [HttpPut("")]
         [Authorize]
         public async Task UpdateTreatmentPlan([FromBody] ProviderClientIncoming.TreatmentPlanIncoming treatmentPlanIncoming)

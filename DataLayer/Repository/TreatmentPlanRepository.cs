@@ -78,13 +78,17 @@ namespace MongoDB.GenericRepository.Repository
 
             var update = Builders<TreatmentPlan>.Update.Set(tp => tp.TreatmentPlanId, new ObjectId(TreatmentPlanId));
 
-            update = update.Set("Treatments.$.TreatmentDetail", treatment.TreatmentDetail);
+            update = update.Set("Treatments.$.Name", treatment.Name);
 
-            update = update.Set("Treatments.$.ServiceRequestId", treatment.ServiceRequestId);
+            update = update.Set("Treatments.$.OrginalInstructions", treatment.OrginalInstructions);
 
-            update = update.Set("Treatments.$.AppointmentId", treatment.AppointmentId);
+            update = update.Set("Treatments.$.TreatmentInstanceServiceRequestId", treatment.TreatmentInstanceServiceRequestId);
+
+            update = update.Set("Treatments.$.TreatmentInstanceAppointmentId", treatment.TreatmentInstanceAppointmentId);
 
             update = update.Set("Treatments.$.PlannedDateTime", treatment.PlannedDateTime);
+
+            update = update.Set("Treatments.$.ActualDateTime", treatment.ActualDateTime);
 
             update = update.Set("Treatments.$.Status", treatment.Status);
 

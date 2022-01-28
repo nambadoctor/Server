@@ -38,7 +38,9 @@ namespace MiddleWare.Converters
 
             treatmentPlan.CustomerName = mongoTreatmentPlan.CustomerName;
 
-            treatmentPlan.OriginServiceRequestId = mongoTreatmentPlan.OriginServiceRequestId;
+            treatmentPlan.OriginServiceRequestId = mongoTreatmentPlan.SourceServiceRequestId;
+
+            treatmentPlan.TreatmentPlanName = mongoTreatmentPlan.TreatmentPlanName;
 
             //TODO Treatments list
 
@@ -66,11 +68,9 @@ namespace MiddleWare.Converters
 
             treatment.TreatmentId = mongoTreatment.TreatmentId.ToString();
 
-            if (mongoTreatment.TreatmentDetail != null)
-            {
-                treatment.Name = mongoTreatment.TreatmentDetail.Name;
-                treatment.Description = mongoTreatment.TreatmentDetail.Description;
-            }
+            treatment.Name = mongoTreatment.Name;
+
+            treatment.OrginalInstructions = mongoTreatment.OrginalInstructions;
 
             treatment.CreatedDateTime = mongoTreatment.CreatedDateTime;
 
@@ -78,9 +78,9 @@ namespace MiddleWare.Converters
 
             treatment.Status = mongoTreatment.Status.ToString();
 
-            treatment.AppointmentId = mongoTreatment.AppointmentId;
+            treatment.AppointmentId = mongoTreatment.TreatmentInstanceAppointmentId;
 
-            treatment.ServiceRequestId = mongoTreatment.ServiceRequestId;
+            treatment.ServiceRequestId = mongoTreatment.TreatmentInstanceServiceRequestId;
 
             return treatment;
         }
@@ -98,9 +98,9 @@ namespace MiddleWare.Converters
                 treatment.TreatmentId = ObjectId.GenerateNewId();
             }
 
-            treatment.ServiceRequestId = treatmentIncoming.ServiceRequestId;
+            treatment.TreatmentInstanceServiceRequestId = treatmentIncoming.ServiceRequestId;
 
-            treatment.AppointmentId = treatmentIncoming.AppointmentId;
+            treatment.TreatmentInstanceAppointmentId = treatmentIncoming.AppointmentId;
 
             treatment.CreatedDateTime = DateTime.UtcNow;
 
@@ -109,9 +109,8 @@ namespace MiddleWare.Converters
             Enum.TryParse(treatmentIncoming.Status, out Mongo.TreatmentStatus treatmentStatus);
             treatment.Status = treatmentStatus;
 
-            treatment.TreatmentDetail = new Mongo.TreatmentDetail();
-            treatment.TreatmentDetail.Description = treatmentIncoming.Description;
-            treatment.TreatmentDetail.Name = treatmentIncoming.Name;
+            treatment.OrginalInstructions = treatmentIncoming.OrginalInstructions;
+            treatment.Name = treatmentIncoming.Name;
 
             return treatment;
         }

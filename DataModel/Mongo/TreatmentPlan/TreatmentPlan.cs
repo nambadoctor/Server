@@ -13,8 +13,7 @@ namespace DataModel.Mongo
     {
         [BsonId]
         public ObjectId TreatmentPlanId { get; set; }
-        public ObjectId TreatmentPlanName { get; set; }
-
+        public string TreatmentPlanName { get; set; }
         public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
         public string CustomerId { get; set; }

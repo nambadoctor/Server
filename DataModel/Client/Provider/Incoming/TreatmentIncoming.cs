@@ -12,7 +12,7 @@ namespace DataModel.Client.Provider.Incoming
         public string AppointmentId { get; set; }
         public string ServiceRequestId { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string OrginalInstructions { get; set; }
         public DateTime PlannedDateTime { get; set; }
         public string Status { get; set; }
     }

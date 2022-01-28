@@ -10,7 +10,7 @@ namespace DataModel.Client.Provider.Outgoing
     {
         public string TreatmentId { get; set; }
         public string Name { get; set; }
-        public string Description { get; set; }
+        public string OrginalInstructions { get; set; }
         public DateTime PlannedDateTime { get; set; }
         public DateTime CreatedDateTime { get; set; }
         public string AppointmentId { get; set; }
