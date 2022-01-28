@@ -8,7 +8,7 @@ namespace MongoDB.GenericRepository.Interfaces
     {
         public Task<CustomerProfile> GetCustomerProfile(string customerId, string organisationId);
         public Task<Customer> GetCustomerFromPhoneNumber(string phoneNumber);
-        public Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId, List<string> serviceProviderIds);
+        public Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId);
         public Task AddCustomerProfile(CustomerProfile profile);
         public Task UpdateCustomerProfile(CustomerProfile profile);
     }
