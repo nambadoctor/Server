@@ -41,6 +41,7 @@ namespace MiddleWare.Utils
         Organisation,
         Prescription,
         Report,
+        TreatmentPlan,
         Other
     }
 }

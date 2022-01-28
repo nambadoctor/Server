@@ -114,5 +114,54 @@ namespace MiddleWare.Converters
 
             return treatment;
         }
+
+        public static List<Mongo.Treatment> ConvertToMongoTreatmentList(List<ProviderClientIncoming.TreatmentIncoming> treatmentsIncomings)
+        {
+            var listToReturn = new List<Mongo.Treatment>();
+
+            if (treatmentsIncomings != null)
+                foreach (var treatment in treatmentsIncomings)
+                {
+                    listToReturn.Add(ConvertToMongoTreatment(treatment));
+                }
+
+            return listToReturn;
+        }
+
+        public static Mongo.TreatmentPlan ConvertToMongoTreatmentPlan(ProviderClientIncoming.TreatmentPlanIncoming treatmentPlan, string? ServiceProviderName, string? CustomerName)
+        {
+            var mongoTreatmentPlan = new Mongo.TreatmentPlan();
+
+            if (string.IsNullOrWhiteSpace(treatmentPlan.TreatmentPlanId))
+            {
+                mongoTreatmentPlan.TreatmentPlanId = ObjectId.GenerateNewId();
+            }
+            else
+            {
+                mongoTreatmentPlan.TreatmentPlanId = new ObjectId(treatmentPlan.TreatmentPlanId);
+            }
+
+            mongoTreatmentPlan.Treatments = ConvertToMongoTreatmentList(treatmentPlan.Treatments);
+
+            mongoTreatmentPlan.CreatedDateTime = DateTime.UtcNow;
+
+            mongoTreatmentPlan.CustomerId = treatmentPlan.CustomerId;
+
+            mongoTreatmentPlan.OrganisationId = treatmentPlan.OrganisationId;
+
+            mongoTreatmentPlan.ServiceProviderId = treatmentPlan.ServiceProviderId;
+
+            mongoTreatmentPlan.ServiceProviderName = ServiceProviderName;
+
+            mongoTreatmentPlan.CustomerName = CustomerName;
+
+            mongoTreatmentPlan.SourceServiceRequestId = treatmentPlan.SourceServiceRequestId;
+
+            mongoTreatmentPlan.TreatmentPlanName = treatmentPlan.TreatmentPlanName;
+
+            mongoTreatmentPlan.TreatmentPlanStatus = treatmentPlan.TreatmentPlanStatus;
+
+            return mongoTreatmentPlan;
+        }
     }
 }
