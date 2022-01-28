@@ -100,7 +100,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task SetStrayPrescription(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
+        public async Task SetStrayPrescription(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string appointmentId, string serviceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -115,50 +115,12 @@ namespace MiddleWare.Services
                     DataValidation.ValidateObjectId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
                 }
 
-                DataValidation.ValidateObjectId(ServiceProviderId, IdType.ServiceProvider);
-                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+                DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
+                DataValidation.ValidateObjectId(serviceRequestId, IdType.ServiceRequest);
 
-                var customerManagementAppointment = await appointmentRepository.GetAppointmentByType(ServiceProviderId, CustomerId, Mongo.AppointmentType.CustomerManagement);
-
-                if (customerManagementAppointment != null)
-                {
-                    prescriptionDocumentIncoming.ServiceRequestId = customerManagementAppointment.ServiceRequestId;
-                    prescriptionDocumentIncoming.AppointmentId = customerManagementAppointment.AppointmentId.ToString();
-                    await SetPrescriptionDocument(prescriptionDocumentIncoming);
-                }
-                else
-                {
-                    var appointment = new Mongo.Appointment();
-
-                    //Generate new service request
-                    var serviceRequest = new Mongo.ServiceRequest();
-                    var appointmentId = ObjectId.GenerateNewId();
-                    var serviceRequestId = ObjectId.GenerateNewId();
-
-                    appointment.AppointmentId = appointmentId;
-                    appointment.ServiceRequestId = serviceRequestId.ToString();
-                    appointment.ServiceProviderId = ServiceProviderId;
-                    appointment.CustomerId = CustomerId;
-                    appointment.AppointmentType = Mongo.AppointmentType.CustomerManagement;
-                    appointment.OrganisationId = OrganisationId;
-
-                    serviceRequest.ServiceRequestId = serviceRequestId;
-                    serviceRequest.AppointmentId = appointmentId.ToString();
-                    serviceRequest.CustomerId = appointment.CustomerId;
-                    serviceRequest.OrganisationId = appointment.OrganisationId;
-                    serviceRequest.ServiceProviderId = appointment.ServiceProviderId;
-                    serviceRequest.Reports = new List<Mongo.Report>();
-                    serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
-
-                    await appointmentRepository.AddAppointment(appointment);
-
-                    await serviceRequestRepository.Add(serviceRequest);
-
-                    prescriptionDocumentIncoming.ServiceRequestId = serviceRequestId.ToString();
-                    prescriptionDocumentIncoming.AppointmentId = appointment.AppointmentId.ToString();
-
-                    await SetPrescriptionDocument(prescriptionDocumentIncoming);
-                }
+                prescriptionDocumentIncoming.AppointmentId = appointmentId;
+                prescriptionDocumentIncoming.ServiceRequestId = serviceRequestId;
+                await SetPrescriptionDocument(prescriptionDocumentIncoming);
             }
         }
 

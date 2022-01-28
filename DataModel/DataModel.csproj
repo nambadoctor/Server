@@ -11,6 +11,7 @@
     <EmbeddedResource Remove="Mongo\Other\**" />
     <None Remove="Client\Consumer\**" />
     <None Remove="Mongo\Other\**" />
+    <None Remove="Mongo\ServiceRequest\Note\" />
   </ItemGroup>
 
   <ItemGroup>
@@ -23,5 +24,8 @@
     <None Remove="Microsoft.Extensions.Caching.Memory" />
     <None Remove="Microsoft.ApplicationInsights" />
     <None Remove="Logging\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Mongo\ServiceRequest\Note\" />
   </ItemGroup>
 </Project>

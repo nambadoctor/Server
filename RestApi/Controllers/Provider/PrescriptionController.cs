@@ -14,10 +14,12 @@ namespace RestApi.Controllers.Provider
     public class PrescriptionController : ControllerBase
     {
         private IPrescriptionService prescriptionService;
+        private IAppointmentService appointmentService;
 
-        public PrescriptionController(IPrescriptionService prescriptionService)
+        public PrescriptionController(IPrescriptionService prescriptionService, IAppointmentService appointmentService)
         {
             this.prescriptionService = prescriptionService;
+            this.appointmentService = appointmentService;
         }
 
         [HttpGet("{ServiceRequestId}")]
@@ -58,7 +60,9 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task SetStrayPrescription([FromBody] ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
-            await prescriptionService.SetStrayPrescription(prescriptionDocumentIncoming, OrganisationId, ServiceProviderId, CustomerId);
+
+            var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId, DataModel.Mongo.AppointmentType.CustomerManagement);
+            await prescriptionService.SetStrayPrescription(prescriptionDocumentIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
         }
     }
 }
