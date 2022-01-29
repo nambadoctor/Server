@@ -67,10 +67,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         [TestMethod]
         public async Task CustomersReadTest()
         {
-            var OrgCustomers = await apiCalls.GetOrgCustomers(ChosenOrganisationId);
-            Assert.IsNotNull(OrgCustomers);
 
-            var SpCustomers = await apiCalls.GetServiceProviderCustomers(ChosenServiceProviderId, ChosenOrganisationId);
+            var SpCustomers = await apiCalls.GetServiceProviderCustomers(ChosenOrganisationId);
             Assert.IsNotNull(SpCustomers);
 
             var chosenCustomer = ChooseRandomFromList(SpCustomers);
@@ -105,7 +103,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         [TestMethod]
         public async Task AppointmentPostTests()
         {
-            var customers = await apiCalls.GetServiceProviderCustomers(ChosenServiceProviderId, ChosenOrganisationId);
+            var customers = await apiCalls.GetServiceProviderCustomers(ChosenOrganisationId);
             var chosenCustomer = ChooseRandomFromList(customers);
 
             var newAppointment = dataGeneration.GenerateSampleAppointment(ChosenServiceProviderId, ChosenOrganisationId, chosenCustomer.CustomerId, "");
@@ -120,11 +118,11 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         [TestMethod]
         public async Task CustomerPutTests()
         {
-            var customers = await apiCalls.GetServiceProviderCustomers(ChosenServiceProviderId, ChosenOrganisationId);
+            var customers = await apiCalls.GetServiceProviderCustomers(ChosenOrganisationId);
             Assert.IsNotNull(customers);
             var rnd = new Random();
             var existingCustomer = customers.ElementAt(rnd.Next(customers.Count));
-            var modifiedCustomer = dataGeneration.GenerateSampleCustomer(ChosenServiceProviderId, ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
+            var modifiedCustomer = dataGeneration.GenerateSampleCustomer(ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
 
             var updatCustomereResult = await apiCalls.UpdateCustomerProfile(modifiedCustomer);
             Assert.IsTrue(updatCustomereResult);
@@ -138,7 +136,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         [TestMethod]
         public async Task CustomerPostTests()
         {
-            var newCustomer = dataGeneration.GenerateSampleCustomer(ChosenServiceProviderId, ChosenOrganisationId, "", "", null);
+            var newCustomer = dataGeneration.GenerateSampleCustomer(ChosenOrganisationId, "", "", null);
             var postCustomerResult = await apiCalls.AddCustomerProfile(newCustomer);
             Assert.IsTrue(postCustomerResult);
 
@@ -148,7 +146,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         }
 
         [TestMethod]
-        public async Task DocumentRWTests()
+        public async Task ReportRWTests()
         {
             var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
             var chosenAppointment = ChooseRandomFromList(initialAppointments);
@@ -157,21 +155,85 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var postReportResult = await apiCalls.AddReport(report);
             Assert.IsTrue(postReportResult);
 
+            var strayReport = dataGeneration.GenerateSampleReport("", "");
+            var postStrayReportResult = await apiCalls.AddStrayReport(strayReport, ChosenOrganisationId, ChosenServiceProviderId, chosenAppointment.CustomerId);
+            Assert.IsTrue(postStrayReportResult);
+
             var updatedReportList = await apiCalls.GetAppointmentReports(chosenAppointment.CustomerId, chosenAppointment.ServiceRequestId);
             Assert.IsTrue(updatedReportList.Count > 0);
+
+            var customerReports = await apiCalls.GetCustomerReports(chosenAppointment.CustomerId, ChosenOrganisationId);
+            Assert.IsNotNull(customerReports);
+        }
+
+        [TestMethod]
+        public async Task PrescriptionRWTests()
+        {
+            var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
+            var chosenAppointment = ChooseRandomFromList(initialAppointments);
 
             var prescription = dataGeneration.GenerateSamplePrescription(chosenAppointment.ServiceRequestId, chosenAppointment.AppointmentId);
             var postPrescriptionResult = await apiCalls.AddPrescription(prescription);
             Assert.IsTrue(postPrescriptionResult);
 
+            var strayPrescription = dataGeneration.GenerateSamplePrescription("", "");
+            var postStrayPrescriptionResult = await apiCalls.AddStrayPrescription(strayPrescription, ChosenOrganisationId, ChosenServiceProviderId, chosenAppointment.CustomerId);
+            Assert.IsTrue(postStrayPrescriptionResult);
+
             var updatedPrescriptionList = await apiCalls.GetAppointmentPrescriptions(chosenAppointment.CustomerId, chosenAppointment.ServiceRequestId);
             Assert.IsTrue(updatedPrescriptionList.Count > 0);
 
-            var customerReports = await apiCalls.GetCustomerReports(chosenAppointment.CustomerId, ChosenOrganisationId);
-            Assert.IsNotNull(customerReports);
-
             var customerPrescriptions = await apiCalls.GetCustomerPrescriptions(chosenAppointment.CustomerId, ChosenOrganisationId);
             Assert.IsNotNull(customerPrescriptions);
+        }
+
+        [TestMethod]
+        public async Task NotesTests()
+        {
+            var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
+            var chosenAppointment = ChooseRandomFromList(initialAppointments);
+
+            var note = dataGeneration.GenerateSampleNote(null, chosenAppointment.ServiceRequestId, chosenAppointment.AppointmentId);
+            var postNoteResult = await apiCalls.AddNote(note);
+            Assert.IsTrue(postNoteResult);
+
+            var strayNote = dataGeneration.GenerateSampleNote(null, "", "");
+            var postStrayNoteResult = await apiCalls.AddStrayNote(strayNote, ChosenOrganisationId, ChosenServiceProviderId, chosenAppointment.CustomerId);
+            Assert.IsTrue(postStrayNoteResult);
+
+            var updatedNoteList = await apiCalls.GetAppointmentNotes(chosenAppointment.ServiceRequestId);
+            Assert.IsTrue(updatedNoteList.Count > 0);
+
+            var customerNotes = await apiCalls.GetCustomerNotes(chosenAppointment.CustomerId, ChosenOrganisationId);
+            Assert.IsNotNull(customerNotes);
+        }
+
+        [TestMethod]
+        public async Task TreatmentPlanTests()
+        {
+            var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
+            var chosenAppointment = ChooseRandomFromList(initialAppointments);
+
+            var treatmentPlan = dataGeneration.GenerateTreatmentPlan(chosenAppointment.CustomerId, ChosenServiceProviderId, ChosenOrganisationId, chosenAppointment.ServiceRequestId, null);
+            var postTreatmentPlanResult = await apiCalls.AddTreatmentPlan(treatmentPlan);
+            Assert.IsTrue(postTreatmentPlanResult);
+
+            var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId);
+            var chosenTreatmentPlan = ChooseRandomFromList(treatmentPlans);
+            var chosenTreatment = ChooseRandomFromList(chosenTreatmentPlan.Treatments);
+
+            var newTreatment = dataGeneration.GenerateTreatment(chosenAppointment.AppointmentId, chosenAppointment.ServiceRequestId, null);
+            var postTreatmentResult = await apiCalls.AddTreatment(newTreatment, chosenTreatmentPlan.TreatmentPlanId);
+            Assert.IsTrue(postTreatmentResult);
+
+            /*var existingTreatment = dataGeneration.GenerateTreatment(chosenAppointment.AppointmentId, chosenAppointment.ServiceRequestId, chosenTreatment.TreatmentId);
+            var putTreatmentResult = await apiCalls.UpdateTreatment(existingTreatment, chosenTreatmentPlan.TreatmentPlanId);
+            Assert.IsTrue(putTreatmentResult);*/
+
+            var updatedTreatmentPlan = dataGeneration.GenerateTreatmentPlan(chosenAppointment.CustomerId, ChosenServiceProviderId, ChosenOrganisationId, chosenAppointment.ServiceRequestId, chosenTreatmentPlan.TreatmentPlanId);
+            var putTreatmentPlanResult = await apiCalls.UpdateTreatmentPlan(updatedTreatmentPlan);
+            Assert.IsTrue(putTreatmentPlanResult);
+
         }
 
         private T ChooseRandomFromList<T>(List<T> list)

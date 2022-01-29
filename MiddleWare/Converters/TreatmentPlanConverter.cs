@@ -42,7 +42,9 @@ namespace MiddleWare.Converters
 
             treatmentPlan.TreatmentPlanName = mongoTreatmentPlan.TreatmentPlanName;
 
-            //TODO Treatments list
+            treatmentPlan.Treatments = ConvertToOutgoingTreatmentList(mongoTreatmentPlan.Treatments);
+
+            treatmentPlan.TreatmentPlanId = mongoTreatmentPlan.TreatmentPlanId.ToString();
 
             return treatmentPlan;
         }
@@ -89,7 +91,7 @@ namespace MiddleWare.Converters
         {
             var treatment = new Mongo.Treatment();
 
-            if (string.IsNullOrWhiteSpace(treatmentIncoming.TreatmentId))
+            if (!string.IsNullOrWhiteSpace(treatmentIncoming.TreatmentId))
             {
                 treatment.TreatmentId = new ObjectId(treatmentIncoming.TreatmentId);
             }

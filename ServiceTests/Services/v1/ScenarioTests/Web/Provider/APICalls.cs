@@ -77,9 +77,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
 
-        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetServiceProviderCustomers(string ServiceProviderId, string OrganisationId)
+        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetServiceProviderCustomers(string OrganisationId)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/organisation/{OrganisationId}/customers?ServiceProviderIds={ServiceProviderId}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/organisation/{OrganisationId}/customers"))
             {
                 var response = await httpClient.SendAsync(request);
                 var customers = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.OutgoingCustomerProfile>>(await response.Content.ReadAsStringAsync());
@@ -149,6 +149,50 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 var value = await response.Content.ReadAsStringAsync();
                 var prescriptions = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>>(value);
                 return prescriptions;
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.NoteOutgoing>> GetAppointmentNotes(string ServiceRequestId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/note/{ServiceRequestId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var notes = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.NoteOutgoing>>(value);
+                return notes;
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.NoteOutgoing>> GetCustomerNotes(string CustomerId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/note/all/{OrganisationId}/{CustomerId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var notes = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.NoteOutgoing>>(value);
+                return notes;
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/all/{OrganisationId}/{ServiceproviderId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentPlanOutgoing>>(value);
+                return tps;
+            }
+        }
+
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string CustomerId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/customer/{OrganisationId}/{CustomerId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentPlanOutgoing>>(value);
+                return tps;
             }
         }
         #endregion GET
@@ -253,6 +297,127 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 }
             }
         }
+
+        public async Task<bool> AddStrayReport(ProviderClientIncoming.ReportIncoming report, string OrganisationId, string ServiceProviderId, string CustomerId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/report/Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}"))
+            {
+                var jsonData = JsonConvert.SerializeObject(report);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddStrayPrescription(ProviderClientIncoming.PrescriptionDocumentIncoming prescription, string OrganisationId, string ServiceProviderId, string CustomerId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/prescription/Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}"))
+            {
+                var jsonData = JsonConvert.SerializeObject(prescription);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddNote(ProviderClientIncoming.NoteIncoming note)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + "/note"))
+            {
+                var jsonData = JsonConvert.SerializeObject(note);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddStrayNote(ProviderClientIncoming.NoteIncoming note, string OrganisationId, string ServiceProviderId, string CustomerId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/note/Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}"))
+            {
+                var jsonData = JsonConvert.SerializeObject(note);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddTreatmentPlan(ProviderClientIncoming.TreatmentPlanIncoming tp)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/treatmentplan"))
+            {
+                var jsonData = JsonConvert.SerializeObject(tp);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddTreatment(ProviderClientIncoming.TreatmentIncoming treatment, string TreatmentPlanId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/treatmentplan/treatment/{TreatmentPlanId}"))
+            {
+                var jsonData = JsonConvert.SerializeObject(treatment);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
         #endregion POST
 
         #region PUT
@@ -321,6 +486,46 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             using (var request = new HttpRequestMessage(HttpMethod.Put, BaseUrl + "/customer"))
             {
                 var jsonData = JsonConvert.SerializeObject(customerProfileIncoming);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> UpdateTreatmentPlan(ProviderClientIncoming.TreatmentPlanIncoming tp)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Put, BaseUrl + $"/treatmentplan"))
+            {
+                var jsonData = JsonConvert.SerializeObject(tp);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> UpdateTreatment(ProviderClientIncoming.TreatmentIncoming treatment, string TreatmentPlanId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Put, BaseUrl + $"/treatmentplan/treatment/{TreatmentPlanId}"))
+            {
+                var jsonData = JsonConvert.SerializeObject(treatment);
                 var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
                 request.Content = contentData;
                 var response = await httpClient.SendAsync(request);
