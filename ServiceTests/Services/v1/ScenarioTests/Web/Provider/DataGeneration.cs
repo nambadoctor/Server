@@ -28,12 +28,11 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             return appointment;
         }
 
-        public ProviderClientIncoming.CustomerProfileIncoming GenerateSampleCustomer(string ServiceProviderId, string OrganisationId, string CustomerId, string CustomerProfileId, List<ProviderClientCommon.PhoneNumber> custPhoneNumbers)
+        public ProviderClientIncoming.CustomerProfileIncoming GenerateSampleCustomer(string OrganisationId, string CustomerId, string CustomerProfileId, List<ProviderClientCommon.PhoneNumber> custPhoneNumbers)
         {
             var customer = new ProviderClientIncoming.CustomerProfileIncoming();
             Random rnd = new Random();
 
-            customer.ServiceProviderId = ServiceProviderId;
             customer.OrganisationId = OrganisationId;
             customer.CustomerId = CustomerId;
             customer.CustomerProfileId = CustomerProfileId;
@@ -65,7 +64,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             var customerWithAppointment = new ProviderClientIncoming.CustomerProfileWithAppointmentIncoming();
 
-            var customer = GenerateSampleCustomer(ServiceProviderId, OrganisationId, "", "", custPhoneNumbers);
+            var customer = GenerateSampleCustomer(OrganisationId, "", "", custPhoneNumbers);
 
             var appointment = GenerateSampleAppointment(ServiceProviderId, OrganisationId, "", "");
 
@@ -75,7 +74,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             return customerWithAppointment;
         }
 
-        public ProviderClientIncoming.ReportIncoming GenerateSampleReport(string ServiceRequestId, string AppointmentId)
+        public ProviderClientIncoming.ReportIncoming GenerateSampleReport(string? ServiceRequestId, string? AppointmentId)
         {
             var rnd = new Random();
             var report = new ProviderClientIncoming.ReportIncoming();
@@ -89,7 +88,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             return report;
         }
 
-        public ProviderClientIncoming.PrescriptionDocumentIncoming GenerateSamplePrescription(string ServiceRequestId, string AppointmentId)
+        public ProviderClientIncoming.PrescriptionDocumentIncoming GenerateSamplePrescription(string? ServiceRequestId, string? AppointmentId)
         {
             var rnd = new Random();
             var prescription = new ProviderClientIncoming.PrescriptionDocumentIncoming();
@@ -101,6 +100,81 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             prescription.File = $"bs,cHJlc2NyaXB0aW9u";
 
             return prescription;
+        }
+
+        public ProviderClientIncoming.NoteIncoming GenerateSampleNote(string? NoteId, string? ServiceRequestId, string? AppointmentId)
+        {
+            var rnd = new Random();
+            var note = new ProviderClientIncoming.NoteIncoming();
+
+            if (!string.IsNullOrEmpty(NoteId))
+            {
+                note.NoteId = NoteId;
+            }
+
+            note.Note = $"Note {rnd.Next(100)}";
+
+            note.ServiceRequestId = ServiceRequestId;
+            note.AppointmentId = AppointmentId;
+
+            return note;
+        }
+
+        public ProviderClientIncoming.TreatmentPlanIncoming GenerateTreatmentPlan(string CustomerId, string ServiceProviderId, string OrganisationId, string OriginServiceRequestId, string? treatmentPlanId)
+        {
+            var rnd = new Random();
+
+            var treatmentPlan = new ProviderClientIncoming.TreatmentPlanIncoming();
+
+            treatmentPlan.CustomerId = CustomerId;
+            treatmentPlan.ServiceProviderId = ServiceProviderId;
+            treatmentPlan.TreatmentPlanStatus = "InProgress";
+            treatmentPlan.OrganisationId = OrganisationId;
+            treatmentPlan.TreatmentPlanName = $"Treatment plan{rnd.Next(100)}";
+            treatmentPlan.SourceServiceRequestId = OriginServiceRequestId;
+
+            if (!string.IsNullOrWhiteSpace(treatmentPlanId))
+            {
+                treatmentPlan.TreatmentPlanId = treatmentPlanId;
+            }
+
+            treatmentPlan.Treatments = new List<ProviderClientIncoming.TreatmentIncoming>();
+
+            for (var i = 0; i < rnd.Next(1, 5); i++)
+            {
+                treatmentPlan.Treatments.Add(GenerateTreatment(null, null, null));
+            }
+
+            return treatmentPlan;
+        }
+
+        public ProviderClientIncoming.TreatmentIncoming GenerateTreatment(string? AppointmentId, string? ServiceRequestId, string? TreatmentId)
+        {
+            var rnd = new Random();
+
+            var treatment = new ProviderClientIncoming.TreatmentIncoming();
+
+            treatment.Status = "Pending";
+            treatment.Name = $"Treatment {rnd.Next(10)}";
+            treatment.PlannedDateTime = DateTime.Now.AddDays(rnd.Next(10));
+            treatment.OrginalInstructions = $"Instruction {rnd.Next(10)}";
+
+            if (!string.IsNullOrWhiteSpace(TreatmentId))
+            {
+                treatment.TreatmentId = TreatmentId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(AppointmentId))
+            {
+                treatment.AppointmentId = AppointmentId;
+            }
+
+            if (!string.IsNullOrWhiteSpace(ServiceRequestId))
+            {
+                treatment.ServiceRequestId = ServiceRequestId;
+            }
+
+            return treatment;
         }
     }
 }

@@ -23,6 +23,10 @@ namespace MongoDB.GenericRepository.Repository
 
             update = update.Set(tp => tp.Treatments, treatmentPlan.Treatments);
 
+            update = update.Set(tp => tp.TreatmentPlanStatus, treatmentPlan.TreatmentPlanStatus);
+
+            update = update.Set(tp => tp.TreatmentPlanName, treatmentPlan.TreatmentPlanName);
+
             await this.Upsert(filter, update);
         }
 
