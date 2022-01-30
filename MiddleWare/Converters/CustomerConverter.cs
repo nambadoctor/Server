@@ -21,7 +21,6 @@ namespace MiddleWare.Converters
             mongoCustomerProfile.LastName = customerProfile.LastName;
             mongoCustomerProfile.Gender = customerProfile.Gender;
             mongoCustomerProfile.OrganisationId = customerProfile.OrganisationId;
-            mongoCustomerProfile.ServiceProviderId = customerProfile.ServiceProviderId;
 
             if (customerProfile.DateOfBirth != null)
                 mongoCustomerProfile.DateOfBirth = ConvertToMongoDateOfBirth(customerProfile.DateOfBirth);
@@ -47,7 +46,6 @@ namespace MiddleWare.Converters
             clientCustomerProfile.LastName = customerProfile.LastName;
             clientCustomerProfile.Gender = customerProfile.Gender;
             clientCustomerProfile.OrganisationId = customerProfile.OrganisationId;
-            clientCustomerProfile.ServiceProviderId = customerProfile.ServiceProviderId;
 
             if (customerProfile.DateOfBirth != null)
                 clientCustomerProfile.DateOfBirth = ConvertToClientDateOfBirth(customerProfile.DateOfBirth);

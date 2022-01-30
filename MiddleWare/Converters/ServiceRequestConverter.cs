@@ -103,13 +103,14 @@ namespace MiddleWare.Converters
             {
                 mongoNote.NoteId = ObjectId.GenerateNewId();
                 mongoNote.CreatedTime = DateTime.UtcNow;
-            } else
+            }
+            else
             {
                 mongoNote.NoteId = new ObjectId(noteIncoming.NoteId);
             }
-           
-            mongoNote.NoteText = noteIncoming.Note;
 
+            mongoNote.NoteText = noteIncoming.Note;
+            mongoNote.LastModifiedTime = DateTime.UtcNow;
             return mongoNote;
         }
 

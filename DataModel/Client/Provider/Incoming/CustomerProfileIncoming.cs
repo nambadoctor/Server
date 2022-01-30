@@ -17,6 +17,5 @@ namespace DataModel.Client.Provider.Incoming
         public string Gender { get; set; }
         public DateOfBirth DateOfBirth { get; set; }
         public string? OrganisationId { get; set; }
-        public string? ServiceProviderId { get; set; }
     }
 }

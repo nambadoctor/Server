@@ -15,6 +15,5 @@ namespace DataModel.Client.Provider.Outgoing
         public string EmailAddress { get; set; }
         public string ProfilePicURL { get; set; }
         public string? OrganisationId { get; set; }
-        public string? ServiceProviderId { get; set; }
     }
 }

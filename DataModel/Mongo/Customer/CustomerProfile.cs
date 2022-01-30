@@ -17,6 +17,5 @@ namespace DataModel.Mongo
         public DateOfBirth DateOfBirth { get; set; }
         public List<PhoneNumber> PhoneNumbers { get; set; }
         public string? OrganisationId { get; set; }
-        public string? ServiceProviderId { get; set; }
     }
 }

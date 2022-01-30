@@ -59,7 +59,8 @@ namespace MiddleWare.Services
                 if (customerProfile == null)
                 {
                     return null;
-                } else
+                }
+                else
                 {
                     logger.LogInformation("Begin data conversion ConvertToClientCustomerProfile");
 
@@ -100,7 +101,7 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomerProfiles(string organsiationId, List<string> serviceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingCustomerProfile>> GetCustomerProfiles(string organsiationId)
         {
             using (logger.BeginScope("Method: {Method}", "CustomerService:GetCustomers"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -108,15 +109,15 @@ namespace MiddleWare.Services
 
                 DataValidation.ValidateObjectId(organsiationId, IdType.Organisation);
 
-                var customerProfiles = await customerRepository.GetCustomersOfOrganisation(organsiationId, serviceProviderIds);
+                var customerProfiles = await customerRepository.GetCustomersOfOrganisation(organsiationId);
 
                 if (customerProfiles == null)
                 {
-                    logger.LogInformation($"No customers for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
+                    logger.LogInformation($"No customers for organisation:{organsiationId}");
                 }
                 else
                 {
-                    logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId} spIdsCount:{serviceProviderIds.Count}");
+                    logger.LogInformation($"Customer count:{customerProfiles.Count} for organisation:{organsiationId}");
                 }
 
                 var clientCustomers = CustomerConverter.ConvertToClientCustomerProfileList(customerProfiles);
@@ -149,7 +150,6 @@ namespace MiddleWare.Services
             }
 
             DataValidation.ValidateObjectId(customerProfile.OrganisationId, IdType.Organisation);
-            DataValidation.ValidateObjectId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
 
             if (!string.IsNullOrWhiteSpace(customerProfile.CustomerId))
             {
@@ -208,7 +208,6 @@ namespace MiddleWare.Services
 
             DataValidation.ValidateObjectId(customerProfile.CustomerId, IdType.Customer);
             DataValidation.ValidateObjectId(customerProfile.OrganisationId, IdType.Organisation);
-            DataValidation.ValidateObjectId(customerProfile.ServiceProviderId, IdType.ServiceProvider);
 
             var phoneNumber = customerProfile.PhoneNumbers.First().CountryCode + customerProfile.PhoneNumbers.First().Number;
 

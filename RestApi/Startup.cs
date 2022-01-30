@@ -67,6 +67,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<IReportService, ReportService>();
             services.AddScoped<INoteService, NoteService>();
             services.AddScoped<IPrescriptionService, PrescriptionService>();
+            services.AddScoped<ITreatmentPlanService, TreatmentPlanService>();
 
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
@@ -81,6 +82,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<IReportRepository, ReportRepository>();
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
+            services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
@@ -112,7 +114,11 @@ namespace NambaDoctorWebApi
                 options.AddDefaultPolicy(
                     builder =>
                     {
-                        builder.WithOrigins("https://localhost:3000")
+                        builder.WithOrigins(new string[] { 
+                                            "https://localhost:3000",
+                                            "https://test.nambadoctor.com", 
+                                            "https://www.nambadoctor.com", 
+                                            "https://nambadoctor.com", "*" })
                                             .AllowAnyHeader()
                                             .AllowAnyMethod();
                     });
