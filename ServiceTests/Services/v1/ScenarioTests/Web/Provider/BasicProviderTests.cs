@@ -226,9 +226,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var postTreatmentResult = await apiCalls.AddTreatment(newTreatment, chosenTreatmentPlan.TreatmentPlanId);
             Assert.IsTrue(postTreatmentResult);
 
-            /*var existingTreatment = dataGeneration.GenerateTreatment(chosenAppointment.AppointmentId, chosenAppointment.ServiceRequestId, chosenTreatment.TreatmentId);
+            var existingTreatment = dataGeneration.GenerateTreatment(chosenAppointment.AppointmentId, chosenAppointment.ServiceRequestId, chosenTreatment.TreatmentId);
             var putTreatmentResult = await apiCalls.UpdateTreatment(existingTreatment, chosenTreatmentPlan.TreatmentPlanId);
-            Assert.IsTrue(putTreatmentResult);*/
+            Assert.IsTrue(putTreatmentResult);
 
             var updatedTreatmentPlan = dataGeneration.GenerateTreatmentPlan(chosenAppointment.CustomerId, ChosenServiceProviderId, ChosenOrganisationId, chosenAppointment.ServiceRequestId, chosenTreatmentPlan.TreatmentPlanId);
             var putTreatmentPlanResult = await apiCalls.UpdateTreatmentPlan(updatedTreatmentPlan);
