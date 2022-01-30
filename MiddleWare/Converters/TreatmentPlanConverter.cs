@@ -84,6 +84,8 @@ namespace MiddleWare.Converters
 
             treatment.ServiceRequestId = mongoTreatment.TreatmentInstanceServiceRequestId;
 
+            treatment.ActualProcedure = mongoTreatment.ActualProcedure;
+
             return treatment;
         }
 
@@ -113,6 +115,8 @@ namespace MiddleWare.Converters
 
             treatment.OrginalInstructions = treatmentIncoming.OrginalInstructions;
             treatment.Name = treatmentIncoming.Name;
+
+            treatment.ActualProcedure = treatmentIncoming.ActualProcedure;
 
             return treatment;
         }
