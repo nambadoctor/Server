@@ -94,7 +94,6 @@ namespace MiddleWare.Services
             {
                 DataValidation.ValidateObjectId(noteIncoming.ServiceRequestId, IdType.ServiceRequest);
                 DataValidation.ValidateObjectId(noteIncoming.AppointmentId, IdType.Appointment);
-                DataValidation.ValidateObjectId(noteIncoming.NoteId, IdType.Note);
 
                 var mongoNote = ServiceRequestConverter.ConvertToMongoNote(noteIncoming);
 
