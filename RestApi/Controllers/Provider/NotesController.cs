@@ -63,7 +63,11 @@ namespace RestApi.Controllers.Provider
         public async Task SetStrayNote([FromBody] ProviderClientIncoming.NoteIncoming noteIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
             var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId);
-            await noteService.SetStrayNote(noteIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
+
+            noteIncoming.AppointmentId = appointment.AppointmentId.ToString();
+            noteIncoming.ServiceRequestId = appointment.ServiceRequestId.ToString();
+
+            await noteService.SetNote(noteIncoming);
         }
     }
 }
