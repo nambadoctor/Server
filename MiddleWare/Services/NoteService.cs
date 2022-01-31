@@ -7,6 +7,7 @@ using Exceptions = DataModel.Shared.Exceptions;
 using MiddleWare.Utils;
 using MongoDB.GenericRepository.Interfaces;
 using MiddleWare.Converters;
+using DataModel.Client.Provider.Incoming;
 
 namespace MiddleWare.Services
 {
@@ -100,6 +101,24 @@ namespace MiddleWare.Services
                 logger.LogInformation("Converted to mongo mote successfully");
 
                 await noteRepository.AddNote(mongoNote, noteIncoming.ServiceRequestId);
+
+                logger.LogInformation($"Added note with id {mongoNote.NoteId} successfully");
+            }
+        }
+
+        public async Task UpdateNote(ProviderClientIncoming.NoteIncoming noteIncoming)
+        {
+            using (logger.BeginScope("Method: {Method}", "NoteService:SetNote"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(noteIncoming.ServiceRequestId, IdType.ServiceRequest);
+                DataValidation.ValidateObjectId(noteIncoming.AppointmentId, IdType.Appointment);
+
+                var mongoNote = ServiceRequestConverter.ConvertToMongoNote(noteIncoming);
+
+                logger.LogInformation("Converted to mongo mote successfully");
+
+                await noteRepository.UpdateNote(mongoNote, noteIncoming.ServiceRequestId, noteIncoming.AppointmentId);
 
                 logger.LogInformation($"Added note with id {mongoNote.NoteId} successfully");
             }

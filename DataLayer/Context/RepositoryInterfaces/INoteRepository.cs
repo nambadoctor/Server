@@ -12,6 +12,7 @@ namespace MongoDB.GenericRepository.Interfaces
         public Task<List<Note>> GetAllNotes(string organisationId, string customerId);
         public Task<List<Note>> GetServiceRequestNotes(string serviceRequestId);
         public Task AddNote(Note note, string serviceRequestId);
+        public Task UpdateNote(Note note, string serviceRequestId, string appointmentId);
         public Task DeleteNote(string serviceRequestId, string noteId);
     }
 }

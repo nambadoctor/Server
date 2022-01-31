@@ -66,5 +66,18 @@ namespace MongoDB.GenericRepository.Repository
 
             return result.ToList();
         }
+
+        public async Task UpdateNote (Note note, string serviceRequestId, string appointmentId)
+        {
+            var filter = Builders<ServiceRequest>.Filter;
+
+            var nestedFilter = Builders<ServiceRequest>.Filter.ElemMatch(sp => sp.Notes, a => a.NoteId.Equals(note.NoteId));
+
+            var update = Builders<ServiceRequest>.Update.Set(sp => sp.ServiceRequestId, new ObjectId(serviceRequestId));
+            update = update.Set("Notes.$.NoteText", note.NoteText);
+            update = update.Set("Notes.$.LastModifiedTime", note.LastModifiedTime);
+
+            await this.Upsert(nestedFilter, update);
+        }
     }
 }
