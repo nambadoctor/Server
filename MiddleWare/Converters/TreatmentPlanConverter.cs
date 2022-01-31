@@ -42,7 +42,9 @@ namespace MiddleWare.Converters
 
             treatmentPlan.TreatmentPlanName = mongoTreatmentPlan.TreatmentPlanName;
 
-            //TODO Treatments list
+            treatmentPlan.Treatments = ConvertToOutgoingTreatmentList(mongoTreatmentPlan.Treatments);
+
+            treatmentPlan.TreatmentPlanId = mongoTreatmentPlan.TreatmentPlanId.ToString();
 
             return treatmentPlan;
         }
@@ -82,6 +84,8 @@ namespace MiddleWare.Converters
 
             treatment.ServiceRequestId = mongoTreatment.TreatmentInstanceServiceRequestId;
 
+            treatment.ActualProcedure = mongoTreatment.ActualProcedure;
+
             return treatment;
         }
 
@@ -89,7 +93,7 @@ namespace MiddleWare.Converters
         {
             var treatment = new Mongo.Treatment();
 
-            if (string.IsNullOrWhiteSpace(treatmentIncoming.TreatmentId))
+            if (!string.IsNullOrWhiteSpace(treatmentIncoming.TreatmentId))
             {
                 treatment.TreatmentId = new ObjectId(treatmentIncoming.TreatmentId);
             }
@@ -111,6 +115,8 @@ namespace MiddleWare.Converters
 
             treatment.OrginalInstructions = treatmentIncoming.OrginalInstructions;
             treatment.Name = treatmentIncoming.Name;
+
+            treatment.ActualProcedure = treatmentIncoming.ActualProcedure;
 
             return treatment;
         }
