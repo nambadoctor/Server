@@ -23,6 +23,10 @@ namespace MongoDB.GenericRepository.Repository
 
             update = update.Set(tp => tp.Treatments, treatmentPlan.Treatments);
 
+            update = update.Set(tp => tp.TreatmentPlanStatus, treatmentPlan.TreatmentPlanStatus);
+
+            update = update.Set(tp => tp.TreatmentPlanName, treatmentPlan.TreatmentPlanName);
+
             await this.Upsert(filter, update);
         }
 
@@ -74,19 +78,19 @@ namespace MongoDB.GenericRepository.Repository
         {
             var filter = Builders<TreatmentPlan>.Filter;
 
-            var nestedFilter = Builders<TreatmentPlan>.Filter.ElemMatch(tp => tp.Treatments, treatment => treatment.TreatmentId.Equals(treatment.TreatmentId));
+            var nestedFilter = filter.ElemMatch(
+                tp => tp.Treatments,
+                tr => tr.TreatmentId.Equals(treatment.TreatmentId));
 
             var update = Builders<TreatmentPlan>.Update.Set(tp => tp.TreatmentPlanId, new ObjectId(TreatmentPlanId));
 
             update = update.Set("Treatments.$.Name", treatment.Name);
 
-            update = update.Set("Treatments.$.OrginalInstructions", treatment.OrginalInstructions);
+            update = update.Set("Treatments.$.ActualProcedure", treatment.ActualProcedure);
 
             update = update.Set("Treatments.$.TreatmentInstanceServiceRequestId", treatment.TreatmentInstanceServiceRequestId);
 
             update = update.Set("Treatments.$.TreatmentInstanceAppointmentId", treatment.TreatmentInstanceAppointmentId);
-
-            update = update.Set("Treatments.$.PlannedDateTime", treatment.PlannedDateTime);
 
             update = update.Set("Treatments.$.ActualDateTime", treatment.ActualDateTime);
 
