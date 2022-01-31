@@ -62,7 +62,11 @@ namespace RestApi.Controllers.Provider
         {
 
             var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId);
-            await prescriptionService.SetStrayPrescription(prescriptionDocumentIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
+
+            prescriptionDocumentIncoming.AppointmentId = appointment.AppointmentId.ToString();
+            prescriptionDocumentIncoming.ServiceRequestId = appointment.ServiceRequestId;
+
+            await prescriptionService.SetPrescriptionDocument(prescriptionDocumentIncoming);
         }
     }
 }

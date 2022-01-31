@@ -63,7 +63,11 @@ namespace RestApi.Controllers.Provider
         public async Task SetStrayReport([FromBody] ProviderClientIncoming.ReportIncoming reportIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)
         {
             var appointment = await appointmentService.UpsertAppointmentForStrayDocuments(OrganisationId, ServiceProviderId, CustomerId);
-            await reportService.SetStrayReport(reportIncoming, appointment.AppointmentId.ToString(), appointment.ServiceRequestId);
+
+            reportIncoming.AppointmentId = appointment.AppointmentId.ToString();
+            reportIncoming.ServiceRequestId = appointment.ServiceRequestId;
+
+            await reportService.SetReport(reportIncoming);
         }
     }
 }

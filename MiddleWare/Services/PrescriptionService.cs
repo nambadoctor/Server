@@ -100,30 +100,6 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task SetStrayPrescription(ProviderClientIncoming.PrescriptionDocumentIncoming prescriptionDocumentIncoming, string appointmentId, string serviceRequestId)
-        {
-            using (logger.BeginScope("Method: {Method}", "ReportService:SetStrayReport"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                if (!string.IsNullOrEmpty(prescriptionDocumentIncoming.AppointmentId))
-                {
-                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
-                }
-
-                if (!string.IsNullOrEmpty(prescriptionDocumentIncoming.ServiceRequestId))
-                {
-                    DataValidation.ValidateObjectId(prescriptionDocumentIncoming.ServiceRequestId, IdType.ServiceRequest);
-                }
-
-                DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
-                DataValidation.ValidateObjectId(serviceRequestId, IdType.ServiceRequest);
-
-                prescriptionDocumentIncoming.AppointmentId = appointmentId;
-                prescriptionDocumentIncoming.ServiceRequestId = serviceRequestId;
-                await SetPrescriptionDocument(prescriptionDocumentIncoming);
-            }
-        }
-
         private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments)
         {
             var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();

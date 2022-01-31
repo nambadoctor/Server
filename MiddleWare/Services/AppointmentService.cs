@@ -67,6 +67,8 @@ namespace MiddleWare.Services
 
                 appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
 
+                appointments.RemoveAll(appointment => appointment.AppointmentType == Mongo.AppointmentType.CustomerManagement);
+
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
                 var listToReturn = AppointmentConverter.ConvertToClientAppointmentDataList(appointments);
