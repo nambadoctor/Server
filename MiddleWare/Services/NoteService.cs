@@ -103,26 +103,5 @@ namespace MiddleWare.Services
                 logger.LogInformation($"Added note with id {mongoNote.NoteId} successfully");
             }
         }
-
-        public async Task SetStrayNote(ProviderClientIncoming.NoteIncoming noteIncoming, string AppointmentId, string ServiceRequestId)
-        {
-            using (logger.BeginScope("Method: {Method}", "NoteService:SetStrayNote"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                if (!string.IsNullOrEmpty(noteIncoming.AppointmentId))
-                {
-                    DataValidation.ValidateObjectId(noteIncoming.AppointmentId, IdType.Appointment);
-                }
-
-                if (!string.IsNullOrEmpty(noteIncoming.ServiceRequestId))
-                {
-                    DataValidation.ValidateObjectId(noteIncoming.ServiceRequestId, IdType.ServiceRequest);
-                }
-
-                noteIncoming.ServiceRequestId = ServiceRequestId;
-                noteIncoming.AppointmentId = AppointmentId;
-                await SetNote(noteIncoming);
-            }
-        }
     }
 }
