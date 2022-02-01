@@ -542,5 +542,24 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         }
         #endregion PUT
 
+        #region Delete
+        public async Task<bool> DeleteReport(string ReportId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, BaseUrl + $"/report/{ReportId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        #endregion Delete
+
     }
 }

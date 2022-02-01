@@ -24,9 +24,11 @@ namespace MongoDB.GenericRepository.Repository
             await this.AddToSet(filter, update);
         }
 
-        public async Task DeletePrescriptionDocument(string serviceRequestId, string prescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string prescriptionDocumentId)
         {
-            var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
+            var filter = Builders<ServiceRequest>.Filter.ElemMatch(
+                sr => sr.PrescriptionDocuments,
+                prescDoc => prescDoc.PrescriptionDocumentId.Equals(new ObjectId(prescriptionDocumentId)));
 
             var update = Builders<ServiceRequest>.Update.PullFilter(
                 sr => sr.PrescriptionDocuments,

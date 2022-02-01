@@ -44,11 +44,11 @@ namespace RestApi.Controllers.Provider
             return reports;
         }
 
-        [HttpDelete("{ServiceRequestId}/{ReportId}")]
+        [HttpDelete("{ReportId}")]
         [Authorize]
-        public async Task DeleteReport(string ServiceRequestId, string ReportId)
+        public async Task DeleteReport(string ReportId)
         {
-            await reportService.DeleteReport(ServiceRequestId, ReportId);
+            await reportService.DeleteReport(ReportId);
         }
 
         [HttpPost("")]

@@ -12,6 +12,6 @@ namespace MongoDB.GenericRepository.Interfaces
         public Task<List<PrescriptionDocument>> GetAllPrescriptions(string organisationId, string customerId);
         public Task<List<PrescriptionDocument>> GetServiceRequestPrescriptionDocuments(string serviceRequestId);
         public Task AddPrescriptionDocument(PrescriptionDocument prescriptionDocument, string serviceRequestId);
-        public Task DeletePrescriptionDocument(string serviceRequestId, string prescriptionDocumentId);
+        public Task DeletePrescriptionDocument(string prescriptionDocumentId);
     }
 }

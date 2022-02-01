@@ -42,11 +42,11 @@ namespace RestApi.Controllers.Provider
             return prescriptionDocuments;
         }
 
-        [HttpDelete("{ServiceRequestId}/{PrescriptionDocumentId}")]
+        [HttpDelete("{PrescriptionDocumentId}")]
         [Authorize]
-        public async Task DeletePrescriptionDocument(string ServiceRequestId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string PrescriptionDocumentId)
         {
-            await prescriptionService.DeletePrescriptionDocument(ServiceRequestId, PrescriptionDocumentId);
+            await prescriptionService.DeletePrescriptionDocument(PrescriptionDocumentId);
         }
 
         [HttpPost("")]

@@ -162,6 +162,10 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var updatedReportList = await apiCalls.GetAppointmentReports(chosenAppointment.CustomerId, chosenAppointment.ServiceRequestId);
             Assert.IsTrue(updatedReportList.Count > 0);
 
+            var reportToDelete = ChooseRandomFromList(updatedReportList);
+            var reportDeleteResult = await apiCalls.DeleteReport(reportToDelete.ReportId);
+            Assert.IsTrue(reportDeleteResult);
+
             var customerReports = await apiCalls.GetCustomerReports(chosenAppointment.CustomerId, ChosenOrganisationId);
             Assert.IsNotNull(customerReports);
         }

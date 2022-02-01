@@ -21,15 +21,14 @@ namespace MiddleWare.Services
             this.logger = logger;
         }
 
-        public async Task DeleteNote(string ServiceRequestId, string NoteId)
+        public async Task DeleteNote(string NoteId)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:DeleteNote"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(NoteId, IdType.Note);
-                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                await noteRepository.DeleteNote(ServiceRequestId, NoteId);
+                await noteRepository.DeleteNote(NoteId);
 
                 logger.LogInformation($"Deleted note with id:{NoteId}");
             }

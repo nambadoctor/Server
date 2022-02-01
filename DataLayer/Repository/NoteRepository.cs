@@ -25,9 +25,10 @@ namespace MongoDB.GenericRepository.Repository
             await this.AddToSet(filter, update);
         }
 
-        public async Task DeleteNote(string serviceRequestId, string noteId)
+        public async Task DeleteNote(string noteId)
         {
-            var filter = Builders<ServiceRequest>.Filter.Eq(sr => sr.ServiceRequestId, new ObjectId(serviceRequestId));
+            var filter = Builders<ServiceRequest>.Filter.ElemMatch(
+                sr => sr.Notes, note => note.NoteId.Equals(new ObjectId(noteId)));
 
             var update = Builders<ServiceRequest>.Update.PullFilter(
                 sr => sr.Notes,

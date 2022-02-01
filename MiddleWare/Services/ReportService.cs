@@ -31,15 +31,16 @@ namespace MiddleWare.Services
             this.logger = logger;
         }
 
-        public async Task DeleteReport(string ServiceRequestId, string ReportId)
+        public async Task DeleteReport(string ReportId)
         {
             using (logger.BeginScope("Method: {Method}", "ReportService:DeleteReport"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(ReportId, IdType.Report);
-                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                await reportRepository.DeleteReport(ServiceRequestId, ReportId);
+                await reportRepository.DeleteReport(ReportId);
+
+                logger.LogInformation($"Successfully deleted report with ID: {ReportId}");
 
             }
         }

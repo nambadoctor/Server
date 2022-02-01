@@ -30,15 +30,14 @@ namespace MiddleWare.Services
             this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
-        public async Task DeletePrescriptionDocument(string ServiceRequestId, string PrescriptionDocumentId)
+        public async Task DeletePrescriptionDocument(string PrescriptionDocumentId)
         {
             using (logger.BeginScope("Method: {Method}", "PrescriptionService:DeletePrescriptionDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 DataValidation.ValidateObjectId(PrescriptionDocumentId, IdType.Prescription);
-                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                await prescriptionRepository.DeletePrescriptionDocument(ServiceRequestId, PrescriptionDocumentId);
+                await prescriptionRepository.DeletePrescriptionDocument(PrescriptionDocumentId);
             }
 
         }

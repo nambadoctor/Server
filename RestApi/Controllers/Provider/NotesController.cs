@@ -44,11 +44,11 @@ namespace RestApi.Controllers.Provider
             return notes;
         }
 
-        [HttpDelete("{ServiceRequestId}/{NoteId}")]
+        [HttpDelete("{NoteId}")]
         [Authorize]
-        public async Task DeleteNote(string ServiceRequestId, string NoteId)
+        public async Task DeleteNote(string NoteId)
         {
-            await noteService.DeleteNote(ServiceRequestId, NoteId);
+            await noteService.DeleteNote(NoteId);
         }
 
         [HttpPost("")]
