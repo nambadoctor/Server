@@ -76,7 +76,7 @@ namespace MiddleWare.Converters
             return mongoPrescriptionDocument;
         }
 
-        public static ProviderClientOutgoing.PrescriptionDocumentOutgoing ConvertToClientOutgoingPrescriptionDocument(Mongo.PrescriptionDocument mongoPrescriptionDocument, string SasUrl)
+        public static ProviderClientOutgoing.PrescriptionDocumentOutgoing ConvertToClientOutgoingPrescriptionDocument(Mongo.PrescriptionDocument mongoPrescriptionDocument, string SasUrl, string ServiceRequestId = "", string AppointmentId = "")
         {
             var prescriptionDocumentOutgoing = new ProviderClientOutgoing.PrescriptionDocumentOutgoing();
 
@@ -93,6 +93,9 @@ namespace MiddleWare.Converters
             }
 
             prescriptionDocumentOutgoing.SasUrl = SasUrl;
+
+            prescriptionDocumentOutgoing.AppointmentId = AppointmentId;
+            prescriptionDocumentOutgoing.ServiceRequestId = ServiceRequestId;
 
             return prescriptionDocumentOutgoing;
         }
