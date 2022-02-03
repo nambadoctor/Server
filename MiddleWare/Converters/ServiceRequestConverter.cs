@@ -30,7 +30,7 @@ namespace MiddleWare.Converters
             return mongoReport;
         }
 
-        public static ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl)
+        public static ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl, string ServiceRequestId, string AppointmentId)
         {
             var reportOutgoing = new ProviderClientOutgoing.ReportOutgoing();
 
@@ -47,6 +47,9 @@ namespace MiddleWare.Converters
                 }
             }
             reportOutgoing.SasUrl = SasUrl;
+
+            reportOutgoing.ServiceRequestId = ServiceRequestId;
+            reportOutgoing.AppointmentId = AppointmentId;
 
             return reportOutgoing;
         }

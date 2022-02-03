@@ -13,6 +13,7 @@ namespace MongoDB.GenericRepository.Interfaces
         Task<IEnumerable<TEntity>> GetListByFilter(FilterDefinition<TEntity> filter);
         Task<TEntity> GetSingleByFilter(FilterDefinition<TEntity> filter);
         Task<IEnumerable<T>> GetListByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
+        Task<List<TEntity>> GetProjectedListByFilterAndProject(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity> project);
         Task<T> GetSingleByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, IEnumerable<T>> project);
         Task<T> GetSingleNestedByFilterAndProject<T>(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity, T> project);
         Task AddToSet(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);

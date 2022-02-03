@@ -9,7 +9,7 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface IReportRepository : IRepository<ServiceRequest>
     {
-        public Task<List<Report>> GetAllReports(string organisationId, string customerId);
+        public Task<List<ServiceRequest>> GetAllReports(string organisationId, string customerId);
         public Task<List<Report>> GetServiceRequestReports(string serviceRequestId);
         public Task AddReport(Report report, string serviceRequestId);
         public Task DeleteReport(string reportId);

@@ -49,7 +49,7 @@ namespace MongoDB.GenericRepository.Repository
             return result.ToList();
         }
 
-        public async Task<List<Report>> GetAllReports(string organisationId, string customerId)
+        public async Task<List<ServiceRequest>> GetAllReports(string organisationId, string customerId)
         {
             var organisationFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.OrganisationId, organisationId);
 
@@ -57,11 +57,12 @@ namespace MongoDB.GenericRepository.Repository
 
             var combinedFilter = organisationFilter & customerFilter;
 
-            var project = Builders<ServiceRequest>.Projection.Expression(
-                sr => sr.Reports.Where(_ => true)
-                );
+            var projection = Builders<ServiceRequest>.Projection
+                .Include(sr => sr.ServiceRequestId)
+                .Include(sr => sr.Reports)
+                .Include(sr => sr.AppointmentId);
 
-            var result = await this.GetListByFilterAndProject(combinedFilter, project);
+            var result = await this.GetProjectedListByFilterAndProject(filter: combinedFilter, project: projection);
 
             return result.ToList();
         }

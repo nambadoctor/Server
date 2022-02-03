@@ -53,15 +53,22 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
                 DataValidation.ValidateObjectId(customerId, IdType.Customer);
 
-                var reports = await reportRepository.GetAllReports(organisationId, customerId);
+                var serviceRequests = await reportRepository.GetAllReports(organisationId, customerId);
 
-                if (reports == null)
+                var reports = new List<ProviderClientOutgoing.ReportOutgoing>();
+
+                if (serviceRequests == null)
                 {
                     logger.LogInformation("No reports available");
                     return new List<ProviderClientOutgoing.ReportOutgoing>();
                 }
 
-                return await GetOutgoingReportsWithSasUrl(reports);
+                foreach (var serviceRequest in serviceRequests)
+                {
+                    reports.AddRange(await GetOutgoingReportsWithSasUrl(serviceRequest.Reports, serviceRequest.ServiceRequestId.ToString(), serviceRequest.AppointmentId));
+                }
+
+                return reports;
             }
         }
 
@@ -128,10 +135,11 @@ namespace MiddleWare.Services
         }
 
 
-        private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetOutgoingReportsWithSasUrl(List<Mongo.Report> reports)
+        private async Task<List<ProviderClientOutgoing.ReportOutgoing>> GetOutgoingReportsWithSasUrl(List<Mongo.Report> reports, string ServiceRequestId = "", string AppointmentId = "")
         {
             var listToReturn = new List<ProviderClientOutgoing.ReportOutgoing>();
 
+            if(reports != null)
             foreach (var report in reports)
             {
                 var sasUrl = await mediaContainer.GetSasUrl(report.FileInfo.FileInfoId.ToString());
@@ -139,7 +147,7 @@ namespace MiddleWare.Services
                 if (sasUrl != null)
                 {
                     listToReturn.Add(
-                        ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl)
+                        ServiceRequestConverter.ConvertToClientOutgoingReport(report, sasUrl, ServiceRequestId, AppointmentId)
                     );
                 }
                 else
