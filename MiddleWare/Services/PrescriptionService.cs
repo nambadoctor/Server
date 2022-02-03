@@ -143,7 +143,7 @@ namespace MiddleWare.Services
                 if (sasUrl != null)
                 {
                     listToReturn.Add(
-                        ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl)
+                        ServiceRequestConverter.ConvertToClientOutgoingPrescriptionDocument(prescDocument, sasUrl, ServiceRequestId, AppointmentId)
                     );
                 }
                 else
