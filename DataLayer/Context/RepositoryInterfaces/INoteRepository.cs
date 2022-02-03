@@ -9,7 +9,7 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface INoteRepository : IRepository<ServiceRequest>
     {
-        public Task<List<Note>> GetAllNotes(string organisationId, string customerId);
+        public Task<List<ServiceRequest>> GetAllNotes(string organisationId, string customerId);
         public Task<List<Note>> GetServiceRequestNotes(string serviceRequestId);
         public Task AddNote(Note note, string serviceRequestId);
         public Task DeleteNote(string noteId);

@@ -9,7 +9,7 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface IPrescriptionRepository : IRepository<ServiceRequest>
     {
-        public Task<List<PrescriptionDocument>> GetAllPrescriptions(string organisationId, string customerId);
+        public Task<List<ServiceRequest>> GetAllPrescriptions(string organisationId, string customerId);
         public Task<List<PrescriptionDocument>> GetServiceRequestPrescriptionDocuments(string serviceRequestId);
         public Task AddPrescriptionDocument(PrescriptionDocument prescriptionDocument, string serviceRequestId);
         public Task DeletePrescriptionDocument(string prescriptionDocumentId);

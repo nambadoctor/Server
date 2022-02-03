@@ -12,6 +12,8 @@ namespace DataModel.Client.Provider.Outgoing
         public string FileName { get; set; }
         public string FileType { get; set; } //Pdf, Img
         public string SasUrl { get; set; }
+        public string ServiceRequestId { get; set; }
+        public string AppointmentId { get; set; }
         public DateTime UploadedDateTime { get; set; }
     }
 }
