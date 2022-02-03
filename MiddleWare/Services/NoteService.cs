@@ -42,17 +42,20 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
                 DataValidation.ValidateObjectId(customerId, IdType.Customer);
 
-                var notes = await noteRepository.GetAllNotes(organisationId, customerId);
+                var serviceRequests = await noteRepository.GetAllNotes(organisationId, customerId);
 
-                if (notes == null)
+                var outgoingNotes = new List<ProviderClientOutgoing.NoteOutgoing>();
+
+                if (serviceRequests == null)
                 {
                     logger.LogInformation("No notes available");
-                    return new List<ProviderClientOutgoing.NoteOutgoing>();
+                    return outgoingNotes;
                 }
 
-                logger.LogInformation($"Received {notes.Count} notes from db");
-
-                var outgoingNotes = ServiceRequestConverter.ConvertToClientOutGoingNotes(notes);
+                foreach (var serviceRequest in serviceRequests)
+                {
+                    outgoingNotes.AddRange(ServiceRequestConverter.ConvertToClientOutGoingNotes(serviceRequest.Notes, serviceRequest.ServiceRequestId.ToString(), serviceRequest.AppointmentId));
+                }
 
                 logger.LogInformation("Converted mongo notes to outgoing notes successfully");
 

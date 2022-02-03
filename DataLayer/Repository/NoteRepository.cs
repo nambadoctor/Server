@@ -38,7 +38,7 @@ namespace MongoDB.GenericRepository.Repository
             await this.RemoveFromSet(filter, update);
         }
 
-        public async Task<List<Note>> GetAllNotes(string organisationId, string customerId)
+        public async Task<List<ServiceRequest>> GetAllNotes(string organisationId, string customerId)
         {
             var organisationFilter = Builders<ServiceRequest>.Filter.Eq(sr => sr.OrganisationId, organisationId);
 
@@ -46,11 +46,12 @@ namespace MongoDB.GenericRepository.Repository
 
             var combinedFilter = organisationFilter & customerFilter;
 
-            var project = Builders<ServiceRequest>.Projection.Expression(
-                sr => sr.Notes.Where(_ => true)
-                );
+            var projection = Builders<ServiceRequest>.Projection
+                .Include(sr => sr.ServiceRequestId)
+                .Include(sr => sr.Notes)
+                .Include(sr => sr.AppointmentId);
 
-            var result = await this.GetListByFilterAndProject(combinedFilter, project);
+            var result = await this.GetProjectedListByFilterAndProject(filter: combinedFilter, project: projection);
 
             return result.ToList();
         }

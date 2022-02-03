@@ -30,7 +30,7 @@ namespace MiddleWare.Converters
             return mongoReport;
         }
 
-        public static ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl)
+        public static ProviderClientOutgoing.ReportOutgoing ConvertToClientOutgoingReport(Mongo.Report mongoReport, string SasUrl, string ServiceRequestId, string AppointmentId)
         {
             var reportOutgoing = new ProviderClientOutgoing.ReportOutgoing();
 
@@ -47,6 +47,9 @@ namespace MiddleWare.Converters
                 }
             }
             reportOutgoing.SasUrl = SasUrl;
+
+            reportOutgoing.ServiceRequestId = ServiceRequestId;
+            reportOutgoing.AppointmentId = AppointmentId;
 
             return reportOutgoing;
         }
@@ -114,7 +117,7 @@ namespace MiddleWare.Converters
             return mongoNote;
         }
 
-        public static ProviderClientOutgoing.NoteOutgoing ConvertToClientOutgoingNote(Mongo.Note mongoNote)
+        public static ProviderClientOutgoing.NoteOutgoing ConvertToClientOutgoingNote(Mongo.Note mongoNote, string ServiceRequestId = "", string AppointmentId = "")
         {
             var noteOutgoing = new ProviderClientOutgoing.NoteOutgoing();
 
@@ -123,16 +126,20 @@ namespace MiddleWare.Converters
             noteOutgoing.CreatedDateTime = mongoNote.CreatedTime;
             noteOutgoing.LastModifiedDateTime = mongoNote.LastModifiedTime;
 
+            noteOutgoing.AppointmentId = AppointmentId;
+            noteOutgoing.ServiceRequestId = ServiceRequestId;
+
             return noteOutgoing;
         }
 
-        public static List<ProviderClientOutgoing.NoteOutgoing> ConvertToClientOutGoingNotes(List<Mongo.Note> mongoNotes)
+        public static List<ProviderClientOutgoing.NoteOutgoing> ConvertToClientOutGoingNotes(List<Mongo.Note> mongoNotes, string ServiceRequestId = "", string AppointmentId = "")
         {
             var listOfNotes = new List<ProviderClientOutgoing.NoteOutgoing>();
 
+            if(mongoNotes != null)
             foreach (var note in mongoNotes)
             {
-                listOfNotes.Add(ConvertToClientOutgoingNote(note));
+                listOfNotes.Add(ConvertToClientOutgoingNote(note, ServiceRequestId, AppointmentId));
             }
 
             return listOfNotes;

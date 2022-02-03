@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using MongoDB.Bson.Serialization;
+using MongoDB.Driver;
 using MongoDB.GenericRepository.Interfaces;
 using System;
 using System.Collections.Generic;
@@ -119,6 +120,22 @@ namespace MongoDB.GenericRepository.Repository
         {
             var result = await DbSet.Aggregate().Match(filter).Project(project).SingleOrDefaultAsync();
             return result;
+        }
+
+        public async Task<List<TEntity>> GetProjectedListByFilterAndProject(FilterDefinition<TEntity> filter, ProjectionDefinition<TEntity> project)
+        {
+            var docList = await DbSet.Find(filter).Project(project).ToListAsync();
+
+            var entityList = new List<TEntity>();
+
+            if (docList != null)
+                foreach (var doc in docList)
+                {
+                    var entity = BsonSerializer.Deserialize<TEntity>(doc);
+                    entityList.Add(entity);
+                }
+            return entityList;
+
         }
     }
 }

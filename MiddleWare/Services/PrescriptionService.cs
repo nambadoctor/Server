@@ -50,15 +50,22 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(organisationId, IdType.Organisation);
                 DataValidation.ValidateObjectId(customerId, IdType.Customer);
 
-                var prescriptionDocuments = await prescriptionRepository.GetAllPrescriptions(organisationId, customerId);
+                var serviceRequests = await prescriptionRepository.GetAllPrescriptions(organisationId, customerId);
 
-                if (prescriptionDocuments == null)
+                var prescriptionDocuments = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+
+                if (serviceRequests == null)
                 {
                     logger.LogInformation("No prescriptions available");
-                    return new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
+                    return prescriptionDocuments;
                 }
 
-                return await GetOutgoingPrescriptionDocumentsWithSasUrl(prescriptionDocuments);
+                foreach (var serviceRequest in serviceRequests)
+                {
+                    prescriptionDocuments.AddRange(await GetOutgoingPrescriptionDocumentsWithSasUrl(serviceRequest.PrescriptionDocuments, serviceRequest.ServiceRequestId.ToString(), serviceRequest.AppointmentId));
+                }
+
+                return prescriptionDocuments;
             }
         }
 
@@ -123,12 +130,12 @@ namespace MiddleWare.Services
             }
         }
 
-        private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments)
+        private async Task<List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>> GetOutgoingPrescriptionDocumentsWithSasUrl(List<Mongo.PrescriptionDocument> prescriptionDocuments, string ServiceRequestId = "", string AppointmentId = "")
         {
             var listToReturn = new List<ProviderClientOutgoing.PrescriptionDocumentOutgoing>();
 
             //Generate sas for each file
-
+            if(prescriptionDocuments != null)
             foreach (var prescDocument in prescriptionDocuments)
             {
                 var sasUrl = await mediaContainer.GetSasUrl(prescDocument.FileInfo.FileInfoId.ToString());
