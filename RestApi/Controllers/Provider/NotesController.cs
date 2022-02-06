@@ -58,6 +58,13 @@ namespace RestApi.Controllers.Provider
             await noteService.SetNote(noteIncoming);
         }
 
+        [HttpPut("")]
+        [Authorize]
+        public async Task UpdateNote([FromBody] ProviderClientIncoming.NoteIncoming noteIncoming)
+        {
+            await noteService.UpdateNote(noteIncoming);
+        }
+
         [HttpPost("Stray/{OrganisationId}/{ServiceProviderId}/{CustomerId}")]
         [Authorize]
         public async Task SetStrayNote([FromBody] ProviderClientIncoming.NoteIncoming noteIncoming, string OrganisationId, string ServiceProviderId, string CustomerId)

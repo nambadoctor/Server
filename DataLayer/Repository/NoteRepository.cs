@@ -25,6 +25,21 @@ namespace MongoDB.GenericRepository.Repository
             await this.AddToSet(filter, update);
         }
 
+        public async Task UpdateNote(Note note, string serviceRequestId)
+        {
+            var filter = Builders<ServiceRequest>.Filter;
+
+            var nestedFilter = Builders<ServiceRequest>.Filter.ElemMatch(sr => sr.Notes, notes => notes.NoteId.Equals(note.NoteId));
+
+            var update = Builders<ServiceRequest>.Update.Set(sp => sp.ServiceRequestId, new ObjectId(serviceRequestId));
+
+            update = update.Set("Notes.$.NoteText", note.NoteText);
+
+            update = update.Set("Appointments.$.LastModifiedTime", note.LastModifiedTime);
+
+            await this.Upsert(nestedFilter, update);
+        }
+
         public async Task DeleteNote(string noteId)
         {
             var filter = Builders<ServiceRequest>.Filter.ElemMatch(

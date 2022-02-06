@@ -107,6 +107,24 @@ namespace MiddleWare.Services
             }
         }
 
+        public async Task UpdateNote(ProviderClientIncoming.NoteIncoming noteIncoming)
+        {
+            using (logger.BeginScope("Method: {Method}", "NoteService:UpdateNote"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(noteIncoming.ServiceRequestId, IdType.ServiceRequest);
+                DataValidation.ValidateObjectId(noteIncoming.AppointmentId, IdType.Appointment);
+
+                var mongoNote = ServiceRequestConverter.ConvertToMongoNote(noteIncoming);
+
+                logger.LogInformation("Converted to mongo mote successfully");
+
+                await noteRepository.UpdateNote(mongoNote, noteIncoming.ServiceRequestId);
+
+                logger.LogInformation($"Added note with id {mongoNote.NoteId} successfully");
+            }
+        }
+
         public async Task SetStrayNote(ProviderClientIncoming.NoteIncoming noteIncoming, string AppointmentId, string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "NoteService:SetStrayNote"))
