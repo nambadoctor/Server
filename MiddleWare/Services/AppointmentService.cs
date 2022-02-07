@@ -43,9 +43,13 @@ namespace MiddleWare.Services
 
                 DataValidation.ValidateObject(appointment);
 
+                var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
+
+                var serviceRequest = await serviceRequestRepository.GetById(appointment.ServiceRequestId);
+
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(appointment);
+                var appointmentData = GetOutgoingAppointment(appointment, serviceRequest, customerProfile);
 
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
@@ -67,9 +71,36 @@ namespace MiddleWare.Services
 
                 appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
 
+                var serviceRequests = await serviceRequestRepository.GetServiceRequests(
+                    appointments.Select(app => app.ServiceRequestId).Distinct().ToList()
+                );
+
+                var customerProfiles = await customerRepository.GetCustomerProfiles(
+                    appointments.Select(app => app.CustomerId).Distinct().ToList(),
+                    organsiationId
+                );
+
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
-                var listToReturn = AppointmentConverter.ConvertToClientAppointmentDataList(appointments);
+                var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
+                
+                foreach (var appointment in appointments)
+                {
+                    var customerProfile = customerProfiles.Find(cust => cust.CustomerId == appointment.CustomerId);
+                    if (customerProfile == null)
+                    {
+                        logger.LogInformation($"No customer profile found for appointment id: {appointment.AppointmentId}");
+                        continue;
+                    }
+                    var serviceRequest = serviceRequests.Find(sr => sr.ServiceRequestId.ToString() == appointment.ServiceRequestId);
+                    if (serviceRequest == null)
+                    {
+                        logger.LogInformation($"No serviceRequest found for appointment id: {appointment.AppointmentId}");
+                        continue;
+                    }
+                    
+                    listToReturn.Add(GetOutgoingAppointment(appointment,serviceRequest,customerProfile));
+                }
 
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
@@ -244,6 +275,29 @@ namespace MiddleWare.Services
             DataValidation.ValidateObject(customerProfile);
 
             return (customerProfile, spProfile);
+        }
+
+        private ProviderClientOutgoing.OutgoingAppointment GetOutgoingAppointment(
+            Mongo.Appointment appointment, 
+            Mongo.ServiceRequest serviceRequest,
+            Mongo.CustomerProfile customerProfile)
+        {
+            var customerPhoneNumber = customerProfile.PhoneNumbers.First();
+
+            var notesCount = serviceRequest.Notes?.Count ?? 0;
+
+            var reportCount = serviceRequest.Reports?.Count ?? 0;
+
+            var prescriptionCount = serviceRequest.PrescriptionDocuments?.Count ?? 0;
+
+            var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(
+                appointment, 
+                customerPhoneNumber.CountryCode+customerPhoneNumber.Number,
+                notesCount,
+                reportCount,
+                prescriptionCount);
+
+            return appointmentData;
         }
 
     }

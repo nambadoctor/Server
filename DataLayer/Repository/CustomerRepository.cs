@@ -14,6 +14,24 @@ namespace MongoDB.GenericRepository.Repository
         {
         }
 
+        public async Task<List<CustomerProfile>> GetCustomerProfiles(List<string> customerIds, string organisationId)
+        {
+            var customerObjectIdList = new List<ObjectId>();
+            foreach (var custId in customerIds)
+            {
+                customerObjectIdList.Add(new ObjectId(custId));
+            }
+            var customerIdFilter = Builders<Customer>.Filter.In(cust => cust.CustomerId, customerObjectIdList);
+
+            var project = Builders<Customer>.Projection.Expression(
+                cust => cust.Profiles.Where(profile => profile.OrganisationId == organisationId)
+            );
+
+            var result = await this.GetListByFilterAndProject(customerIdFilter, project);
+
+            return result.ToList();
+        }
+
         public async Task AddCustomerProfile(CustomerProfile profile)
         {
             var filter = Builders<Customer>.Filter;

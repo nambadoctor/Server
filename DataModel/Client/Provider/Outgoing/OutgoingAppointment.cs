@@ -11,7 +11,16 @@ namespace DataModel.Client.Provider.Outgoing
         public string ServiceProviderName { get; set; }
         public string CustomerId { get; set; }
         public string CustomerName { get; set; }
+        
+        public string PhoneNumber { get; set; }
+        
+        public int NumberOfNotes { get; set; }
+        
+        public int NumberOfReports { get; set; }
+        
+        public int NumberOfPrescriptionDocuments { get; set; }
         public string AppointmentType { get; set; }
+        
         public string AddressId { get; set; }
         public string Status { get; set; }
         public DateTime? ScheduledAppointmentStartTime { get; set; }

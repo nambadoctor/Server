@@ -9,7 +9,7 @@ namespace MiddleWare.Converters
     {
 
         public static List<ProviderClientOutgoing.OutgoingAppointment> ConvertToClientAppointmentDataList(
-            List<Mongo.Appointment> appointments)
+            List<(Mongo.Appointment, string, int, int, int)> appointments)
         {
             var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
 
@@ -17,13 +17,18 @@ namespace MiddleWare.Converters
             {
                 foreach (var appointment in appointments)
                 {
-                    listToReturn.Add(ConvertToClientAppointmentData(appointment));
+                    listToReturn.Add(ConvertToClientAppointmentData(
+                        appointment.Item1, appointment.Item2,
+                        appointment.Item3, 
+                        appointment.Item4,
+                        appointment.Item5)
+                    );
                 }
             }
             return listToReturn;
         }
         public static ProviderClientOutgoing.OutgoingAppointment ConvertToClientAppointmentData(
-            Mongo.Appointment appointment)
+            Mongo.Appointment appointment, string phoneNumber, int numberOfNotes, int numberOfReports, int numberOfPrescriptionDocuments)
         {
             var appointmentData = new ProviderClientOutgoing.OutgoingAppointment();
 
@@ -42,6 +47,11 @@ namespace MiddleWare.Converters
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+
+            appointmentData.PhoneNumber = phoneNumber;
+            appointmentData.NumberOfNotes = numberOfNotes;
+            appointmentData.NumberOfReports = numberOfReports;
+            appointmentData.NumberOfPrescriptionDocuments = numberOfPrescriptionDocuments;
 
             return appointmentData;
         }
