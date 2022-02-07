@@ -1,5 +1,5 @@
 
-﻿using DataModel.Shared;
+using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
@@ -45,7 +45,11 @@ namespace MiddleWare.Services
 
                 var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
 
+                DataValidation.ValidateObject(customerProfile);
+
                 var serviceRequest = await serviceRequestRepository.GetById(appointment.ServiceRequestId);
+
+                DataValidation.ValidateObject(serviceRequest);
 
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
@@ -71,19 +75,25 @@ namespace MiddleWare.Services
 
                 appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
 
+                logger.LogInformation($"Retrieved {appointments.Count} Valid Appointments");
+
                 var serviceRequests = await serviceRequestRepository.GetServiceRequests(
                     appointments.Select(app => app.ServiceRequestId).Distinct().ToList()
                 );
+
+                logger.LogInformation($"Retrieved {serviceRequests.Count} Service Requests");
 
                 var customerProfiles = await customerRepository.GetCustomerProfiles(
                     appointments.Select(app => app.CustomerId).Distinct().ToList(),
                     organsiationId
                 );
 
+                logger.LogInformation($"Retrieved {customerProfiles.Count} Customer profiles");
+
                 logger.LogInformation("Beginning data conversion ConvertToClientAppointmentData");
 
                 var listToReturn = new List<ProviderClientOutgoing.OutgoingAppointment>();
-                
+
                 foreach (var appointment in appointments)
                 {
                     var customerProfile = customerProfiles.Find(cust => cust.CustomerId == appointment.CustomerId);
@@ -98,8 +108,8 @@ namespace MiddleWare.Services
                         logger.LogInformation($"No serviceRequest found for appointment id: {appointment.AppointmentId}");
                         continue;
                     }
-                    
-                    listToReturn.Add(GetOutgoingAppointment(appointment,serviceRequest,customerProfile));
+
+                    listToReturn.Add(GetOutgoingAppointment(appointment, serviceRequest, customerProfile));
                 }
 
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
@@ -278,7 +288,7 @@ namespace MiddleWare.Services
         }
 
         private ProviderClientOutgoing.OutgoingAppointment GetOutgoingAppointment(
-            Mongo.Appointment appointment, 
+            Mongo.Appointment appointment,
             Mongo.ServiceRequest serviceRequest,
             Mongo.CustomerProfile customerProfile)
         {
@@ -291,8 +301,8 @@ namespace MiddleWare.Services
             var prescriptionCount = serviceRequest.PrescriptionDocuments?.Count ?? 0;
 
             var appointmentData = AppointmentConverter.ConvertToClientAppointmentData(
-                appointment, 
-                customerPhoneNumber.CountryCode+customerPhoneNumber.Number,
+                appointment,
+                customerPhoneNumber.CountryCode + customerPhoneNumber.Number,
                 notesCount,
                 reportCount,
                 prescriptionCount);

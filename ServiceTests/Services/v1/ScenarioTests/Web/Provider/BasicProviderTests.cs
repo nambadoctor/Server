@@ -16,10 +16,6 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
     public class BasicProviderTests
     {
 
-        private string AuthToken;
-        private HttpClient httpClient;
-        private string BaseUrl = "https://localhost:44307/api/provider";
-
         private APICalls apiCalls;
         private DataGeneration dataGeneration;
 
@@ -32,10 +28,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         public void Init()
         {
             testInitializer = TestInitializer.Instance;
-            BaseUrl = TestInitializer.BaseUrl;
             apiCalls = TestInitializer.apiCalls;
             dataGeneration = TestInitializer.dataGeneration;
-            httpClient = TestInitializer.httpClient;
 
             ChosenServiceProviderId = TestInitializer.ChosenServiceProviderId;
             ChosenOrganisationId = TestInitializer.ChosenOrganisationId;
