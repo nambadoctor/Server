@@ -12,7 +12,7 @@ namespace MongoDB.GenericRepository.Interfaces
     {
         public Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId);
         public Task<Appointment> GetAppointmentByType(string organisationId, string serviceProviderId, string customerId, AppointmentType appointmentType);
-        public Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds);
+        public Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds, DateTime? startDate, DateTime? endDate);
         public Task AddAppointment(Appointment appointment);
         public Task CancelAppointment(Appointment appointment);
         public Task RescheduleAppointment(Appointment appointment);
