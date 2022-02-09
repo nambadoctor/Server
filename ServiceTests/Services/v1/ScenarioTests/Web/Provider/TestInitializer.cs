@@ -56,7 +56,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         private string GetAuthToken()
         {
             FirebaseAuthProvider provider = new FirebaseAuthProvider();
-            return provider.GetFBToken("+911234567890", "123456").Result;
+            return provider.GetFBToken("+919999999999", "220272").Result;
         }
 
         private void InitHttpClient()

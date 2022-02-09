@@ -1,5 +1,5 @@
 
-﻿using DataModel.Shared;
+using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
@@ -66,8 +66,8 @@ namespace MiddleWare.Services
                 var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(
                     organsiationId,
                     serviceProviderIds,
-                    DateTimeOffset.FromUnixTimeMilliseconds(startDateTimestamp).UtcDateTime,
-                    DateTimeOffset.FromUnixTimeMilliseconds(endDateTimestamp).UtcDateTime);
+                    startDateTimestamp != 0 ? DateTimeOffset.FromUnixTimeMilliseconds(startDateTimestamp).UtcDateTime : null,
+                    endDateTimestamp != 0 ? DateTimeOffset.FromUnixTimeMilliseconds(endDateTimestamp).UtcDateTime : null);
 
                 appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
 
