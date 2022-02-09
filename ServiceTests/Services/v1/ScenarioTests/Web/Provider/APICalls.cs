@@ -25,6 +25,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             BaseUrl = baseUrl;
         }
 
+        public static long ToUnixEpochDate(DateTime date) => new DateTimeOffset(date).ToUniversalTime().ToUnixTimeSeconds();
+
         #region GET
         public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemberships()
         {
@@ -46,9 +48,14 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
 
-        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrgAppointments(string OrganisationId)
+        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrgAppointments(string OrganisationId, DateTime? StartDate = null, DateTime? EndDate = null)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/organisation/{OrganisationId}/appointments"))
+            var optionalDateQuery = "";
+            if (StartDate != null && EndDate != null)
+            {
+                optionalDateQuery = $"?StartDateTimeStamp={ToUnixEpochDate(StartDate.Value) * 1000}&EndDateTimeStamp={ToUnixEpochDate(EndDate.Value) * 1000}";
+            }
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/organisation/{OrganisationId}/appointments{optionalDateQuery}"))
             {
 
                 var response = await httpClient.SendAsync(request);

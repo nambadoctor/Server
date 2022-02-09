@@ -1,4 +1,5 @@
-﻿using DataModel.Mongo;
+﻿using System;
+using DataModel.Mongo;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.GenericRepository.Interfaces;
@@ -55,7 +56,7 @@ namespace MongoDB.GenericRepository.Repository
         }
 
          
-        public async Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds)
+        public async Task<List<Appointment>> GetAppointmentsByServiceProvider(string organisationId, List<string> serviceProviderIds, DateTime? startDate, DateTime? endDate)
         {
 
             var serviceProviderIdList = new List<ObjectId>();
@@ -84,9 +85,27 @@ namespace MongoDB.GenericRepository.Repository
                 combinedFilter = organisationAppointmentFilter & serviceProviderFilter;
             }
 
-            var project = Builders<ServiceProvider>.Projection.Expression(
-                sp => sp.Appointments.Where(appointment => appointment.OrganisationId == organisationId)
+            ProjectionDefinition<ServiceProvider, IEnumerable<Appointment>> project;
+            if (startDate.HasValue && endDate.HasValue)
+            {
+                project = Builders<ServiceProvider>.Projection.Expression(
+                    sp => sp.Appointments.Where(
+                        appointment => appointment.OrganisationId == organisationId &&
+                                       (appointment.ScheduledAppointmentStartTime.HasValue &&
+                                        appointment.ScheduledAppointmentStartTime.Value.Ticks > startDate.Value.Ticks &&
+                                        appointment.ScheduledAppointmentStartTime.Value.Ticks < endDate.Value.Ticks)
+                                       || !appointment.ScheduledAppointmentStartTime.HasValue
+                    )
                 );
+            }
+            else
+            {
+                project = Builders<ServiceProvider>.Projection.Expression(
+                    sp => sp.Appointments.Where(
+                        appointment => appointment.OrganisationId == organisationId
+                    )
+                );
+            }
 
             var result = await this.GetListByFilterAndProject(combinedFilter, project);
 

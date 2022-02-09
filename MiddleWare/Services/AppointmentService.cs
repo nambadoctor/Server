@@ -55,7 +55,7 @@ namespace MiddleWare.Services
 
         }
 
-        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetAppointments(string organsiationId, List<string> serviceProviderIds, long startDateTimestamp, long endDateTimestamp)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:GetAppointments"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -63,7 +63,11 @@ namespace MiddleWare.Services
 
                 DataValidation.ValidateObjectId(organsiationId, IdType.Organisation);
 
-                var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(organsiationId, serviceProviderIds);
+                var appointments = await appointmenRepository.GetAppointmentsByServiceProvider(
+                    organsiationId,
+                    serviceProviderIds,
+                    DateTimeOffset.FromUnixTimeMilliseconds(startDateTimestamp).UtcDateTime,
+                    DateTimeOffset.FromUnixTimeMilliseconds(endDateTimestamp).UtcDateTime);
 
                 appointments.RemoveAll(appointment => appointment.Status == Mongo.AppointmentStatus.Cancelled);
 

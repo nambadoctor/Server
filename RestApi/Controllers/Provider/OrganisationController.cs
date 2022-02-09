@@ -35,10 +35,10 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}/appointments")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds)
+        public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrganisationAppointments(string OrganisationId, [FromQuery] List<string> ServiceProviderIds, [FromQuery] long StartDateTimeStamp, [FromQuery] long EndDateTimeStamp)
         {
 
-            var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds);
+            var appointments = await appointmentService.GetAppointments(OrganisationId, ServiceProviderIds, StartDateTimeStamp, EndDateTimeStamp);
             return appointments;
 
         }
