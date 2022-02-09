@@ -51,6 +51,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         [TestMethod]
         public async Task AppointmentsReadTest()
         {
+            var OrgAppointmentsWithDateFilter = await apiCalls.GetOrgAppointments(ChosenOrganisationId, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(1));
+            Assert.IsNotNull(OrgAppointmentsWithDateFilter);
+
             var OrgAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
             Assert.IsNotNull(OrgAppointments);
 
