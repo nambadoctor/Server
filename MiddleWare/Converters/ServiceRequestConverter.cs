@@ -98,6 +98,14 @@ namespace MiddleWare.Converters
                 {
                     prescriptionDocumentOutgoing.UploadedDateTime = mongoPrescriptionDocument.PrescriptionDetail.UploadedDateTime.Value;
                 }
+                else
+                {
+                    prescriptionDocumentOutgoing.UploadedDateTime = null;
+                }
+            }
+            else
+            {
+                prescriptionDocumentOutgoing.UploadedDateTime = null;
             }
 
             prescriptionDocumentOutgoing.SasUrl = SasUrl;
