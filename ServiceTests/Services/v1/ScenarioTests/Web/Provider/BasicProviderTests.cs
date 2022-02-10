@@ -225,6 +225,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var postTreatmentPlanResult = await apiCalls.AddTreatmentPlan(treatmentPlan);
             Assert.IsTrue(postTreatmentPlanResult);
 
+            var allTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId);
+            Assert.IsNotNull(allTreatments);
+            
             var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId);
             var chosenTreatmentPlan = ChooseRandomFromList(treatmentPlans);
             var chosenTreatment = ChooseRandomFromList(chosenTreatmentPlan.Treatments);
