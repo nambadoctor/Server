@@ -45,6 +45,21 @@ namespace MiddleWare.Services
             }
         }
 
+        public async Task<List<TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId)
+        {
+            DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
+
+            var mongoTreatmentPlans = await treatmentPlanRepository.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
+
+            logger.LogInformation($"Received {mongoTreatmentPlans.Count} treatment plans from db");
+
+            var outgoingTreatments = TreatmentPlanConverter.ConvertToDenormalizedTreatments(mongoTreatmentPlans);
+
+            logger.LogInformation("Converted treatments to outgoing successfully");
+
+            return outgoingTreatments;
+        }
+
         public async Task AddTreatmentPlan(TreatmentPlanIncoming treatmentPlanIncoming)
         {
             using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:AddTreatmentPlan"))
