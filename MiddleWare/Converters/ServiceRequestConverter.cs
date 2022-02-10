@@ -45,6 +45,14 @@ namespace MiddleWare.Converters
                 {
                     reportOutgoing.UploadedDateTime = mongoReport.Details.UploadedDateTime.Value;
                 }
+                else
+                {
+                    reportOutgoing.UploadedDateTime = null;
+                }
+            }
+            else
+            {
+                reportOutgoing.UploadedDateTime = null;
             }
             reportOutgoing.SasUrl = SasUrl;
 
@@ -139,11 +147,11 @@ namespace MiddleWare.Converters
         {
             var listOfNotes = new List<ProviderClientOutgoing.NoteOutgoing>();
 
-            if(mongoNotes != null)
-            foreach (var note in mongoNotes)
-            {
-                listOfNotes.Add(ConvertToClientOutgoingNote(note, ServiceRequestId, AppointmentId));
-            }
+            if (mongoNotes != null)
+                foreach (var note in mongoNotes)
+                {
+                    listOfNotes.Add(ConvertToClientOutgoingNote(note, ServiceRequestId, AppointmentId));
+                }
 
             return listOfNotes;
         }
