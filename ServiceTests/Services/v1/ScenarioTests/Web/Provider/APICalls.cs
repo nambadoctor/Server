@@ -202,6 +202,17 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
+        
+        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetAllTreatments(string ServiceproviderId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/treatment/all/{OrganisationId}/{ServiceproviderId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentOutgoing>>(value);
+                return tps;
+            }
+        }
         #endregion GET
 
         #region POST
