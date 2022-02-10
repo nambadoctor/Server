@@ -101,9 +101,10 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(reportIncoming.AppointmentId, IdType.Appointment);
 
                 var report = ServiceRequestConverter.ConvertToMongoReport(reportIncoming);
-
+                
+                var mimeType = report.FileInfo!=null ? ByteHandler.GetMimeType(report.FileInfo.FileType): "";
                 //Upload to blob
-                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(reportIncoming.File), report.FileInfo.FileInfoId.ToString());
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(reportIncoming.File), report.FileInfo.FileInfoId.ToString(), mimeType);
 
                 await reportRepository.AddReport(report, reportIncoming.ServiceRequestId);
 

@@ -98,8 +98,10 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(prescriptionDocumentIncoming.AppointmentId, IdType.Appointment);
 
                 var prescriptionDocument = ServiceRequestConverter.ConvertToMongoPrescriptionDocument(prescriptionDocumentIncoming);
+                var mimeType = ByteHandler.GetMimeType(prescriptionDocument.FileInfo.FileType);
+                
                 //Upload to blob
-                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(prescriptionDocumentIncoming.File), prescriptionDocument.FileInfo.FileInfoId.ToString());
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(prescriptionDocumentIncoming.File), prescriptionDocument.FileInfo.FileInfoId.ToString(), mimeType);
 
                 await prescriptionRepository.AddPrescriptionDocument(prescriptionDocument, prescriptionDocumentIncoming.ServiceRequestId);
             }
