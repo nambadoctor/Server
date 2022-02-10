@@ -91,6 +91,7 @@ namespace MongoDB.GenericRepository.Repository
                 project = Builders<ServiceProvider>.Projection.Expression(
                     sp => sp.Appointments.Where(
                         appointment => appointment.OrganisationId == organisationId &&
+                                       appointment.AppointmentType != AppointmentType.CustomerManagement &&
                                        (appointment.ScheduledAppointmentStartTime.HasValue &&
                                         appointment.ScheduledAppointmentStartTime.Value.Ticks > startDate.Value.Ticks &&
                                         appointment.ScheduledAppointmentStartTime.Value.Ticks < endDate.Value.Ticks)
