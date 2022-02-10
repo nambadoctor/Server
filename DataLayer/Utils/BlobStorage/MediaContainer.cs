@@ -27,15 +27,12 @@ namespace ND.DataLayer.Utils.BlobStorage
             this.logger = logger;
         }
 
-        public async Task<string> UploadFileToStorage(byte[] fileStream, string fileName)
+        public async Task<string> UploadFileToStorage(byte[] fileStream, string fileName, string mimeType)
         {
-            dynamic result;
-            using (var stream = new MemoryStream(fileStream, writable: false))
-            {
-                result = await containerClient.UploadBlobAsync(fileName, stream);
-            }
-
-            return result.ToString();
+            Stream stream = new MemoryStream(fileStream);
+            BlobClient blobClient = containerClient.GetBlobClient(fileName);
+            var response = await blobClient.UploadAsync(stream, new BlobHttpHeaders { ContentType = $"{mimeType}" });
+            return response.ToString();
         }
 
         public async Task<string> GetSasUrl(string fileName)
