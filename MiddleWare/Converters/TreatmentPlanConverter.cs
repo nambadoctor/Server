@@ -42,14 +42,29 @@ namespace MiddleWare.Converters
 
             treatmentPlan.TreatmentPlanName = mongoTreatmentPlan.TreatmentPlanName;
 
-            treatmentPlan.Treatments = ConvertToOutgoingTreatmentList(mongoTreatmentPlan.Treatments);
+            treatmentPlan.Treatments = ConvertToOutgoingTreatmentList(mongoTreatmentPlan.Treatments, mongoTreatmentPlan);
 
             treatmentPlan.TreatmentPlanId = mongoTreatmentPlan.TreatmentPlanId.ToString();
 
             return treatmentPlan;
         }
 
-        public static List<ProviderClientOutgoing.TreatmentOutgoing> ConvertToOutgoingTreatmentList(List<Mongo.Treatment> mongoTreatments)
+        public static List<ProviderClientOutgoing.TreatmentOutgoing> ConvertToDenormalizedTreatments(List<Mongo.TreatmentPlan> mongoTreatmentPlans)
+        {
+            var treatments = new List<ProviderClientOutgoing.TreatmentOutgoing>();
+
+            if (mongoTreatmentPlans != null)
+            {
+                foreach (var treatmentPlan in mongoTreatmentPlans)
+                {
+                    treatments.AddRange(ConvertToOutgoingTreatmentPlan(treatmentPlan).Treatments);
+                }
+            }
+
+            return treatments;
+        }
+
+        public static List<ProviderClientOutgoing.TreatmentOutgoing> ConvertToOutgoingTreatmentList(List<Mongo.Treatment> mongoTreatments, Mongo.TreatmentPlan mongoTreatmentPlan)
         {
             var treatments = new List<ProviderClientOutgoing.TreatmentOutgoing>();
 
@@ -57,14 +72,14 @@ namespace MiddleWare.Converters
             {
                 foreach (var treatment in mongoTreatments)
                 {
-                    treatments.Add(ConvertToOutgoingTreatment(treatment));
+                    treatments.Add(ConvertToOutgoingTreatment(treatment, mongoTreatmentPlan));
                 }
             }
 
             return treatments;
         }
 
-        public static ProviderClientOutgoing.TreatmentOutgoing ConvertToOutgoingTreatment(Mongo.Treatment mongoTreatment)
+        public static ProviderClientOutgoing.TreatmentOutgoing ConvertToOutgoingTreatment(Mongo.Treatment mongoTreatment, Mongo.TreatmentPlan mongoTreatmentPlan)
         {
             var treatment = new ProviderClientOutgoing.TreatmentOutgoing();
 
@@ -72,7 +87,7 @@ namespace MiddleWare.Converters
 
             treatment.Name = mongoTreatment.Name;
 
-            treatment.OrginalInstructions = mongoTreatment.OrginalInstructions;
+            treatment.OriginalInstructions = mongoTreatment.OrginalInstructions;
 
             treatment.CreatedDateTime = mongoTreatment.CreatedDateTime;
 
@@ -85,6 +100,14 @@ namespace MiddleWare.Converters
             treatment.ServiceRequestId = mongoTreatment.TreatmentInstanceServiceRequestId;
 
             treatment.ActualProcedure = mongoTreatment.ActualProcedure;
+
+            treatment.TreatmentPlanId = mongoTreatmentPlan.TreatmentPlanId.ToString();
+
+            treatment.TreatmentPlanName = mongoTreatmentPlan.TreatmentPlanName;
+
+            treatment.CustomerName = mongoTreatmentPlan.CustomerName;
+
+            treatment.ServiceProviderName = mongoTreatmentPlan.ServiceProviderName;
 
             return treatment;
         }

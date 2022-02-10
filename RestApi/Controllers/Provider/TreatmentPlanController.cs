@@ -24,9 +24,9 @@ namespace RestApi.Controllers.Provider
         public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
         {
 
-            var treatments = await treatmentPlanService.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
+            var treatmentPlans = await treatmentPlanService.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
 
-            return treatments;
+            return treatmentPlans;
         }
 
         [HttpGet("customer/{OrganisationId}/{CustomerId}")]
@@ -34,9 +34,20 @@ namespace RestApi.Controllers.Provider
         public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string OrganisationId, string CustomerId)
         {
 
-            var treatments = await treatmentPlanService.GetCustomerTreatmentPlans(OrganisationId, CustomerId);
+            var treatmentPlans = await treatmentPlanService.GetCustomerTreatmentPlans(OrganisationId, CustomerId);
+
+            return treatmentPlans;
+        }
+        
+        [HttpGet("treatment/all/{OrganisationId}/{ServiceproviderId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId)
+        {
+
+            var treatments = await treatmentPlanService.GetTreatments(OrganisationId, ServiceproviderId);
 
             return treatments;
+
         }
 
 
