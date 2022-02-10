@@ -14,6 +14,6 @@ namespace DataModel.Client.Provider.Outgoing
         public string SasUrl { get; set; }
         public string ServiceRequestId { get; set; }
         public string AppointmentId { get; set; }
-        public DateTime UploadedDateTime { get; set; }
+        public DateTime? UploadedDateTime { get; set; }
     }
 }
