@@ -41,6 +41,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             customer.FirstName = $"First{num}";
             customer.LastName = $"Last{num}";
             customer.DateOfBirth = new DataModel.Client.Provider.Common.DateOfBirth();
+            customer.DateOfBirth.Date = DateTime.UtcNow.AddYears(-num);
             customer.DateOfBirth.Age = $"{num}";
             customer.DateOfBirth.CreatedDate = DateTime.Now;
             customer.Gender = "Male";
