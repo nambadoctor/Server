@@ -10,12 +10,7 @@ namespace DataModel.Mongo
         [BsonId]
         public ObjectId DateOfBirthId { get; set; }
 
-        public int? Day { get; set; } //1-31
-
-        public int? Month { get; set; } //1-12
-
-        public int? Year { get; set; } //YYYY
-
+        public DateTime Date { get; set; }
         public string? Age { get; set; }
         public DateTime CreatedDate { get; set; }
 
