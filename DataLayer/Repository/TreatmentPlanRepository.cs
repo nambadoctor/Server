@@ -30,26 +30,23 @@ namespace MongoDB.GenericRepository.Repository
             await this.Upsert(filter, update);
         }
 
-        public async Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string ServiceProviderId)
+        public async Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string? ServiceProviderId, string? CustomerId = null)
         {
             var organisationFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.OrganisationId, OrganisationId);
 
-            var serviceProviderFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.ServiceProviderId, ServiceProviderId);
-
-            var combinedFilter = string.IsNullOrWhiteSpace(ServiceProviderId) ? organisationFilter : organisationFilter & serviceProviderFilter;
-
-            var result = await this.GetListByFilter(combinedFilter);
-
-            return result.ToList();
-        }
-
-        public async Task<List<TreatmentPlan>> GetTreatmentPlansOfCustomer(string OrganisationId, string CustomerId)
-        {
-            var organisationFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.OrganisationId, OrganisationId);
-
-            var customerFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.CustomerId, CustomerId);
-
-            var combinedFilter = organisationFilter & customerFilter;
+            FilterDefinition<TreatmentPlan> combinedFilter = organisationFilter; //Default filter
+            
+            if (!string.IsNullOrWhiteSpace(ServiceProviderId))
+            {
+                var serviceProviderFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.ServiceProviderId, ServiceProviderId);
+                combinedFilter &= serviceProviderFilter;
+            }
+            
+            if (!string.IsNullOrWhiteSpace(CustomerId))
+            {
+                var customerFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.CustomerId, CustomerId);
+                combinedFilter &= customerFilter;
+            }
 
             var result = await this.GetListByFilter(combinedFilter);
 

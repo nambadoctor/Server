@@ -19,32 +19,22 @@ namespace RestApi.Controllers.Provider
             this.treatmentPlanService = treatmentPlanService;
         }
 
-        [HttpGet("all/{OrganisationId}/{ServiceproviderId}")]
+        [HttpGet("{OrganisationId}/{ServiceproviderId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId, [FromQuery]string CustomerId, [FromQuery] bool IsUpcoming)
         {
 
-            var treatmentPlans = await treatmentPlanService.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
-
-            return treatmentPlans;
-        }
-
-        [HttpGet("customer/{OrganisationId}/{CustomerId}")]
-        [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string OrganisationId, string CustomerId)
-        {
-
-            var treatmentPlans = await treatmentPlanService.GetCustomerTreatmentPlans(OrganisationId, CustomerId);
+            var treatmentPlans = await treatmentPlanService.GetTreatmentPlans(OrganisationId, ServiceproviderId, CustomerId);
 
             return treatmentPlans;
         }
         
-        [HttpGet("treatment/all/{OrganisationId}/{ServiceproviderId}")]
+        [HttpGet("treatments/{OrganisationId}/{ServiceproviderId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId)
+        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId, [FromQuery] string CustomerId, [FromQuery] bool IsUpcoming)
         {
 
-            var treatments = await treatmentPlanService.GetTreatments(OrganisationId, ServiceproviderId);
+            var treatments = await treatmentPlanService.GetTreatments(OrganisationId, ServiceproviderId, CustomerId, IsUpcoming);
 
             return treatments;
 
