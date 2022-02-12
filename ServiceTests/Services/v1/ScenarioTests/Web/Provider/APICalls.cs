@@ -181,20 +181,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
 
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId, string CustomerId)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/all/{OrganisationId}/{ServiceproviderId}"))
-            {
-                var response = await httpClient.SendAsync(request);
-                var value = await response.Content.ReadAsStringAsync();
-                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentPlanOutgoing>>(value);
-                return tps;
-            }
-        }
-
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string CustomerId, string OrganisationId)
-        {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/customer/{OrganisationId}/{CustomerId}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/{OrganisationId}/{ServiceproviderId}?CustumerId={CustomerId}"))
             {
                 var response = await httpClient.SendAsync(request);
                 var value = await response.Content.ReadAsStringAsync();
@@ -203,9 +192,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
         
-        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetAllTreatments(string ServiceproviderId, string OrganisationId)
+        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetAllTreatments(string ServiceproviderId, string OrganisationId, string CustomerId, bool isUpcoming)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/treatment/all/{OrganisationId}/{ServiceproviderId}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/treatments/{OrganisationId}/{ServiceproviderId}?CustomerId={CustomerId}&IsUpcoming={isUpcoming}"))
             {
                 var response = await httpClient.SendAsync(request);
                 var value = await response.Content.ReadAsStringAsync();
