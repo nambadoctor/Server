@@ -45,15 +45,25 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task<List<TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId)
+        public async Task<List<TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId, string CustomerId, bool IsUpcoming)
         {
             DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
 
-            var mongoTreatmentPlans = await treatmentPlanRepository.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
-
+            if (!string.IsNullOrWhiteSpace(CustomerId))
+            {
+                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+            }
+            
+            List<Mongo.TreatmentPlan> mongoTreatmentPlans = await treatmentPlanRepository.GetAllTreatmentPlans(OrganisationId, ServiceproviderId, CustomerId);
+            
             logger.LogInformation($"Received {mongoTreatmentPlans.Count} treatment plans from db");
 
             var outgoingTreatments = TreatmentPlanConverter.ConvertToDenormalizedTreatments(mongoTreatmentPlans);
+            
+            if (IsUpcoming)
+            {
+                FilterTreatmentPlans(ref outgoingTreatments);
+            }
 
             logger.LogInformation("Converted treatments to outgoing successfully");
 
@@ -104,7 +114,7 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task<List<TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
+        public async Task<List<TreatmentPlanOutgoing>> GetTreatmentPlans(string OrganisationId, string ServiceproviderId, string? CustomerId)
         {
             using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetAllTreatmentPlans"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -121,28 +131,6 @@ namespace MiddleWare.Services
 
                 return outgoingTreatmentPlans;
 
-            }
-        }
-
-        public async Task<List<TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string OrganisationId, string CustomerId)
-        {
-            using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetCustomerTreatmentPlans"))
-            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
-            {
-                DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
-                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
-
-                DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
-
-                var mongoTreatmentPlans = await treatmentPlanRepository.GetTreatmentPlansOfCustomer(OrganisationId, CustomerId);
-
-                logger.LogInformation($"Received {mongoTreatmentPlans.Count} treatment plans from db");
-
-                var outgoingTreatmentPlans = TreatmentPlanConverter.ConvertToOutgoingTreatmentPlanList(mongoTreatmentPlans);
-
-                logger.LogInformation("Converted treatment plans to outgoing successfully");
-
-                return outgoingTreatmentPlans;
             }
         }
 
@@ -180,6 +168,13 @@ namespace MiddleWare.Services
 
                 logger.LogInformation($"Updated treatment plan with id:{treatmentPlanIncoming.TreatmentPlanId} successfully");
             }
+        }
+
+        private void FilterTreatmentPlans(ref List<ProviderClientOutgoing.TreatmentOutgoing> treatments)
+        {
+            treatments.RemoveAll(treatment =>
+                treatment.Status == Mongo.TreatmentStatus.Cancelled.ToString() ||
+                treatment.Status == Mongo.TreatmentStatus.Done.ToString());
         }
     }
 }

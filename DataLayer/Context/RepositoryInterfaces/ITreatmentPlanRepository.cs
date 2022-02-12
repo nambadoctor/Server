@@ -10,8 +10,7 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface ITreatmentPlanRepository : IRepository<TreatmentPlan>
     {
-        public Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string ServiceProviderId);
-        public Task<List<TreatmentPlan>> GetTreatmentPlansOfCustomer(string OrganisationId, string CustomerId);
+        public Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string? ServiceProviderId = null, string? CustomerId = null);
         public Task UpsertTreatmentPlan(TreatmentPlan treatmentPlan);
         public Task AddTreatment(string TreatmentPlanId, Treatment treatment);
         public Task UpdateTreatment(string TreatmentPlanId, Treatment treatment);
