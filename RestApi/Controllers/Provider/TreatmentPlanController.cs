@@ -21,7 +21,7 @@ namespace RestApi.Controllers.Provider
 
         [HttpGet("{OrganisationId}/{ServiceproviderId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId, [FromQuery]string CustomerId, [FromQuery] bool IsUpcoming)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId, [FromQuery]string CustomerId)
         {
 
             var treatmentPlans = await treatmentPlanService.GetTreatmentPlans(OrganisationId, ServiceproviderId, CustomerId);
