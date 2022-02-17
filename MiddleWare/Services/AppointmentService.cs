@@ -266,7 +266,7 @@ namespace MiddleWare.Services
             }
             catch (Exception ex)
             {
-                logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
+                logger.LogError($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
             }
         }
 
