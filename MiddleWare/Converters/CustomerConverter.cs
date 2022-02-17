@@ -81,9 +81,7 @@ namespace MiddleWare.Converters
 
             clientDateOfBirth.DateOfBirthId = dateOfBirth.DateOfBirthId.ToString();
 
-            clientDateOfBirth.Day = dateOfBirth.Day;
-            clientDateOfBirth.Month = dateOfBirth.Month;
-            clientDateOfBirth.Year = dateOfBirth.Year;
+            clientDateOfBirth.Date = dateOfBirth.Date;
             clientDateOfBirth.Age = dateOfBirth.Age;
 
             return clientDateOfBirth;
@@ -97,9 +95,7 @@ namespace MiddleWare.Converters
             else
                 mongoDateOfBirth.DateOfBirthId = new MongoDB.Bson.ObjectId(dateOfBirth.DateOfBirthId);
 
-            mongoDateOfBirth.Day = dateOfBirth.Day;
-            mongoDateOfBirth.Month = dateOfBirth.Month;
-            mongoDateOfBirth.Year = dateOfBirth.Year;
+            mongoDateOfBirth.Date = dateOfBirth.Date;
 
             mongoDateOfBirth.Age = dateOfBirth.Age;
             mongoDateOfBirth.CreatedDate = dateOfBirth.CreatedDate;

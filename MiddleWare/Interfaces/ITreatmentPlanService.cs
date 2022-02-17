@@ -5,8 +5,8 @@ namespace MiddleWare.Interfaces
 {
     public interface ITreatmentPlanService
     {
-        public Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId);
-        public Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string OrganisationId, string CustomerId);
+        public Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetTreatmentPlans(string OrganisationId, string ServiceproviderId, string? CustomerId);
+        public Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId, string CustomerId, bool IsUpcoming);
         public Task AddTreatmentPlan(ProviderClientIncoming.TreatmentPlanIncoming treatmentPlanIncoming);
         public Task UpdateTreatmentPlan(ProviderClientIncoming.TreatmentPlanIncoming treatmentPlanIncoming);
         public Task AddTreatment(string TreatmentPlanId, ProviderClientIncoming.TreatmentIncoming treatmentIncoming);

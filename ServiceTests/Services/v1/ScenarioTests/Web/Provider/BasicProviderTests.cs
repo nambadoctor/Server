@@ -225,7 +225,10 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var postTreatmentPlanResult = await apiCalls.AddTreatmentPlan(treatmentPlan);
             Assert.IsTrue(postTreatmentPlanResult);
 
-            var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId);
+            var allTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId, "", false);
+            Assert.IsNotNull(allTreatments);
+            
+            var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId,"");
             var chosenTreatmentPlan = ChooseRandomFromList(treatmentPlans);
             var chosenTreatment = ChooseRandomFromList(chosenTreatmentPlan.Treatments);
 
@@ -240,6 +243,14 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var updatedTreatmentPlan = dataGeneration.GenerateTreatmentPlan(chosenAppointment.CustomerId, ChosenServiceProviderId, ChosenOrganisationId, chosenAppointment.ServiceRequestId, chosenTreatmentPlan.TreatmentPlanId);
             var putTreatmentPlanResult = await apiCalls.UpdateTreatmentPlan(updatedTreatmentPlan);
             Assert.IsTrue(putTreatmentPlanResult);
+            
+            var customerTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
+                chosenAppointment.CustomerId, false);
+            Assert.IsNotNull(customerTreatments);
+            
+            var upcomingTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
+                chosenAppointment.CustomerId, true);
+            Assert.IsNotNull(upcomingTreatments);
 
         }
 

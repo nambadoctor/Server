@@ -19,24 +19,25 @@ namespace RestApi.Controllers.Provider
             this.treatmentPlanService = treatmentPlanService;
         }
 
-        [HttpGet("all/{OrganisationId}/{ServiceproviderId}")]
+        [HttpGet("{OrganisationId}/{ServiceproviderId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetAllTreatmentPlans(string OrganisationId, string ServiceproviderId, [FromQuery]string CustomerId)
         {
 
-            var treatments = await treatmentPlanService.GetAllTreatmentPlans(OrganisationId, ServiceproviderId);
+            var treatmentPlans = await treatmentPlanService.GetTreatmentPlans(OrganisationId, ServiceproviderId, CustomerId);
 
-            return treatments;
+            return treatmentPlans;
         }
-
-        [HttpGet("customer/{OrganisationId}/{CustomerId}")]
+        
+        [HttpGet("treatments/{OrganisationId}/{ServiceproviderId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanOutgoing>> GetCustomerTreatmentPlans(string OrganisationId, string CustomerId)
+        public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetTreatments(string OrganisationId, string ServiceproviderId, [FromQuery] string CustomerId, [FromQuery] bool IsUpcoming)
         {
 
-            var treatments = await treatmentPlanService.GetCustomerTreatmentPlans(OrganisationId, CustomerId);
+            var treatments = await treatmentPlanService.GetTreatments(OrganisationId, ServiceproviderId, CustomerId, IsUpcoming);
 
             return treatments;
+
         }
 
 

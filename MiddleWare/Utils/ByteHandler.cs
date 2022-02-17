@@ -1,4 +1,6 @@
-﻿namespace MiddleWare.Utils
+﻿using System.Linq;
+
+namespace MiddleWare.Utils
 {
     public class ByteHandler
     {
@@ -12,6 +14,14 @@
         public static string Base64Encode(byte[] bytes)
         {
             return System.Convert.ToBase64String(bytes);
+        }
+        public static string GetMimeType(string fileType)
+        {
+            if (fileType.Contains("jpeg")) return "image/jpeg";
+            if (fileType.Contains("png")) return "image/png";
+            if (fileType.Contains("pdf")) return "application/pdf";
+            return "application/octet-stream";
+            
         }
     }
 }
