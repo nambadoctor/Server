@@ -14,12 +14,9 @@ namespace MongoDB.GenericRepository.Context
         public IClientSessionHandle Session { get; set; }
         public MongoClient MongoClient { get; set; }
         private readonly List<Func<Task>> _commands;
-        private readonly IConfiguration _configuration;
 
-        public MongoContext(IConfiguration configuration)
+        public MongoContext()
         {
-            _configuration = configuration;
-
             // Every command will be stored and it'll be processed at SaveChanges
             _commands = new List<Func<Task>>();
         }
@@ -52,7 +49,7 @@ namespace MongoDB.GenericRepository.Context
             // Configure mongo (You can inject the config, just to simplify)
             MongoClient = new MongoClient("mongodb://nambadoctorppedb:jDqohESaSsmpS9aDusWioPZZpuJThfDSptQooRacoSB8GC6hLBnx1CwsxuYozN17bXpTgoUPdCO317OH7eur7w==@nambadoctorppedb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@nambadoctorppedb@");
 
-            Database = MongoClient.GetDatabase("NambaDoctorTest"); 
+            Database = MongoClient.GetDatabase("NambaDoctorTest");
         }
 
         public IMongoCollection<T> GetCollection<T>(string name)

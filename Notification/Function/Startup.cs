@@ -13,6 +13,7 @@ namespace Notification.Function
         [assembly: FunctionsStartup(typeof(Startup))]
         public override void Configure(IFunctionsHostBuilder builder)
         {
+            Console.WriteLine("Lol");
             builder.Services.AddScoped<IMongoContext, MongoContext>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
