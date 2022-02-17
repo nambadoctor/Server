@@ -64,7 +64,7 @@ namespace RestApi.Controllers.Provider
         {
             var customerId = await customerService.AddCustomerProfile(customerProfileWithAppointment.CustomerProfileIncoming);
             customerProfileWithAppointment.AppointmentIncoming.CustomerId = customerId;
-            await appointmentService.AddAppointment(customerProfileWithAppointment.AppointmentIncoming);
+            await appointmentService.AddAppointment(customerProfileWithAppointment.AppointmentIncoming, null);
         }
 
     }

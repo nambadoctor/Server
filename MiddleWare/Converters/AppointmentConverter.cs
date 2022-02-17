@@ -49,7 +49,8 @@ namespace MiddleWare.Converters
         public static Mongo.Appointment ConvertToMongoAppointmentData(
             Mongo.ServiceProviderProfile serviceProviderProfile,
            ProviderClientIncoming.AppointmentIncoming appointment,
-           Mongo.CustomerProfile customerProfile)
+           Mongo.CustomerProfile customerProfile,
+           ProviderClientIncoming.TreatmentIncoming? treatment)
         {
             var appointmentData = new Mongo.Appointment();
 
@@ -86,6 +87,12 @@ namespace MiddleWare.Converters
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+
+            if (treatment != null)
+            {
+                appointmentData.TreatmentId = treatment.TreatmentId;
+                appointmentData.TreatmentPlanId = treatment.TreatmentPlanId;
+            }
 
             return appointmentData;
         }

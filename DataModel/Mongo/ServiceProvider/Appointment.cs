@@ -17,6 +17,9 @@ namespace DataModel.Mongo
         public string CustomerName { get; set; }
         public string ServiceProviderName { get; set; }
 
+        public string TreatmentPlanId { get; set; }
+        public string TreatmentId { get; set; }
+      
         [BsonRepresentation(BsonType.String)]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public AppointmentStatus Status { get; set; }
