@@ -19,5 +19,6 @@
 	<ItemGroup>
 	  <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
 	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
+	  <ProjectReference Include="..\Notification\Notification.csproj" />
 	</ItemGroup>
 </Project>

@@ -24,9 +24,9 @@ namespace MongoDB.GenericRepository.Repository
             await this.AddToSet(filter, update);
         }
 
-        public async Task<Appointment> GetAppointment(string serviceProviderId, string appointmentId)
+        public async Task<Appointment> GetAppointment(string appointmentId)
         {
-            var serviceProviderFilter = Builders<ServiceProvider>.Filter.Eq(sp => sp.ServiceProviderId, new ObjectId(serviceProviderId));
+            var serviceProviderFilter = Builders<ServiceProvider>.Filter.ElemMatch(sp => sp.Appointments, app => app.AppointmentId == new ObjectId(appointmentId));
 
             var project = Builders<ServiceProvider>.Projection.Expression(
                 sp => sp.Appointments.Where(
@@ -156,6 +156,24 @@ namespace MongoDB.GenericRepository.Repository
             update = update.Set("Appointments.$.ActualAppointmentEndTime", appointment.ActualAppointmentEndTime);
 
             await this.Upsert(nestedFilter, update);
+        }
+
+
+        //Not for RestAPI
+        public async Task<List<Appointment>> GetAllAppointments(AppointmentStatus Status, DateTime startTime, DateTime endTime)
+        {
+            var filter = Builders<ServiceProvider>.Filter.Empty;
+
+            var project = Builders<ServiceProvider>.Projection.Expression(
+                sp => sp.Appointments.Where(
+                    app => app.Status == Status &&
+                    app.ScheduledAppointmentStartTime > startTime &&
+                    app.ScheduledAppointmentStartTime < endTime)
+                );
+
+            var result = await this.GetListByFilterAndProject(filter, project);
+
+            return result.ToList();
         }
     }
 }

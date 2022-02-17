@@ -16,7 +16,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         public Boolean flag = false;
 
         public static HttpClient httpClient;
-        public static string BaseUrl = "https://localhost:5001/api/provider";
+        public static string BaseUrl = "https://localhost:44307/api/provider";
 
         public static string ChosenServiceProviderId = "";
         public static string ChosenOrganisationId = "";
