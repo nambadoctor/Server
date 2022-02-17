@@ -15,8 +15,6 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
-using Notification.Mode.SMS;
-using Notification.Trigger;
 using RestApi.Middlewares;
 using System;
 using System.IO;
@@ -74,19 +72,8 @@ namespace NambaDoctorWebApi
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
 
-            //Notification dependencies
-            var testSms = "true";
-            services.AddScoped<ISmsRepository, SmsRepository>((repository) =>
-            {
-                return new SmsRepository(testSms != null ? bool.Parse(testSms) : true);
-            });
-            services.AddScoped<ISmsService, SmsService>();
-            services.AddScoped<IAppointmentStatusTrigger, AppointmentStatusTrigger>();
-
-            //Datalayer dependencies
             services.AddScoped<IMongoContext, MongoContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
@@ -127,10 +114,10 @@ namespace NambaDoctorWebApi
                 options.AddDefaultPolicy(
                     builder =>
                     {
-                        builder.WithOrigins(new string[] {
+                        builder.WithOrigins(new string[] { 
                                             "https://localhost:3000",
-                                            "https://test.nambadoctor.com",
-                                            "https://www.nambadoctor.com",
+                                            "https://test.nambadoctor.com", 
+                                            "https://www.nambadoctor.com", 
                                             "https://nambadoctor.com", "*" })
                                             .AllowAnyHeader()
                                             .AllowAnyMethod();

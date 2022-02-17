@@ -11,8 +11,5 @@ namespace MongoDB.GenericRepository.Interfaces
         public Task<List<CustomerProfile>> GetCustomersOfOrganisation(string organisationId);
         public Task AddCustomerProfile(CustomerProfile profile);
         public Task UpdateCustomerProfile(CustomerProfile profile);
-
-        //Not for RestApi
-        public Task<List<CustomerProfile>> GetCustomerProfiles(List<string> customerIds);
     }
 }

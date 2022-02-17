@@ -94,29 +94,5 @@ namespace MongoDB.GenericRepository.Repository
 
             await this.Upsert(nestedFilter, update);
         }
-
-        public async Task<List<CustomerProfile>> GetCustomerProfiles(List<string> customerIds)
-        {
-            var customerIdsList = new List<ObjectId>();
-
-            foreach (var customerId in customerIds)
-            {
-                customerIdsList.Add(new ObjectId(customerId));
-            }
-
-            var filter = Builders<Customer>.Filter.In(
-                cust => cust.CustomerId,
-                customerIdsList
-                );
-
-            var project = Builders<Customer>.Projection.Expression(
-                cust => cust.Profiles.Where(_ => true)
-                );
-
-            var result = await this.GetListByFilterAndProject(filter, project);
-
-            return result.ToList();
-
-        }
     }
 }

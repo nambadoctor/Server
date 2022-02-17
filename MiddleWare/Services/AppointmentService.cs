@@ -5,7 +5,6 @@ using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
 using MongoDB.GenericRepository.Interfaces;
-using Notification.Trigger;
 using Mongo = DataModel.Mongo;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
@@ -20,17 +19,13 @@ namespace MiddleWare.Services
         private IServiceRequestRepository serviceRequestRepository;
         private ILogger logger;
 
-        private IAppointmentStatusTrigger appointmentStatusTrigger;
-
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger)
         {
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
-
-            this.appointmentStatusTrigger = appointmentStatusTrigger;
         }
 
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
@@ -39,9 +34,12 @@ namespace MiddleWare.Services
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
 
+
+                DataValidation.ValidateObjectId(serviceProviderId, IdType.ServiceProvider);
+
                 DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
 
-                var appointment = await appointmenRepository.GetAppointment(appointmentId);
+                var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
 
                 DataValidation.ValidateObject(appointment);
 
@@ -122,8 +120,6 @@ namespace MiddleWare.Services
                 await serviceRequestRepository.Add(serviceRequest);
 
                 logger.LogInformation("Added serviceRequest successfully");
-
-                RunAppointmentNotificationTrigger(appointmentId.ToString());
             }
         }
 
@@ -198,8 +194,6 @@ namespace MiddleWare.Services
                 logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
-
-                RunAppointmentNotificationTrigger(appointment.AppointmentId);
             }
         }
 
@@ -216,8 +210,6 @@ namespace MiddleWare.Services
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
-
-            RunAppointmentNotificationTrigger(appointment.AppointmentId);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
@@ -256,18 +248,6 @@ namespace MiddleWare.Services
             DataValidation.ValidateObject(customerProfile);
 
             return (customerProfile, spProfile);
-        }
-
-        private void RunAppointmentNotificationTrigger(string appointmentId)
-        {
-            try
-            {
-                appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
-            }
         }
 
     }
