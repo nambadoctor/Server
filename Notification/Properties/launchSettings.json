@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "Notification": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "sms_test": "true"
+      }
+    }
+  }
+}

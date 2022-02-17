@@ -1,0 +1,16 @@
+﻿{
+  "version": "2.0",
+  "ApplicationInsights": {
+    "Instrumentationkey": "ee4f96b4-33c1-4e46-82a9-a8cb69363778",
+    "LogLevel": {
+      "Default": "Information"
+    }
+  },
+  "Logging": {
+    "LogLevel": {
+      "Default": "Information",
+      "Microsoft": "Warning",
+      "Microsoft.Hosting.Lifetime": "Information"
+    }
+  }
+}
