@@ -1,4 +1,4 @@
-namespace Notification.Medium.SMS;
+namespace Notification.Mode.SMS;
 
 // public class TextLocalResponse
 // {
@@ -47,7 +47,7 @@ public class TextLocalResponse
     public Message message { get; set; }
     public string receipt_url { get; set; }
     public string custom { get; set; }
-    public List<ReceiverInfo> messages { get; set; } 
+    public List<ReceiverInfo> messages { get; set; }
     public List<Warning> warnings { get; set; }
     public List<Error> errors { get; set; }
     public string status { get; set; }

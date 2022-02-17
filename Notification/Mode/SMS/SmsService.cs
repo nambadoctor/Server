@@ -1,14 +1,14 @@
-namespace Notification.Medium.SMS;
+namespace Notification.Mode.SMS;
 
-public class SmsService: ISmsService
+public class SmsService : ISmsService
 {
     private ISmsRepository smsRepository;
-    
+
     public SmsService(ISmsRepository smsRepository)
     {
         this.smsRepository = smsRepository;
     }
-    
+
     public bool SendAppointmentReminderSMS(string phoneNumber, string time, string user)
     {
         String message = Uri.EscapeDataString($"Upcoming appointment. \nYour appointment with {user.Trim().Replace(" ", "")} is in {time.Trim().Replace(" ", "")}. Please be ready for the call.\n-Namba Doctor");

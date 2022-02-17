@@ -5,6 +5,7 @@ using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
 using MongoDB.GenericRepository.Interfaces;
+using Notification.Trigger;
 using Mongo = DataModel.Mongo;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
@@ -19,13 +20,17 @@ namespace MiddleWare.Services
         private IServiceRequestRepository serviceRequestRepository;
         private ILogger logger;
 
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger)
+        private IAppointmentStatusTrigger appointmentStatusTrigger;
+
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
         {
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
+
+            this.appointmentStatusTrigger = appointmentStatusTrigger;
         }
 
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
@@ -34,12 +39,9 @@ namespace MiddleWare.Services
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
 
-
-                DataValidation.ValidateObjectId(serviceProviderId, IdType.ServiceProvider);
-
                 DataValidation.ValidateObjectId(appointmentId, IdType.Appointment);
 
-                var appointment = await appointmenRepository.GetAppointment(serviceProviderId, appointmentId);
+                var appointment = await appointmenRepository.GetAppointment(appointmentId);
 
                 DataValidation.ValidateObject(appointment);
 
@@ -120,6 +122,15 @@ namespace MiddleWare.Services
                 await serviceRequestRepository.Add(serviceRequest);
 
                 logger.LogInformation("Added serviceRequest successfully");
+
+                try
+                {
+                    appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId.ToString());
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
+                }
             }
         }
 
@@ -194,6 +205,15 @@ namespace MiddleWare.Services
                 logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
+
+                try
+                {
+                    appointmentStatusTrigger.FireAppointmentStatusNotification(appointment.AppointmentId);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
+                }
             }
         }
 
@@ -210,6 +230,15 @@ namespace MiddleWare.Services
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
+
+            try
+            {
+                appointmentStatusTrigger.FireAppointmentStatusNotification(appointment.AppointmentId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
+            }
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)

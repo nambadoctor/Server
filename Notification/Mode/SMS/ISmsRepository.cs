@@ -1,4 +1,4 @@
-namespace Notification.Medium.SMS;
+namespace Notification.Mode.SMS;
 
 public interface ISmsRepository
 {

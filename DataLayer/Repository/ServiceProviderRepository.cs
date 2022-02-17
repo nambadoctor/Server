@@ -76,5 +76,28 @@ namespace MongoDB.GenericRepository.Repository
 
             return result.ToList();
         }
+
+        public async Task<List<ServiceProviderProfile>> GetServiceProviderProfiles(List<string> serviceProviderIds)
+        {
+            var serviceProviderIdsList = new List<ObjectId>();
+
+            foreach (var serviceProviderId in serviceProviderIds)
+            {
+                serviceProviderIdsList.Add(new ObjectId(serviceProviderId));
+            }
+
+            var filter = Builders<ServiceProvider>.Filter.In(
+                sp => sp.ServiceProviderId,
+                serviceProviderIdsList
+                );
+
+            var project = Builders<ServiceProvider>.Projection.Expression(
+                sp => sp.Profiles.Where(_ => true)
+                );
+
+            var result = await this.GetListByFilterAndProject(filter, project);
+
+            return result.ToList();
+        }
     }
 }

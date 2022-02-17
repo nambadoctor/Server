@@ -34,5 +34,6 @@
 	  <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
 	  <ProjectReference Include="..\DataModel\DataModel.csproj" />
 	  <ProjectReference Include="..\MiddleWare\MiddleWare.csproj" />
+	  <ProjectReference Include="..\Notification\Notification.csproj" />
 	</ItemGroup>
 </Project>
