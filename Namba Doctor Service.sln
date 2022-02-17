@@ -6,10 +6,19 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MiddleWare", "MiddleWare\MiddleWare.csproj", "{668627BE-56D9-4049-BDEF-B1EFAA16A623}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RestApi", "RestApi\RestApi.csproj", "{0F077A1F-3B29-4B7D-8F94-BAE07AE5ED40}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2B3CD934-36E2-47B9-A443-F58B15052F22} = {2B3CD934-36E2-47B9-A443-F58B15052F22}
+	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataLayer", "DataLayer\DataLayer.csproj", "{54E5593D-7F88-4B0E-88C5-A261DC5BFD04}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DataModel", "DataModel\DataModel.csproj", "{5781DA43-433A-455D-AAA4-C57711112429}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Notification", "Notification\Notification.csproj", "{2B3CD934-36E2-47B9-A443-F58B15052F22}"
+	ProjectSection(ProjectDependencies) = postProject
+		{54E5593D-7F88-4B0E-88C5-A261DC5BFD04} = {54E5593D-7F88-4B0E-88C5-A261DC5BFD04}
+		{5781DA43-433A-455D-AAA4-C57711112429} = {5781DA43-433A-455D-AAA4-C57711112429}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +42,10 @@ Global
 		{5781DA43-433A-455D-AAA4-C57711112429}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5781DA43-433A-455D-AAA4-C57711112429}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5781DA43-433A-455D-AAA4-C57711112429}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B3CD934-36E2-47B9-A443-F58B15052F22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B3CD934-36E2-47B9-A443-F58B15052F22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B3CD934-36E2-47B9-A443-F58B15052F22}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B3CD934-36E2-47B9-A443-F58B15052F22}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
