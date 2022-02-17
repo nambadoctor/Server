@@ -1,4 +1,3 @@
-using DataLayer;
 using DataModel.Shared;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
@@ -15,8 +14,8 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
-using Notification.Mode.SMS;
-using Notification.Trigger;
+using NotificationUtil.Mode.SMS;
+using NotificationUtil.Trigger;
 using RestApi.Middlewares;
 using System;
 using System.IO;
