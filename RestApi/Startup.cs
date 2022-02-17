@@ -86,7 +86,6 @@ namespace NambaDoctorWebApi
             //Datalayer dependencies
             services.AddScoped<IMongoContext, MongoContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
-            services.AddScoped<ISmsService, SmsService>();
             services.AddScoped<ICustomerRepository, CustomerRepository>();
             services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
             services.AddScoped<IAppointmentRepository, AppointmentRepository>();
