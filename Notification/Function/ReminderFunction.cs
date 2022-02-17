@@ -30,6 +30,7 @@ namespace Notification.Function
 
             if (appointmentRelevantData == null)
             {
+                log.LogInformation("No pending appointments to remind today");
                 return;
             }
 
