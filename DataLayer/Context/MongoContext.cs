@@ -52,7 +52,7 @@ namespace MongoDB.GenericRepository.Context
             // Configure mongo (You can inject the config, just to simplify)
             MongoClient = new MongoClient("mongodb://nambadoctorppedb:jDqohESaSsmpS9aDusWioPZZpuJThfDSptQooRacoSB8GC6hLBnx1CwsxuYozN17bXpTgoUPdCO317OH7eur7w==@nambadoctorppedb.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@nambadoctorppedb@");
 
-            Database = MongoClient.GetDatabase("NambaDoctorTest");
+            Database = MongoClient.GetDatabase("NambaDoctorTest"); 
         }
 
         public IMongoCollection<T> GetCollection<T>(string name)
