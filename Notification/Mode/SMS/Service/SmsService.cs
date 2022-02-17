@@ -18,7 +18,7 @@ public class SmsService : ISmsService
 
     public bool SendAppointmentStatusSMS(string phoneNumber, string time, string user, string status)
     {
-        String message = Uri.EscapeDataString($"Appointment {status}.\nYour appointment on {time}(IST) with {user} is {status}.\n-Namba Doctor");
+        String message = Uri.EscapeDataString($"Appointment {status}.\nYour appointment on {time}(IST) with {user.Substring(0, Math.Min(user.Length, 10))} is {status}.\n-Namba Doctor");
         var response = smsRepository.SendSms(message, phoneNumber, "NmbaDr");
         return response;
     }
