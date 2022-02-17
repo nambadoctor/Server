@@ -123,14 +123,7 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Added serviceRequest successfully");
 
-                try
-                {
-                    appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId.ToString());
-                }
-                catch (Exception ex)
-                {
-                    logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
-                }
+                RunAppointmentNotificationTrigger(appointmentId.ToString());
             }
         }
 
@@ -206,14 +199,7 @@ namespace MiddleWare.Services
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
 
-                try
-                {
-                    appointmentStatusTrigger.FireAppointmentStatusNotification(appointment.AppointmentId);
-                }
-                catch (Exception ex)
-                {
-                    logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
-                }
+                RunAppointmentNotificationTrigger(appointment.AppointmentId);
             }
         }
 
@@ -231,14 +217,7 @@ namespace MiddleWare.Services
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
 
-            try
-            {
-                appointmentStatusTrigger.FireAppointmentStatusNotification(appointment.AppointmentId);
-            }
-            catch (Exception ex)
-            {
-                logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
-            }
+            RunAppointmentNotificationTrigger(appointment.AppointmentId);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
@@ -277,6 +256,18 @@ namespace MiddleWare.Services
             DataValidation.ValidateObject(customerProfile);
 
             return (customerProfile, spProfile);
+        }
+
+        private void RunAppointmentNotificationTrigger(string appointmentId)
+        {
+            try
+            {
+                appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId);
+            }
+            catch (Exception ex)
+            {
+                logger.LogInformation($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
+            }
         }
 
     }
