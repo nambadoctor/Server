@@ -39,7 +39,7 @@ namespace RestApi.Controllers.Provider
 
         }
 
-        [HttpPost("")]
+        [HttpPost("WithAppointment")]
         [Authorize]
         public async Task AddAppointmentWithTreatment([FromBody] ProviderClientIncoming.AppointmentWithTreatment appointmentWithTreatment)
         {
