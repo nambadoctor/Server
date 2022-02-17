@@ -46,6 +46,7 @@ public class SmsRepository : ISmsRepository
             string result = System.Text.Encoding.UTF8.GetString(response);
             try
             {
+                return true;
                 TextLocalResponse parsedResponse = JsonConvert.DeserializeObject<TextLocalResponse>(result);
                 //TODO Log reason and maybe retry
                 return parsedResponse?.status == "success";

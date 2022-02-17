@@ -6,14 +6,14 @@ using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using Notification.Mode.SMS;
 
+[assembly: FunctionsStartup(typeof(Notification.Function.Startup))]
 namespace Notification.Function
 {
     public class Startup : FunctionsStartup
     {
-        [assembly: FunctionsStartup(typeof(Startup))]
         public override void Configure(IFunctionsHostBuilder builder)
         {
-            Console.WriteLine("Lol");
+            Console.WriteLine("FunctionsStartup called");
             builder.Services.AddScoped<IMongoContext, MongoContext>();
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
