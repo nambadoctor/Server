@@ -75,7 +75,7 @@ namespace NambaDoctorWebApi
             services.AddSingleton<IMediaContainer, MediaContainer>();
 
             //Notification dependencies
-            var testSms = "false";
+            var testSms = "true";
             services.AddScoped<ISmsRepository, SmsRepository>((repository) =>
             {
                 return new SmsRepository(testSms != null ? bool.Parse(testSms) : true);
