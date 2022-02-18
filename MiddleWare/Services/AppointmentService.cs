@@ -86,7 +86,7 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task AddAppointment(ProviderClientIncoming.AppointmentIncoming appointment, ProviderClientIncoming.TreatmentIncoming? treatmentIncoming)
+        public async Task AddAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
         {
             using (logger.BeginScope("Method: {Method}", "AppointmentService:AddAppointment"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
@@ -111,16 +111,11 @@ namespace MiddleWare.Services
                 serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
                 serviceRequest.Notes = new List<Mongo.Note>();
 
-                
-                if (treatmentIncoming != null)
-                {
-                    serviceRequest.TreatmentPlanId = treatmentIncoming.TreatmentPlanId;
-                    serviceRequest.TreatmentId = treatmentIncoming.TreatmentId;
-                }
+
 
                 logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 
-                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1, null);
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
                 logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
@@ -128,18 +123,32 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Added appointment successfully");
 
+                //SET TREATMENT ID IN SERVICE REQUEST
+                if (!string.IsNullOrEmpty(appointment.TreatmentId))
+                {
+                    serviceRequest.TreatmentId = appointment.TreatmentId;
+                }
+
+                if (!string.IsNullOrEmpty(appointment.TreatmentPlanId))
+                {
+                    serviceRequest.TreatmentPlanId = appointment.TreatmentPlanId;
+                }
+                //END
+
                 await serviceRequestRepository.Add(serviceRequest);
 
                 logger.LogInformation("Added serviceRequest successfully");
 
-                //UPDATE FK's in Treatment. Need to be moved to different class?
-                if (treatmentIncoming != null)
+                //UPDATE FK's in Treatment
+                if (!string.IsNullOrEmpty(appointment.TreatmentId))
                 {
-                    treatmentIncoming.ServiceRequestId = serviceRequestId.ToString();
-                    treatmentIncoming.AppointmentId = appointmentId.ToString();
+                    var treatment = new ProviderClientIncoming.TreatmentIncoming();
+                    treatment.TreatmentId = appointment.TreatmentId;
+                    treatment.AppointmentId = appointmentId.ToString();
+                    treatment.ServiceRequestId = serviceRequestId.ToString();
 
-                    var mongoTreatment = TreatmentPlanConverter.ConvertToMongoTreatment(treatmentIncoming);
-                    await treatmentPlanRepository.UpdateTreatment(treatmentIncoming.TreatmentPlanId, mongoTreatment);
+                    var mongoTreatment = TreatmentPlanConverter.ConvertToMongoTreatment(treatment);
+                    await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);
                 }
                 //END
 
@@ -211,7 +220,7 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1, null);
+                var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
                 mongoAppointment.Cancellation = new Mongo.Cancellation();
                 mongoAppointment.Cancellation.CancellationID = ObjectId.GenerateNewId();
                 //Will move to converter once client supports cancellation object
@@ -232,7 +241,7 @@ namespace MiddleWare.Services
 
             logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1, null);
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
@@ -249,7 +258,7 @@ namespace MiddleWare.Services
 
             logger.LogInformation("Begin data conversion ConvertToClientAppointmentData");
 
-            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1, null);
+            var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
 
             logger.LogInformation("Finished data conversion ConvertToMongoAppointmentData");
 
