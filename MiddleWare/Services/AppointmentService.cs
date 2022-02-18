@@ -55,7 +55,6 @@ namespace MiddleWare.Services
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
                 return appointmentData;
-
             }
 
         }
@@ -115,9 +114,8 @@ namespace MiddleWare.Services
                 
                 if (treatmentIncoming != null)
                 {
-                    var mongoTreatment = TreatmentPlanConverter.ConvertToMongoTreatment(treatmentIncoming);
                     serviceRequest.TreatmentPlanId = treatmentIncoming.TreatmentPlanId;
-                    serviceRequest.Treatment = mongoTreatment;
+                    serviceRequest.TreatmentId = treatmentIncoming.TreatmentId;
                 }
 
                 logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");

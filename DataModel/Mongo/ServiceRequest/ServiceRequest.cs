@@ -16,7 +16,7 @@ namespace DataModel.Mongo
         public List<PrescriptionDocument> PrescriptionDocuments { get; set; }
         public List<Report> Reports { get; set; }
         public List<Note> Notes { get; set; }
-        public Treatment Treatment { get; set; }
+        public string TreatmentId { get; set; }
         public string TreatmentPlanId { get; set; }
         public bool IsDeleted { get; set; }
     }
