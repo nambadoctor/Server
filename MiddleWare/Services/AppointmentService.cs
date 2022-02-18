@@ -146,6 +146,7 @@ namespace MiddleWare.Services
                     treatment.TreatmentId = appointment.TreatmentId;
                     treatment.AppointmentId = appointmentId.ToString();
                     treatment.ServiceRequestId = serviceRequestId.ToString();
+                    treatment.Status = "BookedAppointment";
 
                     var mongoTreatment = TreatmentPlanConverter.ConvertToMongoTreatment(treatment);
                     await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);

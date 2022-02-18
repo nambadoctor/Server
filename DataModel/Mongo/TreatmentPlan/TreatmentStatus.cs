@@ -11,6 +11,7 @@ namespace DataModel.Mongo
         Cancelled,
         Postponed,
         Done,
-        Pending
+        Pending,
+        BookedAppointment
     }
 }
