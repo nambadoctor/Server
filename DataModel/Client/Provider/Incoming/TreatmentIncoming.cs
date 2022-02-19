@@ -11,6 +11,7 @@ namespace DataModel.Client.Provider.Incoming
         public string TreatmentId { get; set; }
         public string AppointmentId { get; set; }
         public string ServiceRequestId { get; set; }
+        public string TreatmentPlanId { get; set; }
         public string Name { get; set; }
         public string OrginalInstructions { get; set; }
         public string ActualProcedure { get; set; }

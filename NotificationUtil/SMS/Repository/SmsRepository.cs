@@ -36,25 +36,26 @@ public class SmsRepository : ISmsRepository
 
     public bool SendSms(string message, string phoneNumber, string senderId)
     {
-        nameValueCollection.Set("message", message);
-        nameValueCollection.Set("numbers", phoneNumber);
-        nameValueCollection.Set("sender", senderId);
+        //nameValueCollection.Set("message", message);
+        //nameValueCollection.Set("numbers", phoneNumber);
+        //nameValueCollection.Set("sender", senderId);
 
-        using (var wb = this.wb)
-        {
-            byte[] response = wb.UploadValues(BaseUrl, nameValueCollection);
-            string result = System.Text.Encoding.UTF8.GetString(response);
-            try
-            {
-                TextLocalResponse parsedResponse = JsonConvert.DeserializeObject<TextLocalResponse>(result);
-                //TODO Log reason and maybe retry
-                return parsedResponse?.status == "success";
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return false;
-            }
-        }
+        //using (var wb = this.wb)
+        //{
+        //    byte[] response = wb.UploadValues(BaseUrl, nameValueCollection);
+        //    string result = System.Text.Encoding.UTF8.GetString(response);
+        //    try
+        //    {
+        //        TextLocalResponse parsedResponse = JsonConvert.DeserializeObject<TextLocalResponse>(result);
+        //        //TODO Log reason and maybe retry
+        //        return parsedResponse?.status == "success";
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e.Message);
+        //        return false;
+        //    }
+        //}
+        return true;
     }
 }

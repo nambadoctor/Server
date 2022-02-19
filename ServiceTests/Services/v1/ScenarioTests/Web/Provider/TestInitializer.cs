@@ -16,7 +16,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         public Boolean flag = false;
 
         public static HttpClient httpClient;
-        public static string BaseUrl = "https://localhost:44307/api/provider";
+        public static string BaseUrl = "https://localhost:5001/api/provider";
 
         public static string ChosenServiceProviderId = "";
         public static string ChosenOrganisationId = "";
@@ -56,7 +56,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         private string GetAuthToken()
         {
             FirebaseAuthProvider provider = new FirebaseAuthProvider();
-            return provider.GetFBToken("+919999999999", "220272").Result;
+            return provider.GetFBToken("+911234567890", "123456").Result;
         }
 
         private void InitHttpClient()

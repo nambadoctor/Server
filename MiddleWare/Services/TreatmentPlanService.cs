@@ -174,7 +174,8 @@ namespace MiddleWare.Services
         {
             treatments.RemoveAll(treatment =>
                 treatment.Status == Mongo.TreatmentStatus.Cancelled.ToString() ||
-                treatment.Status == Mongo.TreatmentStatus.Done.ToString());
+                treatment.Status == Mongo.TreatmentStatus.Done.ToString() ||
+                treatment.Status == Mongo.TreatmentStatus.BookedAppointment.ToString()); 
         }
     }
 }
