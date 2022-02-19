@@ -81,17 +81,39 @@ namespace MongoDB.GenericRepository.Repository
 
             var update = Builders<TreatmentPlan>.Update.Set(tp => tp.TreatmentPlanId, new ObjectId(TreatmentPlanId));
 
-            update = update.Set("Treatments.$.Name", treatment.Name);
+            if (!string.IsNullOrEmpty(treatment.Name))
+            {
+                update = update.Set("Treatments.$.Name", treatment.Name);
+            }
 
-            update = update.Set("Treatments.$.ActualProcedure", treatment.ActualProcedure);
+            if (!string.IsNullOrEmpty(treatment.ActualProcedure))
+            {
+                update = update.Set("Treatments.$.ActualProcedure", treatment.ActualProcedure);
+            }
 
-            update = update.Set("Treatments.$.TreatmentInstanceServiceRequestId", treatment.TreatmentInstanceServiceRequestId);
+            if (!string.IsNullOrEmpty(treatment.TreatmentInstanceServiceRequestId))
+            {
+                update = update.Set("Treatments.$.TreatmentInstanceServiceRequestId", treatment.TreatmentInstanceServiceRequestId);
+            }
 
-            update = update.Set("Treatments.$.TreatmentInstanceAppointmentId", treatment.TreatmentInstanceAppointmentId);
+            if (!string.IsNullOrEmpty(treatment.TreatmentInstanceAppointmentId))
+            {
+                update = update.Set("Treatments.$.TreatmentInstanceAppointmentId", treatment.TreatmentInstanceAppointmentId);
+            }
 
             update = update.Set("Treatments.$.ActualDateTime", treatment.ActualDateTime);
 
             update = update.Set("Treatments.$.Status", treatment.Status);
+
+
+
+
+
+
+
+
+
+
 
             await this.Upsert(nestedFilter, update);
         }
