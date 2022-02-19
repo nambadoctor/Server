@@ -6,8 +6,8 @@ namespace NotificationUtil.Mode.SMS;
 
 public class SmsRepository : ISmsRepository
 {
-    private string APIKey = "ZWNhYThlY2I0ZTk5MzVkOTMxZTkxNDQ1MzhhM2I2NTI=";
-    private string BaseUrl = "https://api.textlocal.in/send/";
+    private string APIKey = "";
+    private string BaseUrl = "";
     private bool isTest;
     private NameValueCollection nameValueCollection;
     private WebClient wb;
