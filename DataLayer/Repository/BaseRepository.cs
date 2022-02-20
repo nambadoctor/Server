@@ -106,9 +106,9 @@ namespace MongoDB.GenericRepository.Repository
             //Context.AddCommand(() => DbSet.ReplaceOneAsync(Builders<TEntity>.Filter.Eq("_id", obj.GetId()), obj));
         }
 
-        public virtual void Remove(string id)
+        public async Task Remove(string id)
         {
-            Context.AddCommand(() => DbSet.DeleteOneAsync(Builders<TEntity>.Filter.Eq("_id", id)));
+            await DbSet.DeleteOneAsync(Builders<TEntity>.Filter.Eq("_id", id));
         }
 
         public void Dispose()
