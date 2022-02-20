@@ -5,7 +5,6 @@ using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
 using MongoDB.GenericRepository.Interfaces;
-using NotificationUtil.Trigger;
 using Mongo = DataModel.Mongo;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
@@ -22,9 +21,7 @@ namespace MiddleWare.Services
 
         private ILogger logger;
 
-        private IAppointmentStatusTrigger appointmentStatusTrigger;
-
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ITreatmentPlanRepository treatmentPlanRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ITreatmentPlanRepository treatmentPlanRepository, ILogger<AppointmentService> logger)
         {
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
@@ -32,8 +29,6 @@ namespace MiddleWare.Services
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
             this.treatmentPlanRepository = treatmentPlanRepository;
-
-            this.appointmentStatusTrigger = appointmentStatusTrigger;
         }
 
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
@@ -154,7 +149,10 @@ namespace MiddleWare.Services
                 //END
 
 
-                RunAppointmentNotificationTrigger(appointmentId.ToString());
+                RunAppointmentNotificationTrigger(appointmentId.ToString(), NotificationType.ImmediateConfirmation, appointment.ScheduledAppointmentStartTime.Value);
+                RunAppointmentNotificationTrigger(appointmentId.ToString(), NotificationType.TwentyFourHourReminder, appointment.ScheduledAppointmentStartTime.Value);
+                RunAppointmentNotificationTrigger(appointmentId.ToString(), NotificationType.TwelveHourReminder, appointment.ScheduledAppointmentStartTime.Value);
+
             }
         }
 
@@ -230,7 +228,7 @@ namespace MiddleWare.Services
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
 
-                RunAppointmentNotificationTrigger(appointment.AppointmentId);
+                RunAppointmentNotificationTrigger(mongoAppointment.AppointmentId.ToString(), NotificationType.Cancellation, appointment.ScheduledAppointmentStartTime.Value);
             }
         }
 
@@ -248,7 +246,7 @@ namespace MiddleWare.Services
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
 
-            RunAppointmentNotificationTrigger(appointment.AppointmentId);
+            RunAppointmentNotificationTrigger(mongoAppointment.AppointmentId.ToString(), NotificationType.Reschedule, appointment.ScheduledAppointmentStartTime.Value);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
@@ -289,11 +287,12 @@ namespace MiddleWare.Services
             return (customerProfile, spProfile);
         }
 
-        private void RunAppointmentNotificationTrigger(string appointmentId)
+        private void RunAppointmentNotificationTrigger(string appointmentId, NotificationType notificationType, DateTime appointmentTime)
         {
             try
             {
-                appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId);
+                QueueNotificationHelper queueNotificationHelper = new QueueNotificationHelper(logger);
+                queueNotificationHelper.QueueNotification(appointmentId, notificationType, appointmentTime);
             }
             catch (Exception ex)
             {

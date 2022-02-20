@@ -10,5 +10,6 @@ namespace Jobs.Repository
 {
     public interface INotificationQueueRepository : IRepository<NotificationQueue>
     {
+        public Task RemoveAllMatchingId(string appointmentId);
     }
 }

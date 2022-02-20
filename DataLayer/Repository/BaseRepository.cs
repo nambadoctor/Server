@@ -137,5 +137,10 @@ namespace MongoDB.GenericRepository.Repository
             return entityList;
 
         }
+
+        public async Task RemoveWithFilter(FilterDefinition<TEntity> filter)
+        {
+            await DbSet.DeleteManyAsync(filter);
+        }
     }
 }

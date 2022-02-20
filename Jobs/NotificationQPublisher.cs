@@ -1,3 +1,4 @@
+using DataModel.Shared;
 using Jobs.Models;
 using Jobs.Repository;
 using Jobs.Utils;
@@ -65,7 +66,24 @@ namespace Jobs
         {
             if (notificationQueue.NotificationType == NotificationType.Cancellation)
             {
-                await notificationQueueRepository.Remove(notificationQueue.AppointmentId);
+                await notificationQueueRepository.RemoveAllMatchingId(notificationQueue.AppointmentId);
+            }
+            else if (notificationQueue.NotificationType == NotificationType.Reschedule)
+            {
+                await notificationQueueRepository.RemoveAllMatchingId(notificationQueue.AppointmentId);
+
+                var twentyFourHourNQ = notificationQueue;
+                twentyFourHourNQ.NotificationType = NotificationType.TwentyFourHourReminder;
+
+                var twelveHourNQ = notificationQueue;
+                twelveHourNQ.NotificationType = NotificationType.TwelveHourReminder;
+
+                var immediateNQ = notificationQueue;
+                immediateNQ.NotificationType = NotificationType.ImmediateConfirmation;
+
+                await notificationQueueRepository.Add(twentyFourHourNQ);
+                await notificationQueueRepository.Add(twelveHourNQ);
+                await notificationQueueRepository.Add(immediateNQ);
             }
             else
             {

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using DataModel.Shared;
+using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Text.Json.Serialization;
@@ -18,13 +19,5 @@ namespace Jobs.Models
         public DateTime AppointmentTime { get; set; }
         public DateTime CreatedDateTime { get; set; }
 
-    }
-
-    public enum NotificationType
-    {
-        TwentyFourHourReminder,
-        TwelveHourReminder,
-        ImmediateConfirmation,
-        Cancellation
     }
 }

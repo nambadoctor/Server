@@ -21,5 +21,6 @@ namespace MongoDB.GenericRepository.Interfaces
         Task Upsert(FilterDefinition<TEntity> filter, UpdateDefinition<TEntity> updateDefinition);
         void Update(TEntity obj);
         Task Remove(string id);
+        Task RemoveWithFilter(FilterDefinition<TEntity> filter);
     }
 }
