@@ -47,6 +47,35 @@ namespace NotificationUtil.Trigger
                 );
         }
 
+        public async void FireReminderNotification(string appointmentId)
+        {
+            var appointmentData = await GetAppointmentData(appointmentId);
+            var appointment = appointmentData.Item1;
+            var customerNumber = appointmentData.Item2;
+            var spNumber = appointmentData.Item3;
+
+            //For customer
+            var customerStatus = smsService.SendAppointmentReminderSMS(customerNumber, appointment.ScheduledAppointmentStartTime.Value, appointment.CustomerName);
+            logger.LogInformation($"Reminder Notification status for {customerNumber} = {customerStatus}");
+
+            //For service provider
+            if (IsServiceProviderWhitelisted(spNumber))
+            {
+                var spStatus = smsService.SendAppointmentReminderSMS(
+                    spNumber,
+                    appointment.ScheduledAppointmentStartTime.Value,
+                    appointment.ServiceProviderName);
+
+                logger.LogInformation($"Reminder Notification status for {spNumber} = {spStatus}");
+            }
+        }
+
+
+
+        //Private methods, TODO move somewhere
+
+
+
         private async Task<(Appointment, string, string)> GetAppointmentData(string appointmentId)
         {
             var appointment = await appointmentRepository.GetAppointment(appointmentId);
@@ -77,27 +106,6 @@ namespace NotificationUtil.Trigger
             }
 
             return (appointment, custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number, spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number);
-        }
-
-        public async void FireReminderNotification(string appointmentId)
-        {
-            var appointmentData = await GetAppointmentData(appointmentId);
-
-
-            //For customer
-            var customerStatus = smsService.SendAppointmentReminderSMS(appointmentData.Item2, appointmentData.Item1.ScheduledAppointmentStartTime.Value, appointmentData.Item1.CustomerName);
-            logger.LogInformation($"Reminder Notification status for {appointmentData.Item2} = {customerStatus}");
-
-            //For service provider
-            if (IsServiceProviderWhitelisted(appointmentData.Item3))
-            {
-                var spStatus = smsService.SendAppointmentReminderSMS(
-                    appointmentData.Item3,
-                    appointmentData.Item1.ScheduledAppointmentStartTime.Value,
-                    appointmentData.Item1.ServiceProviderName);
-
-                logger.LogInformation($"Reminder Notification status for {appointmentData.Item2} = {spStatus}");
-            }
         }
 
         private void SendAppointmentStatusSmsToServiceProvider(string doctorPhoneNumber, DateTime appointmentTime, string custName, string status)

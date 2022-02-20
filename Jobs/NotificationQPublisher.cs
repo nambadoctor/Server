@@ -70,6 +70,7 @@ namespace Jobs
             }
             else if (notificationQueue.NotificationType == NotificationType.Reschedule)
             {
+                //Remove existing entries from Q and add new
                 await notificationQueueRepository.RemoveAllMatchingId(notificationQueue.AppointmentId);
 
                 var twentyFourHourNQ = notificationQueue;
