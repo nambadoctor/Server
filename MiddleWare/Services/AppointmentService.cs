@@ -18,17 +18,20 @@ namespace MiddleWare.Services
         private ICustomerRepository customerRepository;
         private IAppointmentRepository appointmenRepository;
         private IServiceRequestRepository serviceRequestRepository;
+        private ITreatmentPlanRepository treatmentPlanRepository;
+
         private ILogger logger;
 
         private IAppointmentStatusTrigger appointmentStatusTrigger;
 
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ITreatmentPlanRepository treatmentPlanRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
         {
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
+            this.treatmentPlanRepository = treatmentPlanRepository;
 
             this.appointmentStatusTrigger = appointmentStatusTrigger;
         }
@@ -52,7 +55,6 @@ namespace MiddleWare.Services
                 logger.LogInformation("Finished data conversion ConvertToClientAppointmentData");
 
                 return appointmentData;
-
             }
 
         }
@@ -109,6 +111,8 @@ namespace MiddleWare.Services
                 serviceRequest.PrescriptionDocuments = new List<Mongo.PrescriptionDocument>();
                 serviceRequest.Notes = new List<Mongo.Note>();
 
+
+
                 logger.LogInformation("Begin data conversion ConvertToMongoAppointmentData");
 
                 var mongoAppointment = AppointmentConverter.ConvertToMongoAppointmentData(users.Item2, appointment, users.Item1);
@@ -119,9 +123,36 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Added appointment successfully");
 
+                //SET TREATMENT ID IN SERVICE REQUEST
+                if (!string.IsNullOrEmpty(appointment.TreatmentId))
+                {
+                    serviceRequest.TreatmentId = appointment.TreatmentId;
+                }
+
+                if (!string.IsNullOrEmpty(appointment.TreatmentPlanId))
+                {
+                    serviceRequest.TreatmentPlanId = appointment.TreatmentPlanId;
+                }
+                //END
+
                 await serviceRequestRepository.Add(serviceRequest);
 
                 logger.LogInformation("Added serviceRequest successfully");
+
+                //UPDATE FK's in Treatment
+                if (!string.IsNullOrEmpty(appointment.TreatmentId))
+                {
+                    var treatment = new ProviderClientIncoming.TreatmentIncoming();
+                    treatment.TreatmentId = appointment.TreatmentId;
+                    treatment.AppointmentId = appointmentId.ToString();
+                    treatment.ServiceRequestId = serviceRequestId.ToString();
+                    treatment.Status = "BookedAppointment";
+
+                    var mongoTreatment = TreatmentPlanConverter.ConvertToMongoTreatment(treatment);
+                    await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);
+                }
+                //END
+
 
                 RunAppointmentNotificationTrigger(appointmentId.ToString());
             }

@@ -4,6 +4,8 @@
     {
         Online,
         Inperson,
-        CustomerManagement
+        CustomerManagement,
+        Consultation,
+        Treatment
     }
 }

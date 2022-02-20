@@ -6,8 +6,8 @@ namespace NotificationUtil.Mode.SMS;
 
 public class SmsRepository : ISmsRepository
 {
-    private string APIKey = "ZWNhYThlY2I0ZTk5MzVkOTMxZTkxNDQ1MzhhM2I2NTI=";
-    private string BaseUrl = "https://api.textlocal.in/send/";
+    private string APIKey = "";
+    private string BaseUrl = "";
     private bool isTest;
     private NameValueCollection nameValueCollection;
     private WebClient wb;
@@ -36,25 +36,26 @@ public class SmsRepository : ISmsRepository
 
     public bool SendSms(string message, string phoneNumber, string senderId)
     {
-        nameValueCollection.Set("message", message);
-        nameValueCollection.Set("numbers", phoneNumber);
-        nameValueCollection.Set("sender", senderId);
+        //nameValueCollection.Set("message", message);
+        //nameValueCollection.Set("numbers", phoneNumber);
+        //nameValueCollection.Set("sender", senderId);
 
-        using (var wb = this.wb)
-        {
-            byte[] response = wb.UploadValues(BaseUrl, nameValueCollection);
-            string result = System.Text.Encoding.UTF8.GetString(response);
-            try
-            {
-                TextLocalResponse parsedResponse = JsonConvert.DeserializeObject<TextLocalResponse>(result);
-                //TODO Log reason and maybe retry
-                return parsedResponse?.status == "success";
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-                return false;
-            }
-        }
+        //using (var wb = this.wb)
+        //{
+        //    byte[] response = wb.UploadValues(BaseUrl, nameValueCollection);
+        //    string result = System.Text.Encoding.UTF8.GetString(response);
+        //    try
+        //    {
+        //        TextLocalResponse parsedResponse = JsonConvert.DeserializeObject<TextLocalResponse>(result);
+        //        //TODO Log reason and maybe retry
+        //        return parsedResponse?.status == "success";
+        //    }
+        //    catch (Exception e)
+        //    {
+        //        Console.WriteLine(e.Message);
+        //        return false;
+        //    }
+        //}
+        return true;
     }
 }
