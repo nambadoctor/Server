@@ -16,7 +16,7 @@ namespace Jobs.Models
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public NotificationType NotificationType { get; set; }
         public string AppointmentId { get; set; }
-        public DateTime AppointmentTime { get; set; }
+        public DateTime NotificationScheduledTime { get; set; }
         public DateTime CreatedDateTime { get; set; }
 
     }

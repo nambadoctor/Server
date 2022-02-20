@@ -15,12 +15,12 @@ namespace MiddleWare.Utils
             var contentType = new MediaTypeWithQualityHeaderValue("application/json");
             this.httpClient.DefaultRequestHeaders.Accept.Add(contentType);
             this.logger = logger;
-            BaseUrl = "https://google.com";
+            BaseUrl = "https://google.com";//TODO Update URL
         }
 
-        public async Task QueueNotification(string appointmentId, NotificationType notificationType, DateTime appointmentTime)
+        public async Task QueueNotification(string appointmentId, NotificationType notificationType, DateTime scheduledTime)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/NotificationQPublisher?AppointmentId={appointmentId}&NotificationType={notificationType}&AppointmentTime={ToUnixEpochDate(appointmentTime) * 1000}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/NotificationQPublisher?AppointmentId={appointmentId}&NotificationType={notificationType}&ScheduledTime={ToUnixEpochDate(scheduledTime) * 1000}"))
             {
                 var response = await httpClient.SendAsync(request);
                 var value = await response.Content.ReadAsStringAsync();

@@ -292,7 +292,20 @@ namespace MiddleWare.Services
             try
             {
                 QueueNotificationHelper queueNotificationHelper = new QueueNotificationHelper(logger);
-                queueNotificationHelper.QueueNotification(appointmentId, notificationType, appointmentTime);
+                DateTime scheduledTime;
+                if (notificationType == NotificationType.TwentyFourHourReminder)
+                {
+                    scheduledTime = appointmentTime.AddDays(1);
+                }
+                else if (notificationType == NotificationType.TwelveHourReminder)
+                {
+                    scheduledTime = appointmentTime.AddHours(12);
+                }
+                else //For instantaneous
+                {
+                    scheduledTime = DateTime.UtcNow;
+                }
+                queueNotificationHelper.QueueNotification(appointmentId, notificationType, scheduledTime);
             }
             catch (Exception ex)
             {

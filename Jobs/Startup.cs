@@ -6,6 +6,7 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using NotificationUtil.Mode.SMS;
+using NotificationUtil.Trigger;
 using System;
 
 [assembly: FunctionsStartup(typeof(Notification.Function.Startup))]
@@ -30,6 +31,7 @@ namespace Notification.Function
             builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
+            builder.Services.AddScoped<INotificationBroadcast, NotificationBroadcast>();
         }
     }
 }

@@ -33,7 +33,7 @@ namespace Jobs
         [OpenApiSecurity("function_key", SecuritySchemeType.ApiKey, Name = "code", In = OpenApiSecurityLocationType.Query)]
         [OpenApiParameter(name: "AppointmentId", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The AppointmentId")]
         [OpenApiParameter(name: "NotificationType", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The NotificationTypes: {TwentyFourHourReminder,TwelveHourReminder,ImmediateConfirmation,Cancellation}")]
-        [OpenApiParameter(name: "AppointmentTime", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The appointment time")]
+        [OpenApiParameter(name: "ScheduledTime", In = ParameterLocation.Query, Required = true, Type = typeof(string), Description = "The appointment time")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.OK, contentType: "text/plain", bodyType: typeof(string), Description = "The OK response")]
         [OpenApiResponseWithBody(statusCode: HttpStatusCode.BadRequest, contentType: "text/plain", bodyType: typeof(string), Description = "The ERROR response")]
         public async Task<IActionResult> Run(
@@ -43,15 +43,15 @@ namespace Jobs
 
             string appointmentId = req.Query["AppointmentId"];
             string notificationType = req.Query["NotificationType"];
-            string appointmentTime = req.Query["AppointmentTime"];
+            string scheduledTime = req.Query["ScheduledTime"];
 
-            if (string.IsNullOrWhiteSpace(appointmentId) || string.IsNullOrWhiteSpace(notificationType) || string.IsNullOrWhiteSpace(appointmentTime))
+            if (string.IsNullOrWhiteSpace(appointmentId) || string.IsNullOrWhiteSpace(notificationType) || string.IsNullOrWhiteSpace(scheduledTime))
             {
                 _logger.LogError("Bad request at NotificationQPublisher");
                 return new BadRequestResult();
             }
 
-            var notificationObj = ParseRequest(appointmentId, notificationType, appointmentTime);
+            var notificationObj = ParseRequest(appointmentId, notificationType, scheduledTime);
 
             _logger.LogInformation($"Parsed request successfully, Queue Id:  {notificationObj.NotificationQueueId}");
 
@@ -102,7 +102,7 @@ namespace Jobs
 
             Double.TryParse(appointmentTime, out Double appointmentTimestamp);
 
-            notificationQueue.AppointmentTime = UtilityFunctions.UnixTimeStampToDateTime(appointmentTimestamp);
+            notificationQueue.NotificationScheduledTime = UtilityFunctions.UnixTimeStampToDateTime(appointmentTimestamp);
 
             notificationQueue.CreatedDateTime = DateTime.UtcNow;
 
