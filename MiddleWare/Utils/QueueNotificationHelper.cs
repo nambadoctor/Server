@@ -8,19 +8,19 @@ namespace MiddleWare.Utils
     {
         private HttpClient httpClient;
         private ILogger logger;
-        private string BaseUrl;
+        private string BaseUrl = "https://nambajobs.azurewebsites.net/api";
+        private string FunctionApiKey = "fzUv2QCow3Hlx1O8d4mEgj2o9VuUw8j8QbNnBib4imB71fiazrTuvQ==";
         public QueueNotificationHelper(ILogger logger)
         {
             httpClient = new HttpClient();
             var contentType = new MediaTypeWithQualityHeaderValue("application/json");
             this.httpClient.DefaultRequestHeaders.Accept.Add(contentType);
             this.logger = logger;
-            BaseUrl = "https://google.com";//TODO Update URL
         }
 
         public async Task QueueNotification(string appointmentId, NotificationType notificationType, DateTime scheduledTime)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/NotificationQPublisher?AppointmentId={appointmentId}&NotificationType={notificationType}&ScheduledTime={ToUnixEpochDate(scheduledTime) * 1000}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/NotificationQPublisher?code={FunctionApiKey}&AppointmentId={appointmentId}&NotificationType={notificationType}&ScheduledTime={ToUnixEpochDate(scheduledTime) * 1000}"))
             {
                 var response = await httpClient.SendAsync(request);
                 var value = await response.Content.ReadAsStringAsync();
