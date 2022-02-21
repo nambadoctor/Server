@@ -1,4 +1,4 @@
-﻿using Jobs.Models;
+﻿using DataModel.Mongo.Notification;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.GenericRepository.Interfaces;
@@ -9,7 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Jobs.Repository
+namespace MongoDB.GenericRepository.Repository
 {
     public class NotificationQueueRepository : BaseRepository<NotificationQueue>, INotificationQueueRepository
     {

@@ -1,42 +1,37 @@
-using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Jobs.Models;
-using Jobs.Repository;
+using DataModel.Mongo.Notification;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
-using DataModel.Shared;
+using MongoDB.GenericRepository.Interfaces;
 using NotificationUtil.Trigger;
-using System.Linq;
+using System;
+using System.Threading.Tasks;
 
 namespace Jobs
 {
-    public class NotificationQSubscriber
+    public class NotificationQProcessor
     {
         private readonly INotificationQueueRepository notificationQueueRepository;
         private readonly INotificationBroadcast notificationBroadcast;
-        public NotificationQSubscriber(INotificationQueueRepository notificationQueueRepository, INotificationBroadcast notificationBroadcast)
+        public NotificationQProcessor(INotificationQueueRepository notificationQueueRepository, INotificationBroadcast notificationBroadcast)
         {
             this.notificationQueueRepository = notificationQueueRepository;
             this.notificationBroadcast = notificationBroadcast;
         }
 
-        [FunctionName("NotificationQSubscriber")]
+        [FunctionName("NotificationQProcessor")]
         public async Task Run([TimerTrigger("0 */1 * * * *")] TimerInfo myTimer, ILogger logger)
         {
-            logger.LogInformation($"NotificationQSubscriber function executed at: {DateTime.Now}");
+            logger.LogInformation($"NotificationQProcessor function executed at: {DateTime.Now}");
 
             var pendingQueue = await notificationQueueRepository.GetPending();
 
             foreach (var queue in pendingQueue)
             {
+                await notificationQueueRepository.Remove(queue.NotificationQueueId.ToString());
                 FireNotification(queue);
             }
 
-            await RemoveFromQueue(pendingQueue.Select(nq => nq.NotificationQueueId.ToString()).ToList());
-
-            logger.LogInformation($"NotificationQSubscriber function finished execution at: {DateTime.Now}");
+            logger.LogInformation($"NotificationQProcessor function finished execution at: {DateTime.Now}");
         }
 
         private void FireNotification(NotificationQueue notificationQueue)
@@ -48,16 +43,11 @@ namespace Jobs
             {
                 notificationBroadcast.FireAppointmentStatusNotification(notificationQueue.AppointmentId);
             }
-            else if (notificationQueue.NotificationType == NotificationType.TwentyFourHourReminder || notificationQueue.NotificationType == NotificationType.TwelveHourReminder)
+            else if (notificationQueue.NotificationType == NotificationType.Reminder)
             {
                 notificationBroadcast.FireReminderNotification(notificationQueue.AppointmentId);
             }
 
-        }
-
-        private async Task RemoveFromQueue(List<string> notificationQueueIds)
-        {
-            await notificationQueueRepository.RemoveAllMatchingIdList(notificationQueueIds);
         }
     }
 }

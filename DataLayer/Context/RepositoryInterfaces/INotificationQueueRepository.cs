@@ -1,9 +1,9 @@
-﻿using Jobs.Models;
+﻿using DataModel.Mongo.Notification;
 using MongoDB.GenericRepository.Interfaces;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace Jobs.Repository
+namespace MongoDB.GenericRepository.Interfaces
 {
     public interface INotificationQueueRepository : IRepository<NotificationQueue>
     {

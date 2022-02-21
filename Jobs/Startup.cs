@@ -1,5 +1,4 @@
-﻿using Jobs.Repository;
-using Microsoft.Azure.Functions.Extensions.DependencyInjection;
+﻿using Microsoft.Azure.Functions.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection;
 using MongoDB.GenericRepository.Context;
 using MongoDB.GenericRepository.Interfaces;

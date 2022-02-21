@@ -14,6 +14,7 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
+using NotificationUtil.EventListener;
 using RestApi.Middlewares;
 using System;
 using System.IO;
@@ -71,6 +72,9 @@ namespace NambaDoctorWebApi
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
 
+            //Notification dependency
+            services.AddScoped<INotificationEventListener, NotificationEventListener>();
+
             //Datalayer dependencies
             services.AddScoped<IMongoContext, MongoContext>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -83,6 +87,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
             services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
+            services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

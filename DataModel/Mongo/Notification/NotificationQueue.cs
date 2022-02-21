@@ -1,10 +1,9 @@
-﻿using DataModel.Shared;
-using MongoDB.Bson;
+﻿using MongoDB.Bson;
 using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Text.Json.Serialization;
 
-namespace Jobs.Models
+namespace DataModel.Mongo.Notification
 {
     [BsonIgnoreExtraElements]
     public class NotificationQueue
