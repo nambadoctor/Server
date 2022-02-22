@@ -45,9 +45,7 @@ namespace RestApi.Controllers.Provider
         [Authorize]
         public async Task AddTreatmentPlan([FromBody] ProviderClientIncoming.TreatmentPlanIncoming treatmentPlanIncoming)
         {
-
             await treatmentPlanService.AddTreatmentPlan(treatmentPlanIncoming);
-
         }
 
         [HttpPut("")]

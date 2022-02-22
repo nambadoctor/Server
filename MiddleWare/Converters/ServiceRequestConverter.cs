@@ -92,6 +92,8 @@ namespace MiddleWare.Converters
 
             prescriptionDocumentOutgoing.FileType = mongoPrescriptionDocument.FileInfo.FileType;
 
+            prescriptionDocumentOutgoing.FileName = mongoPrescriptionDocument.FileInfo.FileName;
+
             if (mongoPrescriptionDocument.PrescriptionDetail != null)
             {
                 if (mongoPrescriptionDocument.PrescriptionDetail.UploadedDateTime.HasValue)
