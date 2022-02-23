@@ -1,4 +1,5 @@
 ﻿using DataModel.Mongo;
+using DataModel.Shared;
 using Microsoft.Extensions.Logging;
 using MongoDB.GenericRepository.Interfaces;
 using Notification.Sms;
@@ -24,8 +25,8 @@ namespace NotificationUtil.Trigger
 
         public async Task FireAppointmentStatusNotification(string appointmentId)
         {
-            var appointmentData = await GetAppointmentData(appointmentId);
 
+            var appointmentData = await GetAppointmentData(appointmentId);
             var appointment = appointmentData.Item1;
             var customerNumber = appointmentData.Item2;
             var spNumber = appointmentData.Item3;

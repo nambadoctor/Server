@@ -6,11 +6,6 @@ using System.Threading.Tasks;
 
 namespace DataModel.Shared
 {
-    public class NotificationWhitelist
-    {
-        public Dictionary<string, WhitelistConfig> whitelist { get; set; }
-    }
-
     public class WhitelistConfig
     {
         public bool TO_SEND_TO_SELF { get; set; }

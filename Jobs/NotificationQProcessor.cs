@@ -1,9 +1,12 @@
 using DataModel.Mongo.Notification;
+using DataModel.Shared;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using MongoDB.GenericRepository.Interfaces;
+using Newtonsoft.Json;
 using NotificationUtil.Trigger;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Jobs
@@ -32,7 +35,9 @@ namespace Jobs
                 foreach (var queue in pendingQueue)
                 {
                     await notificationQueueRepository.Remove(queue.NotificationQueueId.ToString());
+
                     logger.LogInformation($"Removed event: {queue.NotificationQueueId} {queue.AppointmentId} {queue.NotificationType}");
+
                     await FireNotification(queue, logger);
                 }
             }
