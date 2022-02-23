@@ -149,7 +149,7 @@ namespace MiddleWare.Services
                     await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);
                 }
                 //END
-                await notificationEventListener.NewAppointmentEvent(appointmentId.ToString(), appointment.ScheduledAppointmentStartTime.Value);
+                await notificationEventListener.NewAppointmentEvent(appointmentId.ToString(), appointment.ScheduledAppointmentStartTime);
 
             }
         }
@@ -244,7 +244,7 @@ namespace MiddleWare.Services
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
 
-            await notificationEventListener.RescheduleAppointmentEvent(appointment.AppointmentId, appointment.ScheduledAppointmentStartTime.Value);
+            await notificationEventListener.RescheduleAppointmentEvent(appointment.AppointmentId, appointment.ScheduledAppointmentStartTime);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)

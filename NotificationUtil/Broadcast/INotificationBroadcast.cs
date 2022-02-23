@@ -2,7 +2,7 @@
 {
     public interface INotificationBroadcast
     {
-        public void FireAppointmentStatusNotification(string appointmentId);
-        public void FireReminderNotification(string appointmentId);
+        public Task FireAppointmentStatusNotification(string appointmentId);
+        public Task FireReminderNotification(string appointmentId);
     }
 }

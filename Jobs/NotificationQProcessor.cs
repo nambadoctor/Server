@@ -23,30 +23,42 @@ namespace Jobs
         {
             logger.LogInformation($"NotificationQProcessor function executed at: {DateTime.Now}");
 
-            var pendingQueue = await notificationQueueRepository.GetPending();
-
-            foreach (var queue in pendingQueue)
+            try
             {
-                await notificationQueueRepository.Remove(queue.NotificationQueueId.ToString());
-                FireNotification(queue);
+                var pendingQueue = await notificationQueueRepository.GetPending();
+
+                logger.LogInformation($"Pending queue count: {pendingQueue.Count}");
+
+                foreach (var queue in pendingQueue)
+                {
+                    await notificationQueueRepository.Remove(queue.NotificationQueueId.ToString());
+                    logger.LogInformation($"Removed event: {queue.NotificationQueueId} {queue.AppointmentId} {queue.NotificationType}");
+                    await FireNotification(queue, logger);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"NotificationQProcessor function unhandled exception: {ex.Message} {ex.StackTrace}");
             }
 
             logger.LogInformation($"NotificationQProcessor function finished execution at: {DateTime.Now}");
         }
 
-        private void FireNotification(NotificationQueue notificationQueue)
+        private async Task FireNotification(NotificationQueue notificationQueue, ILogger logger)
         {
             //Fire appointment status notif
             if (notificationQueue.NotificationType == NotificationType.Cancellation ||
                 notificationQueue.NotificationType == NotificationType.ImmediateConfirmation ||
                 notificationQueue.NotificationType == NotificationType.Reschedule)
             {
-                notificationBroadcast.FireAppointmentStatusNotification(notificationQueue.AppointmentId);
+                await notificationBroadcast.FireAppointmentStatusNotification(notificationQueue.AppointmentId);
             }
             else if (notificationQueue.NotificationType == NotificationType.Reminder)
             {
-                notificationBroadcast.FireReminderNotification(notificationQueue.AppointmentId);
+                await notificationBroadcast.FireReminderNotification(notificationQueue.AppointmentId);
             }
+
+            logger.LogInformation($"Fired notification event: {notificationQueue.NotificationQueueId} {notificationQueue.AppointmentId} {notificationQueue.NotificationType}");
 
         }
     }

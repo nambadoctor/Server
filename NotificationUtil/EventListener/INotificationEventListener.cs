@@ -9,9 +9,9 @@ namespace NotificationUtil.EventListener
 {
     public interface INotificationEventListener
     {
-        public Task NewAppointmentEvent(string appointmentId, DateTime appointmentTime);
+        public Task NewAppointmentEvent(string appointmentId, DateTime? appointmentTime);
         public Task CancelAppointmentEvent(string appointmentId);
-        public Task RescheduleAppointmentEvent(string appointmentId, DateTime appointmentTime);
+        public Task RescheduleAppointmentEvent(string appointmentId, DateTime? appointmentTime);
 
     }
 }

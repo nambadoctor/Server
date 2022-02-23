@@ -19,11 +19,14 @@ namespace NotificationUtil.EventListener
             this._logger = logger;
         }
 
-        public async Task RescheduleAppointmentEvent(string appointmentId, DateTime appointmentTime)
+        public async Task RescheduleAppointmentEvent(string appointmentId, DateTime? appointmentTime)
         {
             await notificationQueueRepository.RemoveAllMatchingId(appointmentId);
 
-            await AddNewAppointmentEventToQueue(appointmentId, appointmentTime);
+            if (appointmentTime.HasValue)
+                await AddNewAppointmentEventToQueue(appointmentId, appointmentTime.Value);
+            else
+                _logger.LogError($"Appointment with no scheduled time at RescheduleAppointmentEvent: {appointmentId}");
         }
 
         public async Task CancelAppointmentEvent(string appointmentId)
@@ -32,12 +35,19 @@ namespace NotificationUtil.EventListener
 
             await notificationQueueRepository.RemoveAllMatchingId(appointmentId);
 
+            _logger.LogInformation($"CancelAppointmentEvent Removed previous events for {appointmentId}");
+
             await notificationQueueRepository.Add(cancelNotificationQueue);
+
+            _logger.LogInformation($"CancelAppointmentEvent Added cancel event {appointmentId}");
         }
 
-        public async Task NewAppointmentEvent(string appointmentId, DateTime appointmentTime)
+        public async Task NewAppointmentEvent(string appointmentId, DateTime? appointmentTime)
         {
-            await AddNewAppointmentEventToQueue(appointmentId, appointmentTime);
+            if (appointmentTime.HasValue)
+                await AddNewAppointmentEventToQueue(appointmentId, appointmentTime.Value);
+            else
+                _logger.LogError($"Appointment with no scheduled time at NewAppointmentEvent: {appointmentId}");
         }
 
         private async Task AddNewAppointmentEventToQueue(string appointmentId, DateTime appointmentTime)
@@ -52,9 +62,19 @@ namespace NotificationUtil.EventListener
             twentyFourHourNQ.NotificationType = NotificationType.Reminder;
             twentyFourHourNQ.NotificationScheduledTime = appointmentTime.AddHours(12);
 
+            _logger.LogInformation($"AddNewAppointmentEventToQueue Constructed events for {appointmentId}");
+
             await notificationQueueRepository.Add(immediateNotificationQueue);
+
+            _logger.LogInformation($"AddNewAppointmentEventToQueue Added immediate notification event for {appointmentId}");
+
             await notificationQueueRepository.Add(twentyFourHourNQ);
+
+            _logger.LogInformation($"AddNewAppointmentEventToQueue Added 24 hour reminder event for {appointmentId}");
+
             await notificationQueueRepository.Add(twelveHourNQ);
+
+            _logger.LogInformation($"AddNewAppointmentEventToQueue Added 12 hour reminder event for {appointmentId}");
         }
     }
 }

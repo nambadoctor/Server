@@ -22,7 +22,7 @@ namespace NotificationUtil.Trigger
             this.logger = logger;
         }
 
-        public async void FireAppointmentStatusNotification(string appointmentId)
+        public async Task FireAppointmentStatusNotification(string appointmentId)
         {
             var appointmentData = await GetAppointmentData(appointmentId);
 
@@ -30,36 +30,69 @@ namespace NotificationUtil.Trigger
             var customerNumber = appointmentData.Item2;
             var spNumber = appointmentData.Item3;
 
-            logger.LogInformation($"Firing notification to Customer no:{customerNumber} Service Provider Number:{spNumber}");
+            logger.LogInformation($"Started Firing notification to Customer no:{customerNumber} Service Provider Number:{spNumber}");
 
-            SendAppointmentStatusSmsToServiceProvider(
+            if (!appointment.ScheduledAppointmentStartTime.HasValue)
+            {
+                logger.LogError($"Appointment with no scheduled time at FireAppointmentStatusNotification: {appointmentId}");
+                return;
+            }
+
+            if (WhiteList.IsServiceproviderWhitelisted(appointment.ServiceProviderId))
+            {
+                SendAppointmentStatusSmsToServiceProvider(
                 customerNumber,
                 appointment.ScheduledAppointmentStartTime.Value.ToUniversalTime(),
                 appointment.CustomerName,
                 appointment.Status.ToString()
                 );
 
-            SendAppointmentStatusSmsToCustomer(
+                logger.LogInformation($"Fired AppointmentStatus notification to Service Provider Number:{spNumber}");
+            }
+            else
+            {
+                logger.LogInformation($"IsServiceproviderWhitelisted is false for Service Provider Id:{appointment.ServiceProviderId}");
+            }
+
+            if (WhiteList.IsCustomerWhitelistedByServiceprovider(appointment.ServiceProviderId))
+            {
+                SendAppointmentStatusSmsToCustomer(
                 spNumber,
                 appointment.ScheduledAppointmentStartTime.Value.ToUniversalTime(),
                 "Dr. " + appointment.ServiceProviderName,
                 appointment.Status.ToString()
                 );
+
+                logger.LogInformation($"Fired AppointmentStatus notification to Customer no:{customerNumber}");
+            }
+            else
+            {
+                logger.LogInformation($"IsCustomerWhitelistedByServiceprovider is false for Service Provider Id:{appointment.ServiceProviderId}");
+            }
         }
 
-        public async void FireReminderNotification(string appointmentId)
+        public async Task FireReminderNotification(string appointmentId)
         {
             var appointmentData = await GetAppointmentData(appointmentId);
             var appointment = appointmentData.Item1;
             var customerNumber = appointmentData.Item2;
             var spNumber = appointmentData.Item3;
 
+            if (!appointment.ScheduledAppointmentStartTime.HasValue)
+            {
+                logger.LogError($"At FireReminderNotification ScheduledAppointmentStartTime for appointment id:{appointment.AppointmentId} is null");
+                return;
+            }
+
             //For customer
-            var customerStatus = smsService.SendAppointmentReminderSMS(customerNumber, appointment.ScheduledAppointmentStartTime.Value, appointment.CustomerName);
-            logger.LogInformation($"Reminder Notification status for {customerNumber} = {customerStatus}");
+            if (WhiteList.IsCustomerWhitelistedByServiceprovider(appointment.ServiceProviderId))
+            {
+                var customerStatus = smsService.SendAppointmentReminderSMS(customerNumber, appointment.ScheduledAppointmentStartTime.Value, appointment.CustomerName);
+                logger.LogInformation($"Reminder Notification status for {customerNumber} = {customerStatus}");
+            }
 
             //For service provider
-            if (IsServiceProviderWhitelisted(spNumber))
+            if (WhiteList.IsServiceproviderWhitelisted(appointment.ServiceProviderId))
             {
                 var spStatus = smsService.SendAppointmentReminderSMS(
                     spNumber,
@@ -110,31 +143,14 @@ namespace NotificationUtil.Trigger
 
         private void SendAppointmentStatusSmsToServiceProvider(string doctorPhoneNumber, DateTime appointmentTime, string custName, string status)
         {
-            if (IsServiceProviderWhitelisted(doctorPhoneNumber))
-            {
-                var sentStatus = smsService.SendAppointmentStatusSMS(doctorPhoneNumber, appointmentTime, custName, status);
-                logger.LogInformation($"Appointment status Notification status for {doctorPhoneNumber} = {sentStatus}");
-            }
+            var sentStatus = smsService.SendAppointmentStatusSMS(doctorPhoneNumber, appointmentTime, custName, status);
+            logger.LogInformation($"Appointment status Notification status for {doctorPhoneNumber} = {sentStatus}");
         }
 
         private void SendAppointmentStatusSmsToCustomer(string customerPhoneNumber, DateTime appointmentTime, string spName, string status)
         {
             var sentStatus = smsService.SendAppointmentStatusSMS(customerPhoneNumber, appointmentTime, spName, status);
             logger.LogInformation($"Appointment status Notification status for {customerPhoneNumber} = {sentStatus}");
-        }
-
-        private bool IsServiceProviderWhitelisted(string doctorPhoneNumber)
-        {
-            if (SMSSpWhiteList.SpWhiteList.Contains(doctorPhoneNumber))
-            {
-                logger.LogInformation($"Doctor number {doctorPhoneNumber} is whitelisted");
-                return true;
-            }
-            else
-            {
-                logger.LogInformation($"Doctor number {doctorPhoneNumber} not whitelisted");
-                return false;
-            }
         }
     }
 }
