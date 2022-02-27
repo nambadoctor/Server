@@ -20,9 +20,9 @@ namespace RestApi.Middlewares
 
         public async Task InvokeAsync(HttpContext context, ILogger<LoggingMiddleware> logger)
         {
-            logger.LogInformation($"Request: {await GetRequestString(context.Request)}");
+            //logger.LogInformation($"Request: {await GetRequestString(context.Request)}");
             StoreValuesFromContext(context);
-            logger.LogInformation($"Response: {Truncate(await GetResponseString(context.Response), 50)}");
+            //logger.LogInformation($"Response: {Truncate(await GetResponseString(context.Response), 50)}");
             await _next(context);
         }
         private void StoreValuesFromContext(HttpContext context)

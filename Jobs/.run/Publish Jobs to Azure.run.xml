@@ -1,0 +1,37 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Publish Jobs to Azure" type="AzureFunctionAppPublish" factoryName="Azure Function App">
+    <option name="AZURE_FUNCTION_APP_PROJECT" value="$PROJECT_DIR$/Jobs/Jobs.csproj" />
+    <option name="AZURE_FUNCTION_APP_SUBSCRIPTION_ID" value="671ac35a-fbf3-4fa5-95ce-75d0ae1cd043" />
+    <option name="AZURE_FUNCTION_APP_IS_CREATE_APP" value="0" />
+    <option name="AZURE_FUNCTION_APP_ID" value="/subscriptions/671ac35a-fbf3-4fa5-95ce-75d0ae1cd043/resourceGroups/DefaultResourceGroup-southindia/providers/Microsoft.Web/sites/NambaJobs" />
+    <option name="AZURE_FUNCTION_APP_NAME" value="functionapp-220227083516" />
+    <option name="AZURE_FUNCTION_APP_IS_CREATE_RESOURCE_GROUP" value="0" />
+    <option name="AZURE_FUNCTION_APP_RESOURCE_GROUP_NAME" value="DefaultResourceGroup-CUS" />
+    <option name="AZURE_FUNCTION_APP_IS_CREATE_APP_SERVICE_PLAN" value="0" />
+    <option name="AZURE_FUNCTION_APP_SERVICE_PLAN_ID" value="/subscriptions/c02d1a1b-d3db-4a3c-bb1f-2998927dcecf/resourceGroups/picto/providers/Microsoft.Web/serverfarms/CentralUSPlan" />
+    <option name="AZURE_FUNCTION_APP_SERVICE_PLAN_NAME" value="appsp-220227083516" />
+    <option name="AZURE_FUNCTION_APP_LOCATION" value="eastus" />
+    <option name="AZURE_FUNCTION_APP_PRICING_TIER" value="" />
+    <option name="AZURE_FUNCTION_APP_IS_CREATE_STORAGE_ACCOUNT" value="0" />
+    <option name="AZURE_FUNCTION_APP_STORAGE_ACCOUNT_ID" value="/subscriptions/c02d1a1b-d3db-4a3c-bb1f-2998927dcecf/resourceGroups/VLSI/providers/Microsoft.Storage/storageAccounts/vlsidiag" />
+    <option name="AZURE_FUNCTION_APP_STORAGE_ACCOUNT_NAME" value="toqf" />
+    <option name="AZURE_FUNCTION_APP_STORAGE_ACCOUNT_TYPE" value="Standard_LRS" />
+    <option name="AZURE_FUNCTION_APP_IS_DEPLOY_TO_SLOT" value="0" />
+    <option name="AZURE_FUNCTION_APP_SLOT_NAME" value="" />
+    <option name="AZURE_SQL_DATABASE_SUBSCRIPTION_ID" value="c02d1a1b-d3db-4a3c-bb1f-2998927dcecf" />
+    <option name="AZURE_SQL_DATABASE_IS_ENABLED" value="0" />
+    <option name="AZURE_SQL_DATABASE_CONNECTION_STRING_NAME" value="" />
+    <option name="AZURE_SQL_DATABASE_IS_CREATE" value="0" />
+    <option name="AZURE_SQL_DATABASE_ID" value="" />
+    <option name="AZURE_SQL_DATABASE_NAME" value="" />
+    <option name="AZURE_SQL_DATABASE_IS_CREATE_RESOURCE_GROUP" value="0" />
+    <option name="AZURE_SQL_DATABASE_RESOURCE_GROUP_NAME" value="" />
+    <option name="AZURE_SQL_DATABASE_IS_CREATE_SQL_SERVER" value="0" />
+    <option name="AZURE_SQL_DATABASE_SQL_SERVER_ID" value="" />
+    <option name="AZURE_SQL_DATABASE_SQL_SERVER_NAME" value="" />
+    <option name="AZURE_SQL_DATABASE_SQL_SERVER_ADMIN_LOGIN" value="N/A" />
+    <option name="AZURE_SQL_DATABASE_LOCATION" value="eastus" />
+    <option name="AZURE_SQL_DATABASE_COLLATION" value="SQL_Latin1_General_CP1_CI_AS" />
+    <method v="2" />
+  </configuration>
+</component>

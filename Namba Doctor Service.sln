@@ -64,4 +64,7 @@ Global
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BCEA69C7-143B-4432-87DB-D00F7BF69179}
 	EndGlobalSection
+	GlobalSection(RiderSharedRunConfigurations) = postSolution
+		File = Jobs\.run\Publish Jobs to Azure.run.xml
+	EndGlobalSection
 EndGlobal
