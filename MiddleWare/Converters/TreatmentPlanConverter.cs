@@ -109,6 +109,10 @@ namespace MiddleWare.Converters
 
             treatment.ServiceProviderName = mongoTreatmentPlan.ServiceProviderName;
 
+            treatment.ServiceProviderId = mongoTreatmentPlan.ServiceProviderId;
+
+            treatment.CustomerId = mongoTreatmentPlan.CustomerId;
+
             return treatment;
         }
 
