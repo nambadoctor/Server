@@ -8,6 +8,7 @@ namespace MongoDB.GenericRepository.Interfaces
     public interface IRepository<TEntity> : IDisposable where TEntity : class
     {
         Task Add(TEntity obj);
+        Task AddMany(List<TEntity> objs);
         Task<TEntity> GetById(string id);
         Task<IEnumerable<TEntity>> GetAll();
         Task<IEnumerable<TEntity>> GetListByFilter(FilterDefinition<TEntity> filter);

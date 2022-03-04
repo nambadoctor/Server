@@ -19,29 +19,17 @@ namespace MongoDB.GenericRepository.Repository
 
         public async Task<List<NotificationQueue>> GetPending()
         {
-            var filter = Builders<NotificationQueue>.Filter.Lt(nq => nq.NotificationScheduledTime, DateTime.UtcNow);
+            var filter = Builders<NotificationQueue>.Filter.Lt(nq => nq.ToBeNotifiedTime, DateTime.UtcNow);
 
             var pendingQueue = await this.GetListByFilter(filter);
 
             return pendingQueue.ToList();
         }
 
-        public async Task RemoveAllMatchingId(string appointmentId)
+        public async Task RemoveAllMatchingIdList(string appointmentId)
         {
+
             var filter = Builders<NotificationQueue>.Filter.Eq(nq => nq.AppointmentId, appointmentId);
-
-            await this.RemoveWithFilter(filter);
-        }
-
-        public async Task RemoveAllMatchingIdList(List<string> notificationQIds)
-        {
-            var notificationQIdsList = new List<ObjectId>();
-            foreach (var notificationQId in notificationQIds)
-            {
-                notificationQIdsList.Add(new ObjectId(notificationQId));
-            }
-
-            var filter = Builders<NotificationQueue>.Filter.In(nq => nq.NotificationQueueId, notificationQIdsList);
 
             await this.RemoveWithFilter(filter);
         }

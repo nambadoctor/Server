@@ -1,12 +1,9 @@
 using DataModel.Mongo.Notification;
-using DataModel.Shared;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
 using MongoDB.GenericRepository.Interfaces;
-using Newtonsoft.Json;
-using NotificationUtil.Trigger;
+using NotificationUtil.Mode.SMS;
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace Jobs
@@ -14,11 +11,11 @@ namespace Jobs
     public class NotificationQProcessor
     {
         private readonly INotificationQueueRepository notificationQueueRepository;
-        private readonly INotificationBroadcast notificationBroadcast;
-        public NotificationQProcessor(INotificationQueueRepository notificationQueueRepository, INotificationBroadcast notificationBroadcast)
+        private readonly ISmsRepository smsRepository;
+        public NotificationQProcessor(INotificationQueueRepository notificationQueueRepository, ISmsRepository smsRepository)
         {
             this.notificationQueueRepository = notificationQueueRepository;
-            this.notificationBroadcast = notificationBroadcast;
+            this.smsRepository = smsRepository;
         }
 
         [FunctionName("NotificationQProcessor")]
@@ -36,9 +33,9 @@ namespace Jobs
                 {
                     await notificationQueueRepository.Remove(queue.NotificationQueueId.ToString());
 
-                    logger.LogInformation($"Removed event: {queue.NotificationQueueId} {queue.AppointmentId} {queue.NotificationType}");
+                    logger.LogInformation($"Removed event: {queue.NotificationQueueId} {queue.NotificationType}");
 
-                    await FireNotification(queue, logger);
+                    FireNotification(queue, logger);
                 }
             }
             catch (Exception ex)
@@ -49,21 +46,12 @@ namespace Jobs
             logger.LogInformation($"NotificationQProcessor function finished execution at: {DateTime.Now}");
         }
 
-        private async Task FireNotification(NotificationQueue notificationQueue, ILogger logger)
+        private void FireNotification(NotificationQueue notificationQueue, ILogger logger)
         {
             //Fire appointment status notif
-            if (notificationQueue.NotificationType == NotificationType.Cancellation ||
-                notificationQueue.NotificationType == NotificationType.ImmediateConfirmation ||
-                notificationQueue.NotificationType == NotificationType.Reschedule)
-            {
-                await notificationBroadcast.FireAppointmentStatusNotification(notificationQueue.AppointmentId);
-            }
-            else if (notificationQueue.NotificationType == NotificationType.Reminder)
-            {
-                await notificationBroadcast.FireReminderNotification(notificationQueue.AppointmentId);
-            }
+            var response = smsRepository.SendSms(notificationQueue.Message, notificationQueue.UserPhoneNumber, notificationQueue.SenderId);
 
-            logger.LogInformation($"Fired notification event: {notificationQueue.NotificationQueueId} {notificationQueue.AppointmentId} {notificationQueue.NotificationType}");
+            logger.LogInformation($"Fired notification event: {notificationQueue.NotificationQueueId} with status: {response}");
 
         }
     }

@@ -26,6 +26,11 @@ namespace MongoDB.GenericRepository.Repository
             await DbSet.InsertOneAsync(obj);
         }
 
+        public virtual async Task AddMany(List<TEntity> objs)
+        {
+            await DbSet.InsertManyAsync(objs);
+        }
+
         public virtual async Task<TEntity> GetById(string id)
         {
             var data = await DbSet.FindAsync(Builders<TEntity>.Filter.Eq("_id", id));

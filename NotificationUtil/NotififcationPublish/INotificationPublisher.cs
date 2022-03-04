@@ -5,11 +5,10 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace NotificationUtil.EventListener
+namespace NotificationUtil.NotificationPublish
 {
-    public interface INotificationEventListener
+    public interface INotificationPublisher
     {
-        public Task TriggerEvent(string appointmentId, EventType eventType);
-
+        public Task<bool> BuildNotification(EventQueue eventQueue);
     }
 }

@@ -6,12 +6,11 @@ using System.Threading.Tasks;
 
 namespace DataModel.Mongo.Notification
 {
-    public enum NotificationType
+    public enum SubscriptionType
     {
-        Reminder,
         AppointmentStatus,
-        NewCustomer,
+        AppointmentReminder,
         Referral,
-        PrescriptionUploaded
+        TreatmentPlanFollowUp
     }
 }

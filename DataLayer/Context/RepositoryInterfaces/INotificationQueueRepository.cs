@@ -8,7 +8,6 @@ namespace MongoDB.GenericRepository.Interfaces
     public interface INotificationQueueRepository : IRepository<NotificationQueue>
     {
         public Task<List<NotificationQueue>> GetPending();
-        public Task RemoveAllMatchingId(string appointmentId);
-        public Task RemoveAllMatchingIdList(List<string> notificationQIds);
+        public Task RemoveAllMatchingIdList(string appointmentId);
     }
 }
