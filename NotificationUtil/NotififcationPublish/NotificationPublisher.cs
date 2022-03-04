@@ -33,7 +33,7 @@ namespace NotificationUtil.NotificationPublish
 
             this.logger = logger;
         }
-        public async Task<bool> BuildNotification(EventQueue eventQueue)
+        public async Task<bool> BuildAndPublishNotifications(EventQueue eventQueue)
         {
             var appointment = await appointmentRepository.GetAppointment(eventQueue.AppointmentId);
             if (appointment == null)
@@ -42,7 +42,7 @@ namespace NotificationUtil.NotificationPublish
                 return false;
             }
 
-            var subscriptions = await ToSendNotificationForUser(eventQueue, appointment.ServiceProviderId, appointment.OrganisationId);
+            var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, appointment.ServiceProviderId, appointment.OrganisationId);
 
             if (subscriptions.Count > 0)
             {
@@ -61,6 +61,7 @@ namespace NotificationUtil.NotificationPublish
         {
             var notificationsNeedToBeQueued = await GetNotificationForSubscriptionList(subscriptions, eventQueue);
 
+            //Delete first directive
             if (eventQueue.EventType == EventType.AppointmentCancellation || eventQueue.EventType == EventType.AppointmentReschedule)
             {
                 await notificationQueueRepository.RemoveAllMatchingIdList(eventQueue.AppointmentId);
@@ -77,7 +78,7 @@ namespace NotificationUtil.NotificationPublish
         /// <param name="serviceProviderId"></param>
         /// <param name="organisationId"></param>
         /// <returns></returns>
-        private async Task<List<NotificationSubscription>> ToSendNotificationForUser(EventQueue eventQueue, string serviceProviderId, string organisationId)
+        private async Task<List<NotificationSubscription>> GetUserNotificationSubscriptionsForEvent(EventQueue eventQueue, string serviceProviderId, string organisationId)
         {
             var subscriptions = new List<NotificationSubscription>();
 
@@ -115,13 +116,13 @@ namespace NotificationUtil.NotificationPublish
 
             foreach (var sub in subscriptionList)
             {
-                notifications.AddRange(GetNotificationForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3));
+                notifications.AddRange(GetNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3));
             }
 
             return notifications;
         }
 
-        private List<NotificationQueue> GetNotificationForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber)
+        private List<NotificationQueue> GetNotificationsForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber)
         {
 
             var notifications = new List<NotificationQueue>();

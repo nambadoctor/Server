@@ -1,21 +1,13 @@
 ﻿using DataModel.Mongo.Notification;
 using Microsoft.Extensions.Logging;
-using MongoDB.GenericRepository.Interfaces;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace NotificationUtil.EventListener
 {
     public class NotificationEventListener : INotificationEventListener
     {
-        private readonly INotificationQueueRepository notificationQueueRepository;
         private readonly ILogger<NotificationEventListener> logger;
-        public NotificationEventListener(INotificationQueueRepository notificationQueueRepository, ILogger<NotificationEventListener> logger)
+        public NotificationEventListener(ILogger<NotificationEventListener> logger)
         {
-            this.notificationQueueRepository = notificationQueueRepository;
             this.logger = logger;
         }
 

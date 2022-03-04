@@ -39,7 +39,7 @@ namespace Jobs
 
             EventQueue eventBody = JsonConvert.DeserializeObject<EventQueue>(requestBody);
 
-            var result = await notificationPublisher.BuildNotification(eventBody);
+            var result = await notificationPublisher.BuildAndPublishNotifications(eventBody);
 
             logger.LogInformation($"NotificationQPublisher processed a request with status:{result}");
 

@@ -9,6 +9,6 @@ namespace NotificationUtil.NotificationPublish
 {
     public interface INotificationPublisher
     {
-        public Task<bool> BuildNotification(EventQueue eventQueue);
+        public Task<bool> BuildAndPublishNotifications(EventQueue eventQueue);
     }
 }
