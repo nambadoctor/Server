@@ -46,23 +46,23 @@ namespace NotificationUtil.NotificationPublish
 
             if (subscriptions.Count > 0)
             {
-                await AddToQueueForSubscriptions(subscriptions, eventQueue);
+                await AddNotificationsToQueueForSubscriptions(subscriptions, eventQueue);
 
                 return true;
             }
             else
             {
-                logger.LogError($"NotificationPublisher: Users not configured to send notification for appointment id: {eventQueue.AppointmentId}");
+                logger.LogError($"NotificationPublisher: User not configured to send notification for appointment id: {eventQueue.AppointmentId}");
                 return false;
             }
         }
 
-        private async Task AddToQueueForSubscriptions(List<NotificationSubscription> subscriptions, EventQueue eventQueue)
+        private async Task AddNotificationsToQueueForSubscriptions(List<NotificationSubscription> subscriptions, EventQueue eventQueue)
         {
             var notificationsNeedToBeQueued = await GetNotificationForSubscriptionList(subscriptions, eventQueue);
 
             //Delete first directive
-            if (eventQueue.EventType == EventType.AppointmentCancellation || eventQueue.EventType == EventType.AppointmentReschedule)
+            if (eventQueue.EventType == EventType.AppointmentCancelled || eventQueue.EventType == EventType.AppointmentRescheduled)
             {
                 await notificationQueueRepository.RemoveAllMatchingIdList(eventQueue.AppointmentId);
                 logger.LogInformation($"Removed notification events for appointment id: {eventQueue.AppointmentId}");
@@ -96,7 +96,7 @@ namespace NotificationUtil.NotificationPublish
                     {
                         foreach (var sub in configuration.SubscribedNotifications)
                         {
-                            if (sub.EventType == eventQueue.EventType)
+                            if (IsSubscriptionOfEventType(eventQueue, sub.SubscriptionType))
                             {
                                 subscriptions.Add(sub);
                             }
@@ -106,6 +106,21 @@ namespace NotificationUtil.NotificationPublish
             }
 
             return subscriptions;
+        }
+
+        private bool IsSubscriptionOfEventType(EventQueue eventQueue, SubscriptionType subscriptionType)
+        {
+            var isMatch = false;
+
+            if (eventQueue.EventType == EventType.AppointmentBooked || eventQueue.EventType == EventType.AppointmentCancelled || eventQueue.EventType == EventType.AppointmentRescheduled)
+            {
+                if (subscriptionType == SubscriptionType.AppointmentReminder || subscriptionType == SubscriptionType.AppointmentReminder)
+                {
+                    isMatch = true;
+                }
+            }
+
+            return isMatch;
         }
 
         private async Task<List<NotificationQueue>> GetNotificationForSubscriptionList(List<NotificationSubscription> subscriptionList, EventQueue eventQueue)

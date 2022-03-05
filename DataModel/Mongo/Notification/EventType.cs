@@ -2,10 +2,8 @@
 {
     public enum EventType
     {
-        NewAppointment,
-        AppointmentCancellation,
-        AppointmentReschedule,
-        Referral,
-        TreatmentPlanFollowUp
+        AppointmentBooked,
+        AppointmentCancelled,
+        AppointmentRescheduled
     }
 }
