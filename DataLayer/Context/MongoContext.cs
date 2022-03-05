@@ -14,12 +14,9 @@ namespace MongoDB.GenericRepository.Context
         public IClientSessionHandle Session { get; set; }
         public MongoClient MongoClient { get; set; }
         private readonly List<Func<Task>> _commands;
-        private readonly IConfiguration _configuration;
 
-        public MongoContext(IConfiguration configuration)
+        public MongoContext()
         {
-            _configuration = configuration;
-
             // Every command will be stored and it'll be processed at SaveChanges
             _commands = new List<Func<Task>>();
         }

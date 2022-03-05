@@ -31,6 +31,7 @@ namespace Notification.Function
             builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
             builder.Services.AddScoped<INotificationUserConfigurationRepository, NotificationUserConfigurationRepository>();
             builder.Services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
+
             builder.Services.AddScoped<INotificationPublisher, NotificationPublisher>();
         }
     }

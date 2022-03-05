@@ -13,7 +13,6 @@ namespace DataModel.Mongo.Notification
         public ObjectId UserConfigurationId { get; set; }
         public string ServiceProviderId { get; set; }
         public string OrganisationId { get; set; }
-        public string PhoneNumber { get; set; }
         public string Name { get; set; }
 
         public List<NotificationSubscription> SubscribedNotifications;
