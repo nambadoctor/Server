@@ -169,14 +169,24 @@ namespace NotificationUtil.NotificationPublish
                 {
                     var toBeNotifiedTime = appointment.ScheduledAppointmentStartTime!.Value.AddMinutes(-interval);
 
-                    if (notificationSubscription.IsEnabledForSelf)
+                    TimeSpan timeLeftToNotify = appointment.ScheduledAppointmentStartTime!.Value.Subtract(DateTime.UtcNow);
+
+                    if (Math.Abs(timeLeftToNotify.TotalMinutes) > interval)
                     {
-                        notifications.Add(smsBuilder.GetAppointmentReminderSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, toBeNotifiedTime, appointment.AppointmentId.ToString()));
+                        if (notificationSubscription.IsEnabledForSelf)
+                        {
+                            notifications.Add(smsBuilder.GetAppointmentReminderSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, toBeNotifiedTime, appointment.AppointmentId.ToString()));
+                        }
+                        if (notificationSubscription.IsEnabledForCustomers)
+                        {
+                            notifications.Add(smsBuilder.GetAppointmentReminderSMS(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, toBeNotifiedTime, appointment.AppointmentId.ToString()));
+                        }
                     }
-                    if (notificationSubscription.IsEnabledForCustomers)
+                    else
                     {
-                        notifications.Add(smsBuilder.GetAppointmentReminderSMS(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, toBeNotifiedTime, appointment.AppointmentId.ToString()));
+                        logger.LogInformation($"Too less time to fire reminder. Scheduled notification time:{toBeNotifiedTime} CALCULATED TIME LEFT TO NOTIFY:{interval} Current time:{DateTime.UtcNow}");
                     }
+
                 }
 
             }

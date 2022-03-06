@@ -4,12 +4,12 @@
       "type": "storage",
       "connectionId": "AzureWebJobsStorage"
     },
+    "apis1": {
+      "type": "apis"
+    },
     "appInsights1": {
       "type": "appInsights",
       "connectionId": "APPLICATIONINSIGHTS_CONNECTION_STRING"
-    },
-    "apis1": {
-      "type": "apis"
     }
   }
 }
