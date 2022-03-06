@@ -30,6 +30,10 @@ namespace NotificationUtil.EventListener
             string BaseUrl = "https://nambajobs.azurewebsites.net/api";
             string FunctionApiKey = "fzUv2QCow3Hlx1O8d4mEgj2o9VuUw8j8QbNnBib4imB71fiazrTuvQ==";
 
+            //TO Switch for prod deployment
+            string ProdBaseUrl = "https://nambajobsprod.azurewebsites.net/api/";
+            string ProdFunctionApiKey = "LhOJMtFnsQPw3pVYRX0DJocyHoCpfr8qwWiqyHtuRzn0z/izqBaqFA==";
+
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(BaseUrl);
 

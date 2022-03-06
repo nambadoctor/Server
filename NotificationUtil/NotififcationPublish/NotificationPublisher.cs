@@ -17,8 +17,6 @@ namespace NotificationUtil.NotificationPublish
         private readonly INotificationUserConfigurationRepository notificationUserConfigurationRepository;
         private readonly INotificationQueueRepository notificationQueueRepository;
 
-        private readonly TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-
         private ISmsBuilder smsBuilder;
 
         private ILogger logger;
@@ -156,11 +154,11 @@ namespace NotificationUtil.NotificationPublish
             {
                 if (notificationSubscription.IsEnabledForSelf)
                 {
-                    notifications.Add(smsBuilder.GetAppointmentStatusSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, appointment.Status.ToString(), TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE), appointment.AppointmentId.ToString()));
+                    notifications.Add(smsBuilder.GetAppointmentStatusSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString()));
                 }
                 if (notificationSubscription.IsEnabledForCustomers)
                 {
-                    notifications.Add(smsBuilder.GetAppointmentStatusSMS(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, appointment.Status.ToString(), TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE), appointment.AppointmentId.ToString()));
+                    notifications.Add(smsBuilder.GetAppointmentStatusSMS(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString()));
                 }
 
             }
@@ -169,9 +167,9 @@ namespace NotificationUtil.NotificationPublish
             {
                 foreach (var interval in notificationSubscription.MinuteIntervals)
                 {
-                    var toBeNotifiedTime = TimeZoneInfo.ConvertTimeFromUtc(appointment.ScheduledAppointmentStartTime!.Value.AddMinutes(-interval), INDIAN_ZONE);
+                    var toBeNotifiedTime = appointment.ScheduledAppointmentStartTime!.Value.AddMinutes(-interval);
 
-                    TimeSpan timeLeftToNotify = TimeZoneInfo.ConvertTimeFromUtc(appointment.ScheduledAppointmentStartTime!.Value, INDIAN_ZONE).Subtract(TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE));
+                    TimeSpan timeLeftToNotify = appointment.ScheduledAppointmentStartTime!.Value.Subtract(DateTime.UtcNow);
 
                     if (Math.Abs(timeLeftToNotify.TotalMinutes) > interval)
                     {
@@ -186,7 +184,7 @@ namespace NotificationUtil.NotificationPublish
                     }
                     else
                     {
-                        logger.LogInformation($"Too less time to fire reminder. Scheduled notification time:{toBeNotifiedTime} CALCULATED TIME LEFT TO NOTIFY:{interval} Current time:{TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, INDIAN_ZONE)}");
+                        logger.LogInformation($"Too less time to fire reminder. Scheduled notification time:{toBeNotifiedTime} CALCULATED TIME LEFT TO NOTIFY:{interval} Current time:{DateTime.UtcNow}");
                     }
 
                 }
