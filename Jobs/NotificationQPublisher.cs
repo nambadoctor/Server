@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Net;
 using System.Threading.Tasks;
@@ -35,13 +36,20 @@ namespace Jobs
         public async Task<IActionResult> Run(
             [HttpTrigger(AuthorizationLevel.Function, "post", Route = null)] HttpRequest req)
         {
-            string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+            try
+            {
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
 
-            EventQueue eventBody = JsonConvert.DeserializeObject<EventQueue>(requestBody);
+                EventQueue eventBody = JsonConvert.DeserializeObject<EventQueue>(requestBody);
 
-            var result = await notificationPublisher.BuildAndPublishNotifications(eventBody);
+                var result = await notificationPublisher.BuildAndPublishNotifications(eventBody);
 
-            logger.LogInformation($"NotificationQPublisher processed a request with status:{result}");
+                logger.LogInformation($"NotificationQPublisher processed a request with status:{result}");
+            }
+            catch (Exception ex)
+            {
+                logger.LogError($"Error publishing notification: {ex.Message} {ex.StackTrace}");
+            }
 
             return new OkObjectResult("Event successfully logged");
         }

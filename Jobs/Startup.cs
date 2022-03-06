@@ -20,10 +20,9 @@ namespace Notification.Function
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
             builder.Services.AddScoped<ISmsBuilder, SmsBuilder>();
-            var testSms = Environment.GetEnvironmentVariable("sms_test");
             builder.Services.AddScoped<ISmsRepository, SmsRepository>((repository) =>
             {
-                return new SmsRepository(testSms != null ? bool.Parse(testSms) : true);
+                return new SmsRepository(false);
             });
 
             builder.Services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();

@@ -46,7 +46,9 @@ namespace NotificationUtil.NotificationPublish
 
             if (subscriptions.Count > 0)
             {
-                await AddNotificationsToQueueForSubscriptions(subscriptions, eventQueue);
+                var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions, eventQueue);
+
+                logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
 
                 return true;
             }
@@ -57,7 +59,7 @@ namespace NotificationUtil.NotificationPublish
             }
         }
 
-        private async Task AddNotificationsToQueueForSubscriptions(List<NotificationSubscription> subscriptions, EventQueue eventQueue)
+        private async Task<List<NotificationQueue>> AddNotificationsToQueueForSubscriptions(List<NotificationSubscription> subscriptions, EventQueue eventQueue)
         {
             var notificationsNeedToBeQueued = await GetNotificationForSubscriptionList(subscriptions, eventQueue);
 
@@ -69,6 +71,8 @@ namespace NotificationUtil.NotificationPublish
             }
 
             await notificationQueueRepository.AddMany(notificationsNeedToBeQueued);
+
+            return notificationsNeedToBeQueued;
         }
 
         /// <summary>
@@ -83,6 +87,8 @@ namespace NotificationUtil.NotificationPublish
             var subscriptions = new List<NotificationSubscription>();
 
             var userConfigurations = await notificationUserConfigurationRepository.GetByServiceProvider(serviceProviderId, organisationId);
+
+            logger.LogInformation($"Received {userConfigurations.Count} userConfigurations for userid {serviceProviderId}");
 
             if (userConfigurations == null || userConfigurations.Count == 0)
             {
@@ -104,6 +110,8 @@ namespace NotificationUtil.NotificationPublish
                     }
                 }
             }
+
+            logger.LogInformation($"Found {subscriptions.Count} subscriptions for Event {eventQueue.EventType}");
 
             return subscriptions;
         }
