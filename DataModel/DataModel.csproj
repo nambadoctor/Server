@@ -26,6 +26,7 @@
     <None Remove="Logging\" />
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Client\Admin\Incoming\" />
     <Folder Include="Mongo\ServiceRequest\Note\" />
   </ItemGroup>
 </Project>

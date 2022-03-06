@@ -10,5 +10,6 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface IServiceRequestRepository : IRepository<ServiceRequest>
     {
+        public Task<List<ServiceRequest>> GetServiceRequestsMatchingId(List<string> ServiceRequestIds);
     }
 }

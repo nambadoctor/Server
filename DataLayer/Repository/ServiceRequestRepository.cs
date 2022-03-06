@@ -14,5 +14,24 @@ namespace MongoDB.GenericRepository.Repository
         public ServiceRequestRepository(IMongoContext context) : base(context)
         {
         }
+
+        public async Task<List<ServiceRequest>> GetServiceRequestsMatchingId(List<string> ServiceRequestIds)
+        {
+            var serviceRequestIdsList = new List<ObjectId>();
+
+            foreach (var serviceProviderId in ServiceRequestIds)
+            {
+                serviceRequestIdsList.Add(new ObjectId(serviceProviderId));
+            }
+
+            var filter = Builders<ServiceRequest>.Filter.In(
+                sr => sr.ServiceRequestId,
+                serviceRequestIdsList
+                );
+
+            var result = await this.GetListByFilter(filter);
+
+            return result.ToList();
+        }
     }
 }

@@ -160,13 +160,13 @@ namespace MongoDB.GenericRepository.Repository
 
 
         //Not for RestAPI
-        public async Task<List<Appointment>> GetAllAppointments(AppointmentStatus Status, DateTime startTime, DateTime endTime)
+        public async Task<List<Appointment>> GetAllAppointments(DateTime startTime, DateTime endTime)
         {
             var filter = Builders<ServiceProvider>.Filter.Empty;
 
             var project = Builders<ServiceProvider>.Projection.Expression(
                 sp => sp.Appointments.Where(
-                    app => app.Status == Status &&
+                    app =>
                     app.ScheduledAppointmentStartTime > startTime &&
                     app.ScheduledAppointmentStartTime < endTime)
                 );

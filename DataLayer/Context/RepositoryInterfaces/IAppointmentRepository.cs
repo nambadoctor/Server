@@ -19,6 +19,6 @@ namespace MongoDB.GenericRepository.Interfaces
         public Task EndAppointment(Appointment appointment);
 
         //Not for RestAPI
-        public Task<List<Appointment>> GetAllAppointments(AppointmentStatus Status, DateTime startTime, DateTime endTime);
+        public Task<List<Appointment>> GetAllAppointments(DateTime startTime, DateTime endTime);
     }
 }
