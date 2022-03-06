@@ -25,15 +25,16 @@ namespace MiddleWare.Services
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 //Get appointments for current day
-                var appointmentsForDay = (await appointmentRepository.GetAllAppointments(
-                DateTime.UtcNow.Date,
-                DateTime.UtcNow.Date.AddDays(1).AddTicks(-1)
-                ))
-                .Where(app => app.AppointmentType != DataModel.Mongo.AppointmentType.CustomerManagement).ToList();
+                var appointmentsForDay = await appointmentRepository.GetAllAppointments(
+                    DateTime.UtcNow.Date,
+                    DateTime.UtcNow.Date.AddDays(1).AddTicks(-1)
+                );
+                
+                var validAppointments = appointmentsForDay.Where(app => app.AppointmentType != DataModel.Mongo.AppointmentType.CustomerManagement).ToList();
 
-                logger.LogInformation($"Total appointments count for day {appointmentsForDay.Count}");
+                logger.LogInformation($"Total appointments count for day {validAppointments.Count}");
 
-                var serviceRequestIds = appointmentsForDay
+                var serviceRequestIds = validAppointments
                     .Select(app => app.ServiceRequestId)
                     .ToList();
 
@@ -43,7 +44,7 @@ namespace MiddleWare.Services
 
                 logger.LogInformation($"Total service requests count for day {serviceRequests.Count}");
 
-                var stats = GetStatsForAppointments(appointmentsForDay, serviceRequests, organisations.ToList());
+                var stats = GetStatsForAppointments(validAppointments, serviceRequests, organisations.ToList());
 
                 return stats;
             }
@@ -76,6 +77,8 @@ namespace MiddleWare.Services
                     var associatedServiceRequest = serviceRequests.Find(sr => sr.ServiceRequestId.ToString() == appointment.ServiceRequestId)!;
                     adminStat.NoOfDocumentsUploaded += associatedServiceRequest.Notes.Count + associatedServiceRequest.PrescriptionDocuments.Count + associatedServiceRequest.Reports.Count;
                 }
+                
+                outgoingAdminStats.Add(adminStat);
             }
 
             return outgoingAdminStats;

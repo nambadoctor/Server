@@ -162,7 +162,7 @@ namespace MongoDB.GenericRepository.Repository
         //Not for RestAPI
         public async Task<List<Appointment>> GetAllAppointments(DateTime startTime, DateTime endTime)
         {
-            var filter = Builders<ServiceProvider>.Filter.Empty;
+            var filter = Builders<ServiceProvider>.Filter.Exists(sp=>sp.Appointments);
 
             var project = Builders<ServiceProvider>.Projection.Expression(
                 sp => sp.Appointments.Where(

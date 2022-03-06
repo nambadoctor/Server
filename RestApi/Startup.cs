@@ -68,6 +68,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<INoteService, NoteService>();
             services.AddScoped<IPrescriptionService, PrescriptionService>();
             services.AddScoped<ITreatmentPlanService, TreatmentPlanService>();
+            services.AddScoped<IAdminService, AdminService>();
 
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
