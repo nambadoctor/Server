@@ -1,11 +1,10 @@
-
 using DataModel.Shared;
 using MiddleWare.Converters;
 using MiddleWare.Interfaces;
 using MiddleWare.Utils;
 using MongoDB.Bson;
 using MongoDB.GenericRepository.Interfaces;
-using NotificationUtil.Trigger;
+using NotificationUtil.EventListener;
 using Mongo = DataModel.Mongo;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
@@ -19,12 +18,11 @@ namespace MiddleWare.Services
         private IAppointmentRepository appointmenRepository;
         private IServiceRequestRepository serviceRequestRepository;
         private ITreatmentPlanRepository treatmentPlanRepository;
+        private INotificationEventListener notificationEventListener;
 
         private ILogger logger;
 
-        private IAppointmentStatusTrigger appointmentStatusTrigger;
-
-        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ITreatmentPlanRepository treatmentPlanRepository, ILogger<AppointmentService> logger, IAppointmentStatusTrigger appointmentStatusTrigger)
+        public AppointmentService(IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmenRepository, IServiceRequestRepository serviceRequestRepository, ITreatmentPlanRepository treatmentPlanRepository, ILogger<AppointmentService> logger, INotificationEventListener notificationEventListener)
         {
             this.logger = logger;
             this.serviceProviderRepository = serviceProviderRepository;
@@ -32,8 +30,7 @@ namespace MiddleWare.Services
             this.appointmenRepository = appointmenRepository;
             this.serviceRequestRepository = serviceRequestRepository;
             this.treatmentPlanRepository = treatmentPlanRepository;
-
-            this.appointmentStatusTrigger = appointmentStatusTrigger;
+            this.notificationEventListener = notificationEventListener;
         }
 
         public async Task<ProviderClientOutgoing.OutgoingAppointment> GetAppointment(string serviceProviderId, string appointmentId)
@@ -152,9 +149,8 @@ namespace MiddleWare.Services
                     await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);
                 }
                 //END
+                await notificationEventListener.TriggerEvent(appointmentId.ToString(), Mongo.Notification.EventType.AppointmentBooked);
 
-
-                RunAppointmentNotificationTrigger(appointmentId.ToString());
             }
         }
 
@@ -230,7 +226,7 @@ namespace MiddleWare.Services
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
 
-                RunAppointmentNotificationTrigger(appointment.AppointmentId);
+                await notificationEventListener.TriggerEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentCancelled);
             }
         }
 
@@ -248,7 +244,7 @@ namespace MiddleWare.Services
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
 
-            RunAppointmentNotificationTrigger(appointment.AppointmentId);
+            await notificationEventListener.TriggerEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentRescheduled);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)
@@ -287,18 +283,6 @@ namespace MiddleWare.Services
             DataValidation.ValidateObject(customerProfile);
 
             return (customerProfile, spProfile);
-        }
-
-        private void RunAppointmentNotificationTrigger(string appointmentId)
-        {
-            try
-            {
-                appointmentStatusTrigger.FireAppointmentStatusNotification(appointmentId);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError($"Appointment status notification trigger:{ex.Message} {ex.StackTrace}");
-            }
         }
 
     }

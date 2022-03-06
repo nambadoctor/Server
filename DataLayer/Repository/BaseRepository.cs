@@ -26,6 +26,11 @@ namespace MongoDB.GenericRepository.Repository
             await DbSet.InsertOneAsync(obj);
         }
 
+        public virtual async Task AddMany(List<TEntity> objs)
+        {
+            await DbSet.InsertManyAsync(objs);
+        }
+
         public virtual async Task<TEntity> GetById(string id)
         {
             var data = await DbSet.FindAsync(Builders<TEntity>.Filter.Eq("_id", id));
@@ -106,9 +111,9 @@ namespace MongoDB.GenericRepository.Repository
             //Context.AddCommand(() => DbSet.ReplaceOneAsync(Builders<TEntity>.Filter.Eq("_id", obj.GetId()), obj));
         }
 
-        public virtual void Remove(string id)
+        public async Task Remove(string id)
         {
-            Context.AddCommand(() => DbSet.DeleteOneAsync(Builders<TEntity>.Filter.Eq("_id", id)));
+            await DbSet.DeleteOneAsync(Builders<TEntity>.Filter.Eq("_id", id));
         }
 
         public void Dispose()
@@ -136,6 +141,11 @@ namespace MongoDB.GenericRepository.Repository
                 }
             return entityList;
 
+        }
+
+        public async Task RemoveWithFilter(FilterDefinition<TEntity> filter)
+        {
+            await DbSet.DeleteManyAsync(filter);
         }
     }
 }

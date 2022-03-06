@@ -16,15 +16,11 @@ namespace ND.DataLayer.Utils.BlobStorage
 
         private BlobContainerClient containerClient;
 
-        private ILogger logger;
 
-
-        public MediaContainer(ILogger<MediaContainer> logger)
+        public MediaContainer()
         {
             blobServiceClient = new BlobServiceClient(ConnectionConfiguration.BlobStorageConnectionString);
             containerClient = blobServiceClient.GetBlobContainerClient(ConnectionConfiguration.BlobContainerName);
-
-            this.logger = logger;
         }
 
         public async Task<string> UploadFileToStorage(byte[] fileStream, string fileName, string mimeType)
