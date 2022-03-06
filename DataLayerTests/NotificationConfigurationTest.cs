@@ -28,7 +28,7 @@ namespace LayerTests
         {
             var globalUserConfig = DataGenerator.GenerateNotificationConfigForGlobalUser();
 
-            //await notificationUserConfigurationRepository!.Add(globalUserConfig);
+            await notificationUserConfigurationRepository!.Add(globalUserConfig);
 
             Assert.IsTrue(true);
         }
