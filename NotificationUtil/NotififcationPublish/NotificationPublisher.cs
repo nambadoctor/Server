@@ -163,15 +163,13 @@ namespace NotificationUtil.NotificationPublish
 
             }
 
-            if (notificationSubscription.SubscriptionType == SubscriptionType.AppointmentReminder)
+            if (notificationSubscription.SubscriptionType == SubscriptionType.AppointmentReminder && appointment.Status != AppointmentStatus.Cancelled)
             {
                 foreach (var interval in notificationSubscription.MinuteIntervals)
                 {
                     var toBeNotifiedTime = appointment.ScheduledAppointmentStartTime!.Value.AddMinutes(-interval);
 
-                    TimeSpan timeLeftToNotify = appointment.ScheduledAppointmentStartTime!.Value.Subtract(DateTime.UtcNow);
-
-                    if (Math.Abs(timeLeftToNotify.TotalMinutes) > interval)
+                    if (toBeNotifiedTime > DateTime.UtcNow)
                     {
                         if (notificationSubscription.IsEnabledForSelf)
                         {
