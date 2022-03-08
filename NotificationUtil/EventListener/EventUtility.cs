@@ -27,17 +27,17 @@ namespace NotificationUtil.EventListener
 
         public static async Task<bool> TriggerEvent(EventQueue eventQueue)
         {
-            string BaseUrl = "https://nambajobs.azurewebsites.net/api";
-            string FunctionApiKey = "fzUv2QCow3Hlx1O8d4mEgj2o9VuUw8j8QbNnBib4imB71fiazrTuvQ==";
+            //string BaseUrl = "https://nambajobs.azurewebsites.net/api";
+            //string FunctionApiKey = "fzUv2QCow3Hlx1O8d4mEgj2o9VuUw8j8QbNnBib4imB71fiazrTuvQ==";
 
             //TO Switch for prod deployment
-            string ProdBaseUrl = "https://nambajobsprod.azurewebsites.net/api/";
-            string ProdFunctionApiKey = "LhOJMtFnsQPw3pVYRX0DJocyHoCpfr8qwWiqyHtuRzn0z/izqBaqFA==";
+            string ProdBaseUrl = "https://nambaprodjobs.azurewebsites.net/api";
+            string ProdFunctionApiKey = "q/SZqfsM63qmTHKSzgVcNYSKq1DRMcFlnA0XV6ZgBqLXySabYshr/w==";
 
             var httpClient = new HttpClient();
-            httpClient.BaseAddress = new Uri(BaseUrl);
+            httpClient.BaseAddress = new Uri(ProdBaseUrl);
 
-            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/NotificationQPublisher?code={FunctionApiKey}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, ProdBaseUrl + $"/NotificationQPublisher?code={ProdFunctionApiKey}"))
             {
                 var jsonData = JsonConvert.SerializeObject(eventQueue);
                 var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
