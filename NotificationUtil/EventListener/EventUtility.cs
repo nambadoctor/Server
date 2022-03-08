@@ -31,8 +31,8 @@ namespace NotificationUtil.EventListener
             string FunctionApiKey = "fzUv2QCow3Hlx1O8d4mEgj2o9VuUw8j8QbNnBib4imB71fiazrTuvQ==";*/
 
             //TO Switch for prod deployment
-            string ProdBaseUrl = "https://nambaprodjobs.azurewebsites.net//api";
-            string ProdFunctionApiKey = "Dr34d6TgsCcaadk67DtbMzIYUtTT9SbTG8RqG8p2B1MqSTgFAl3s7g==";
+            string ProdBaseUrl = "https://nambaprodjobs.azurewebsites.net/api";
+            string ProdFunctionApiKey = "q/SZqfsM63qmTHKSzgVcNYSKq1DRMcFlnA0XV6ZgBqLXySabYshr/w==";
 
             var httpClient = new HttpClient();
             httpClient.BaseAddress = new Uri(ProdBaseUrl);
