@@ -15,6 +15,8 @@ using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
 using NotificationUtil.EventListener;
+using NotificationUtil.Mode.SMS;
+using NotificationUtil.NotificationPublish;
 using RestApi.Middlewares;
 using System;
 using System.IO;
@@ -74,6 +76,10 @@ namespace NambaDoctorWebApi
 
             //Notification dependency
             services.AddScoped<INotificationEventListener, NotificationEventListener>();
+            services.AddScoped<INotificationUserConfigurationRepository, NotificationUserConfigurationRepository>();
+            services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
+            services.AddScoped<INotificationPublisher, NotificationPublisher>();
+            services.AddScoped<ISmsBuilder, SmsBuilder>();
 
             //Datalayer dependencies
             services.AddScoped<IMongoContext, MongoContext>();

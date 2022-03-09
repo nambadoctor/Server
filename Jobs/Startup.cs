@@ -5,7 +5,6 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using NotificationUtil.Mode.SMS;
-using NotificationUtil.NotificationPublish;
 using System;
 
 [assembly: FunctionsStartup(typeof(Notification.Function.Startup))]
@@ -25,13 +24,7 @@ namespace Notification.Function
                 return new SmsRepository(false);
             });
 
-            builder.Services.AddScoped<IServiceProviderRepository, ServiceProviderRepository>();
-            builder.Services.AddScoped<ICustomerRepository, CustomerRepository>();
-            builder.Services.AddScoped<IAppointmentRepository, AppointmentRepository>();
-            builder.Services.AddScoped<INotificationUserConfigurationRepository, NotificationUserConfigurationRepository>();
             builder.Services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
-
-            builder.Services.AddScoped<INotificationPublisher, NotificationPublisher>();
         }
     }
 }
