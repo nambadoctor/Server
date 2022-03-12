@@ -123,18 +123,6 @@ namespace MiddleWare.Services
 
                 logger.LogInformation("Added appointment successfully");
 
-                //SET TREATMENT ID IN SERVICE REQUEST
-                if (!string.IsNullOrEmpty(appointment.TreatmentId))
-                {
-                    serviceRequest.TreatmentId = appointment.TreatmentId;
-                }
-
-                if (!string.IsNullOrEmpty(appointment.TreatmentPlanId))
-                {
-                    serviceRequest.TreatmentPlanId = appointment.TreatmentPlanId;
-                }
-                //END
-
                 await serviceRequestRepository.Add(serviceRequest);
 
                 logger.LogInformation("Added serviceRequest successfully");
