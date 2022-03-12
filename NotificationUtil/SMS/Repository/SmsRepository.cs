@@ -56,6 +56,5 @@ public class SmsRepository : ISmsRepository
                 return false;
             }
         }
-        return true;
     }
 }
