@@ -1,6 +1,10 @@
 ﻿using DataModel.Shared;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace RestApi.Middlewares
@@ -14,9 +18,11 @@ namespace RestApi.Middlewares
             _next = next;
         }
 
-        public async Task InvokeAsync(HttpContext context)
+        public async Task InvokeAsync(HttpContext context, ILogger<LoggingMiddleware> logger)
         {
+            logger.LogInformation($"Request: {context.Request}");
             StoreValuesFromContext(context);
+            logger.LogInformation($"Response: {context.Response}");
             await _next(context);
         }
         private void StoreValuesFromContext(HttpContext context)

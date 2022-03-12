@@ -14,8 +14,9 @@ using MongoDB.GenericRepository.Interfaces;
 using MongoDB.GenericRepository.Repository;
 using MongoDB.GenericRepository.UoW;
 using ND.DataLayer.Utils.BlobStorage;
+using NotificationUtil.EventListener;
 using NotificationUtil.Mode.SMS;
-using NotificationUtil.Trigger;
+using NotificationUtil.NotificationPublish;
 using RestApi.Middlewares;
 using System;
 using System.IO;
@@ -73,14 +74,12 @@ namespace NambaDoctorWebApi
             //Init datalayer with telemetry
             services.AddSingleton<IMediaContainer, MediaContainer>();
 
-            //Notification dependencies
-            var testSms = "true";
-            services.AddScoped<ISmsRepository, SmsRepository>((repository) =>
-            {
-                return new SmsRepository(testSms != null ? bool.Parse(testSms) : true);
-            });
-            services.AddScoped<ISmsService, SmsService>();
-            services.AddScoped<IAppointmentStatusTrigger, AppointmentStatusTrigger>();
+            //Notification dependency
+            services.AddScoped<INotificationEventListener, NotificationEventListener>();
+            services.AddScoped<INotificationUserConfigurationRepository, NotificationUserConfigurationRepository>();
+            services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
+            services.AddScoped<INotificationPublisher, NotificationPublisher>();
+            services.AddScoped<ISmsBuilder, SmsBuilder>();
 
             //Datalayer dependencies
             services.AddScoped<IMongoContext, MongoContext>();
@@ -94,6 +93,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<INoteRepository, NoteRepository>();
             services.AddScoped<IPrescriptionRepository, PrescriptionRepository>();
             services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
+            services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>
