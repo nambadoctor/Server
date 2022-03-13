@@ -47,6 +47,16 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return sp;
             }
         }
+        
+        public async Task<List<ProviderClientOutgoing.ServiceProvider>> GetServiceProviders(string OrganisationId)
+                {
+                    using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/serviceprovider/organisation/{OrganisationId}"))
+                    {
+                        var response = await httpClient.SendAsync(request);
+                        var sps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.ServiceProvider>>(await response.Content.ReadAsStringAsync());
+                        return sps;
+                    }
+                }
 
         public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrgAppointments(string OrganisationId, DateTime? StartDate = null, DateTime? EndDate = null)
         {

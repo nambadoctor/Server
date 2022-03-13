@@ -46,6 +46,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         {
             var sp = await apiCalls.GetServiceProvider(ChosenServiceProviderId, ChosenOrganisationId);
             Assert.IsNotNull(sp);
+
+            var sps = await apiCalls.GetServiceProviders(ChosenOrganisationId);
+            Assert.IsNotNull(sps);
         }
 
         [TestMethod]
