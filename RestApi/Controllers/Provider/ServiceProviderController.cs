@@ -38,6 +38,16 @@ namespace RestApi.Controllers.Provider
             return serviceProvider;
 
         }
+        
+        [HttpGet("organisation/{OrganisationId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.ServiceProvider>> GetServiceProvidersAsync(string OrganisationId)
+        {
+            var serviceProviders = await serviceProviderService.GetServiceProvidersAsync(OrganisationId);
+
+            return serviceProviders;
+
+        }
 
         /// <summary>
         /// Usaully this will be the first method to be called to get Orgmemberships of a service provider
@@ -45,7 +55,7 @@ namespace RestApi.Controllers.Provider
         /// <returns></returns>
         [HttpGet]
         [Authorize]
-        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemeberships()
+        public async Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemberships()
         {
             var serviceProvider = await serviceProviderService.GetServiceProviderOrganisationMemberships();
             return serviceProvider;
