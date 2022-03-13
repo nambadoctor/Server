@@ -91,5 +91,28 @@ namespace MiddleWare.Services
             }
 
         }
+
+        public async Task<List<ProviderClientOutgoing.ServiceProvider>> GetServiceProvidersAsync(string OrganisationId)
+        {
+            using (logger.BeginScope("Method: {Method}", "ServiceProviderService:GetServiceProvidersAsync"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(OrganisationId, IdType.Organisation);
+
+                NambaDoctorContext.AddTraceContext("OrganisationId", OrganisationId);
+
+                var mongoServiceProviderProfiles = await serviceProviderRepository.GetServiceProviderProfilesOfOrg(OrganisationId);
+
+                var clientServiceProviderProfiles = new List<ProviderClientOutgoing.ServiceProvider>();
+
+                foreach (var mongoSp in mongoServiceProviderProfiles)
+                {
+                    clientServiceProviderProfiles.Add(ServiceProviderConverter.ConvertToClientServiceProvider(mongoSp));
+                }
+
+                return clientServiceProviderProfiles;
+
+            }
+        }
     }
 }

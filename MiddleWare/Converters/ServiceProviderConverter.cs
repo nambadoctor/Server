@@ -75,5 +75,18 @@ namespace MiddleWare.Converters
 
             return clientSp;
         }
+
+        public static List<ProviderClientOutgoing.ServiceProviderProfile> ConvertToClientServiceProviderProfiles(
+            List<(ServerModel.ServiceProviderProfile, string, string)> mongoServiceProviderProfiles)
+        {
+            var serviceProviders = new List<ProviderClientOutgoing.ServiceProviderProfile>();
+
+            foreach (var serviceProvider in mongoServiceProviderProfiles)
+            {
+                serviceProviders.Add(ConvertToClientServiceProviderProfile(serviceProvider.Item1, serviceProvider.Item2, serviceProvider.Item3));
+            }
+
+            return serviceProviders;
+        }
     }
 }
