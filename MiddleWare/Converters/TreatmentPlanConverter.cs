@@ -194,6 +194,8 @@ namespace MiddleWare.Converters
 
             mongoTreatmentPlan.TreatmentPlanStatus = treatmentPlan.TreatmentPlanStatus;
 
+            mongoTreatmentPlan.UploadedDocuments = new List<Mongo.FileInfo>();
+
             return mongoTreatmentPlan;
         }
 
