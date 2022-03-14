@@ -212,6 +212,29 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
+        
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocs(string TreatmentPlanId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/{TreatmentPlanId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>>(value);
+                return tps;
+            }
+        }
+        
+        public async Task<ProviderClientOutgoing.SettingsConfigurationOutgoing> GetUserConfig(string ServiceProviderId, string OrganisationId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/settings_configuration/{OrganisationId}/{ServiceProviderId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var config = JsonConvert.DeserializeObject<ProviderClientOutgoing.SettingsConfigurationOutgoing>(value);
+                return config;
+            }
+        }
+        
         #endregion GET
 
         #region POST
@@ -434,6 +457,26 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 }
             }
         }
+        
+        public async Task<bool> AddTreatmentPlanDocument(ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentPlanDocument)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/treatmentplan/document/"))
+            {
+                var jsonData = JsonConvert.SerializeObject(treatmentPlanDocument);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
 
         #endregion POST
 
@@ -563,6 +606,23 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         public async Task<bool> DeleteReport(string ReportId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Delete, BaseUrl + $"/report/{ReportId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        
+        public async Task<bool> DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Delete, BaseUrl + $"/treatmentplan/document/{TreatmentPlanDocumentId}"))
             {
                 var response = await httpClient.SendAsync(request);
                 if (response.IsSuccessStatusCode)

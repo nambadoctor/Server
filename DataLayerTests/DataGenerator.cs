@@ -5,15 +5,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using DataModel.Mongo.Configuration;
 
 namespace LayerTests
 {
     public static class DataGenerator
     {
+        
+        const string globalDrId = "61f395acee2b9622eaad5303";
+        const string globalOrgId = "61f3957eee2b9622eaad52fe";
         public static NotificationUserConfiguration GenerateNotificationConfigForGlobalUser()
         {
-            var globalDrId = "61f395acee2b9622eaad5303";
-            var globalOrgId = "61f3957eee2b9622eaad52fe";
 
             NotificationUserConfiguration notificationUserConfiguration = new NotificationUserConfiguration();
 
@@ -52,6 +54,17 @@ namespace LayerTests
             );
 
             return subscriptions;
+        }
+
+        public static SettingsConfiguration GetSampleSettingsConfiguration()
+        {
+            var settings = new SettingsConfiguration();
+            settings.OrganisationId = globalOrgId;
+            settings.ServiceProviderId = globalDrId;
+            settings.AppointmentSettings = new AppointmentSettings();
+            settings.AppointmentSettings.AppointmentReasons = new List<string> { "Fever", "Pregnancy", "STDs" };
+
+            return settings;
         }
     }
 }
