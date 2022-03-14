@@ -207,6 +207,7 @@ namespace MiddleWare.Converters
             treatmentPlanDocumentOutgoing.FileType = document.FileType;
 
             treatmentPlanDocumentOutgoing.SasUrl = sasUrl;
+            treatmentPlanDocumentOutgoing.TreatmentPlanDocumentId = document.FileInfoId.ToString();
 
             return treatmentPlanDocumentOutgoing;
         }
