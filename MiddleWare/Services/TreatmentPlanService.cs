@@ -7,6 +7,7 @@ using MiddleWare.Utils;
 using MongoDB.Bson;
 using Exceptions = DataModel.Shared.Exceptions;
 using MongoDB.GenericRepository.Interfaces;
+using ND.DataLayer.Utils.BlobStorage;
 using Mongo = DataModel.Mongo;
 using ProviderClientIncoming = DataModel.Client.Provider.Incoming;
 using ProviderClientOutgoing = DataModel.Client.Provider.Outgoing;
@@ -19,12 +20,14 @@ namespace MiddleWare.Services
         private ITreatmentPlanRepository treatmentPlanRepository;
         private IServiceProviderRepository serviceProviderRepository;
         private ICustomerRepository customerRepository;
+        private IMediaContainer mediaContainer;
 
-        public TreatmentPlanService(ITreatmentPlanRepository treatmentPlanRepository, ILogger<TreatmentPlanService> logger, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository)
+        public TreatmentPlanService(ITreatmentPlanRepository treatmentPlanRepository, ILogger<TreatmentPlanService> logger, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IMediaContainer mediaContainer)
         {
             this.treatmentPlanRepository = treatmentPlanRepository;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
+            this.mediaContainer = mediaContainer;
             this.logger = logger;
         }
 
@@ -111,6 +114,75 @@ namespace MiddleWare.Services
                 await treatmentPlanRepository.RemoveTreatment(TreatmentPlanId, TreatmentId);
 
                 logger.LogInformation($"Deleted treatment with id: {TreatmentId}");
+            }
+        }
+
+        public async Task<List<TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string TreatmentPlanId)
+        {
+            using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetTreatmentPlanDocuments"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(TreatmentPlanId, IdType.TreatmentPlan);
+
+                var treatmentPlan = await treatmentPlanRepository.GetById(TreatmentPlanId);
+
+                var treatmentPlanDocuments = new List<TreatmentPlanDocumentsOutgoing>();
+
+                if (treatmentPlan.UploadedDocuments != null)
+                {
+                    foreach (var document in treatmentPlan.UploadedDocuments)
+                    {
+                        var sasUrl = await mediaContainer.GetSasUrl(document.FileInfoId.ToString());
+
+                        if (sasUrl != null)
+                        {
+                            treatmentPlanDocuments.Add(
+                                TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, TreatmentPlanId)
+                            );
+                        }
+                        else
+                        {
+                            throw new Exceptions.BlobStorageException($"Treatment plan not found in blob:{TreatmentPlanId}");
+                        }
+                    }
+                }
+
+                return treatmentPlanDocuments;
+
+            }
+        }
+
+        public async Task SetTreatmentPlanDocument(TreatmentPlanDocumentIncoming treatmentPlanDocumentIncoming)
+        {
+            using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:SetTreatmentPlanDocument"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.TreatmentPlanId, IdType.TreatmentPlan);
+
+                var treatmentPlanDocument = TreatmentPlanConverter.ConvertToMongoTreatmentPlanDocument(treatmentPlanDocumentIncoming);
+                
+                var mimeType = ByteHandler.GetMimeType(treatmentPlanDocument.FileType);
+                //Upload to blob
+                var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(treatmentPlanDocumentIncoming.File), treatmentPlanDocument.FileInfoId.ToString(), mimeType);
+
+                await treatmentPlanRepository.AddTreatmentPlanDocument(treatmentPlanDocument, treatmentPlanDocumentIncoming.TreatmentPlanId);
+
+                logger.LogInformation($"Successfully Uploaded TreatmentPlanDocument with ID: {treatmentPlanDocumentIncoming.TreatmentPlanId}");
+
+            }
+        }
+
+        public async Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
+        {
+            using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:DeleteTreatmentPlanDocument"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(TreatmentPlanDocumentId, IdType.TreatmentPlan);
+
+                await treatmentPlanRepository.DeleteTreatmentPlanDocument(TreatmentPlanDocumentId);
+
+                logger.LogInformation($"Successfully deleted TreatmentPlanDocument with ID: {TreatmentPlanDocumentId}");
+
             }
         }
 

@@ -71,6 +71,27 @@ namespace MongoDB.GenericRepository.Repository
             await this.RemoveFromSet(filter, update);
         }
 
+        public async Task AddTreatmentPlanDocument(FileInfo fileInfo, string TreatmentPlanId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(sr => sr.TreatmentPlanId, new ObjectId(TreatmentPlanId));
+
+            var update = Builders<TreatmentPlan>.Update.AddToSet(sr => sr.UploadedDocuments, fileInfo);
+
+            await this.AddToSet(filter, update);
+        }
+
+        public async Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.ElemMatch(sr => sr.UploadedDocuments, doc => doc.FileInfoId.Equals(new ObjectId(TreatmentPlanDocumentId)));
+
+            var update = Builders<TreatmentPlan>.Update.PullFilter(
+                sr => sr.UploadedDocuments,
+                doc => doc.FileInfoId == new ObjectId(TreatmentPlanDocumentId)
+            );
+
+            await this.RemoveFromSet(filter, update);
+        }
+
         public async Task UpdateTreatment(string TreatmentPlanId, Treatment treatment)
         {
             var filter = Builders<TreatmentPlan>.Filter;
