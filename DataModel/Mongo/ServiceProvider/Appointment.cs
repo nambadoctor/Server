@@ -27,6 +27,8 @@ namespace DataModel.Mongo
         [BsonRepresentation(BsonType.String)]
         [JsonConverter(typeof(JsonStringEnumConverter))]
         public AppointmentType AppointmentType { get; set; }
+        
+        public string AppointmentReason { get; set; }
         public DateTime? ScheduledAppointmentStartTime { get; set; }
         public DateTime? ScheduledAppointmentEndTime { get; set; }
         public DateTime? ActualAppointmentStartTime { get; set; }
