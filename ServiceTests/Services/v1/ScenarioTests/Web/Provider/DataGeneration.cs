@@ -88,6 +88,19 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             return report;
         }
+        
+        public ProviderClientIncoming.TreatmentPlanDocumentIncoming GenerateSampleTreatmentPlanDocument(string treatmentPlanId)
+        {
+            var rnd = new Random();
+            var tpDocument = new ProviderClientIncoming.TreatmentPlanDocumentIncoming();
+
+            tpDocument.FileType = "bs";
+            tpDocument.FileName = $"report{rnd.Next(100)}";
+            tpDocument.File = $"bs,cmVwb3J0";
+            tpDocument.TreatmentPlanId = treatmentPlanId;
+
+            return tpDocument;
+        }
 
         public ProviderClientIncoming.PrescriptionDocumentIncoming GenerateSamplePrescription(string? ServiceRequestId, string? AppointmentId)
         {

@@ -42,6 +42,7 @@ namespace MiddleWare.Converters
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+            appointmentData.AppointmentReason = appointment.AppointmentReason;
 
             return appointmentData;
         }
@@ -86,6 +87,8 @@ namespace MiddleWare.Converters
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
+            
+            appointmentData.AppointmentReason = appointment.AppointmentReason;
 
             return appointmentData;
         }

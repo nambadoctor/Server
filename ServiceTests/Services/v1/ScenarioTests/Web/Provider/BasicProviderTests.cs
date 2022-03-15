@@ -49,6 +49,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             var sps = await apiCalls.GetServiceProviders(ChosenOrganisationId);
             Assert.IsNotNull(sps);
+
+            var config = await apiCalls.GetUserConfig("61f395acee2b9622eaad5303", "61f3957eee2b9622eaad52fe");
+            Assert.IsNotNull(config);
         }
 
         [TestMethod]
@@ -254,6 +257,17 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var upcomingTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
                 chosenAppointment.CustomerId, true);
             Assert.IsNotNull(upcomingTreatments);
+
+            var docToUpload = dataGeneration.GenerateSampleTreatmentPlanDocument(chosenTreatmentPlan.TreatmentPlanId);
+            var uploadDocResult = await apiCalls.AddTreatmentPlanDocument(docToUpload);
+            Assert.IsTrue(uploadDocResult);
+
+            var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(chosenTreatmentPlan.TreatmentPlanId);
+            Assert.IsNotNull(treatmentPlanDocs);
+
+            var deleteDocId = treatmentPlanDocs.First().TreatmentPlanDocumentId;
+            var deleteDocumentResult = await apiCalls.DeleteTreatmentPlanDocument(deleteDocId);
+            Assert.IsTrue(deleteDocumentResult);
 
         }
 

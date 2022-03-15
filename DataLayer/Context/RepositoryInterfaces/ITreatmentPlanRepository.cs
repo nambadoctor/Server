@@ -15,5 +15,7 @@ namespace MongoDB.GenericRepository.Interfaces
         public Task AddTreatment(string TreatmentPlanId, Treatment treatment);
         public Task UpdateTreatment(string TreatmentPlanId, Treatment treatment);
         public Task RemoveTreatment(string TreatmentPlanId, string TreatmentId);
+        public Task AddTreatmentPlanDocument(FileInfo fileInfo, string TreatmentPlanId);
+        public Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId);
     }
 }

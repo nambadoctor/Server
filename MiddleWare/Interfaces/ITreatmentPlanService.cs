@@ -12,5 +12,8 @@ namespace MiddleWare.Interfaces
         public Task AddTreatment(string TreatmentPlanId, ProviderClientIncoming.TreatmentIncoming treatmentIncoming);
         public Task UpdateTreatment(string TreatmentPlanId, ProviderClientIncoming.TreatmentIncoming treatmentIncoming);
         public Task DeleteTreatment(string TreatmentPlanId, string TreatmentId);
+        public Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string TreatmentPlanId);
+        public Task SetTreatmentPlanDocument(ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentPlanDocumentIncoming);
+        public Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId);
     }
 }

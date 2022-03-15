@@ -21,7 +21,9 @@ namespace DataModel.Mongo
         public string ServiceProviderName { get; set; }
         public string SourceServiceRequestId { get; set; }
         public List<Treatment> Treatments { get; set; }
-        public string TreatmentPlanStatus { get; set; } // This is to represent aggreation of treatment status. This takes precedence over agregated results
+        
+        public List<FileInfo> UploadedDocuments { get; set; }
+        public string TreatmentPlanStatus { get; set; } // This is to represent aggregation of treatment status. This takes precedence over agregated results
         public DateTime CreatedDateTime { get; set; }
     }
 }

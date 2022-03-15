@@ -194,7 +194,35 @@ namespace MiddleWare.Converters
 
             mongoTreatmentPlan.TreatmentPlanStatus = treatmentPlan.TreatmentPlanStatus;
 
+            mongoTreatmentPlan.UploadedDocuments = new List<Mongo.FileInfo>();
+
             return mongoTreatmentPlan;
+        }
+
+        public static ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing ConvertToClientOutgoingTreatmentPlanDocument(Mongo.FileInfo document, string sasUrl, string treatmentPlanId)
+        {
+            var treatmentPlanDocumentOutgoing = new ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing();
+
+            treatmentPlanDocumentOutgoing.TreatmentPlanId = treatmentPlanId;
+
+            treatmentPlanDocumentOutgoing.FileName = document.FileName;
+            treatmentPlanDocumentOutgoing.FileType = document.FileType;
+
+            treatmentPlanDocumentOutgoing.SasUrl = sasUrl;
+            treatmentPlanDocumentOutgoing.TreatmentPlanDocumentId = document.FileInfoId.ToString();
+
+            return treatmentPlanDocumentOutgoing;
+        }
+
+        public static Mongo.FileInfo ConvertToMongoTreatmentPlanDocument(ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentPlanDocumentIncoming)
+        {
+            var fileInfo = new Mongo.FileInfo();
+            {
+                fileInfo.FileInfoId = ObjectId.GenerateNewId();
+                fileInfo.FileName = treatmentPlanDocumentIncoming.FileName;
+                fileInfo.FileType = treatmentPlanDocumentIncoming.FileType;
+            }
+            return fileInfo;
         }
     }
 }

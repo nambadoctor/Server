@@ -36,6 +36,7 @@ namespace LayerTests
             services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
             services.AddScoped<INotificationUserConfigurationRepository, NotificationUserConfigurationRepository>();
             services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
+            services.AddScoped<ISettingsConfigurationRepository, SettingsConfigurationRepository>();
 
             ServiceProvider = services.BuildServiceProvider();
         }

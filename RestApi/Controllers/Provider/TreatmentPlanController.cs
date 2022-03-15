@@ -83,6 +83,35 @@ namespace RestApi.Controllers.Provider
             await treatmentPlanService.DeleteTreatment(TreatmentPlanId, TreatmentId);
 
         }
+        
+        [HttpPost("document")]
+        [Authorize]
+        public async Task UploadTreatmentPlanDocument([FromBody] ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentIncoming)
+        {
+
+            await treatmentPlanService.SetTreatmentPlanDocument(treatmentIncoming);
+
+        }
+        
+        [HttpDelete("document/{TreatmentPlanDocumentId}")]
+        [Authorize]
+        public async Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
+        {
+
+            await treatmentPlanService.DeleteTreatmentPlanDocument(TreatmentPlanDocumentId);
+
+        }
+        
+        [HttpGet("document/{TreatmentPlanId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string TreatmentPlanId)
+        {
+
+            var treatmentDocuments = await treatmentPlanService.GetTreatmentPlanDocuments(TreatmentPlanId);
+
+            return treatmentDocuments;
+
+        }
 
     }
 }

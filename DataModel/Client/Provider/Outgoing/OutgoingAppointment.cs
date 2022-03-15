@@ -14,6 +14,8 @@ namespace DataModel.Client.Provider.Outgoing
         public string AppointmentType { get; set; }
         public string AddressId { get; set; }
         public string Status { get; set; }
+        
+        public string AppointmentReason { get; set; }
         public DateTime? ScheduledAppointmentStartTime { get; set; }
         public DateTime? ScheduledAppointmentEndTime { get; set; }
         public DateTime? ActualAppointmentStartTime { get; set; }
