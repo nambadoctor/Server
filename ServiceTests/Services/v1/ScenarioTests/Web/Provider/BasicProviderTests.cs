@@ -133,8 +133,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var existingCustomer = customers.ElementAt(rnd.Next(customers.Count));
             var modifiedCustomer = dataGeneration.GenerateSampleCustomer(ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
 
-            var updatCustomereResult = await apiCalls.UpdateCustomerProfile(modifiedCustomer);
-            Assert.IsTrue(updatCustomereResult);
+            var updateCustomerResult = await apiCalls.UpdateCustomerProfile(modifiedCustomer);
+            Assert.IsTrue(updateCustomerResult);
 
             var appointmentWithExistingCustomer = dataGeneration.GenerateSampleCustomerWithAppointment(ChosenServiceProviderId, ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
             var postAppointmentWithExistingCustomertResult = await apiCalls.AddCustomerWithAppointment(appointmentWithExistingCustomer); // Should throw error response
@@ -257,12 +257,14 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var upcomingTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
                 chosenAppointment.CustomerId, true);
             Assert.IsNotNull(upcomingTreatments);
+            
+            var existingAppointment = dataGeneration.GenerateSampleAppointmentFromExistingAppointment(chosenAppointment);
 
-            var docToUpload = dataGeneration.GenerateSampleTreatmentPlanDocument(chosenTreatmentPlan.TreatmentPlanId);
+            var docToUpload = dataGeneration.GenerateSampleTreatmentPlanDocument(chosenTreatmentPlan.TreatmentPlanId, existingAppointment);
             var uploadDocResult = await apiCalls.AddTreatmentPlanDocument(docToUpload);
             Assert.IsTrue(uploadDocResult);
 
-            var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(chosenTreatmentPlan.TreatmentPlanId);
+            var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(existingAppointment.ServiceRequestId);
             Assert.IsNotNull(treatmentPlanDocs);
 
             var deleteDocId = treatmentPlanDocs.First().TreatmentPlanDocumentId;
