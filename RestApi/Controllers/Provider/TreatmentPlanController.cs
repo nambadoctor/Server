@@ -102,12 +102,12 @@ namespace RestApi.Controllers.Provider
 
         }
         
-        [HttpGet("document/{TreatmentPlanId}")]
+        [HttpGet("document/{ServiceRequestId}")]
         [Authorize]
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string TreatmentPlanId)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string ServiceRequestId)
         {
 
-            var treatmentDocuments = await treatmentPlanService.GetTreatmentPlanDocuments(TreatmentPlanId);
+            var treatmentDocuments = await treatmentPlanService.GetTreatmentPlanDocuments(ServiceRequestId);
 
             return treatmentDocuments;
 
