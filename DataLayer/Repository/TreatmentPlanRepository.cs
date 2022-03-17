@@ -30,6 +30,15 @@ namespace MongoDB.GenericRepository.Repository
             await this.Upsert(filter, update);
         }
 
+        public async Task<TreatmentPlan> GetTreatmentPlanByServiceRequestId(string ServiceRequestId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.SourceServiceRequestId, ServiceRequestId);
+
+            var result = await this.GetSingleByFilter(filter);
+
+            return result;
+        }
+
         public async Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string? ServiceProviderId, string? CustomerId = null)
         {
             var organisationFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.OrganisationId, OrganisationId);

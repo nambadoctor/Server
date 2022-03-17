@@ -117,33 +117,38 @@ namespace MiddleWare.Services
             }
         }
 
-        public async Task<List<TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string TreatmentPlanId)
+        public async Task<List<TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string ServiceRequestId)
         {
             using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetTreatmentPlanDocuments"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                DataValidation.ValidateObjectId(TreatmentPlanId, IdType.TreatmentPlan);
+                DataValidation.ValidateObjectId(ServiceRequestId, IdType.ServiceRequest);
 
-                var treatmentPlan = await treatmentPlanRepository.GetById(TreatmentPlanId);
+                var treatmentPlan = await treatmentPlanRepository.GetTreatmentPlanByServiceRequestId(ServiceRequestId);
 
                 var treatmentPlanDocuments = new List<TreatmentPlanDocumentsOutgoing>();
 
-                if (treatmentPlan.UploadedDocuments != null)
+                if (treatmentPlan == null)
+                    return treatmentPlanDocuments;
+                
+                if (treatmentPlan.UploadedDocuments == null || treatmentPlan.UploadedDocuments.Count == 0)
                 {
-                    foreach (var document in treatmentPlan.UploadedDocuments)
-                    {
-                        var sasUrl = await mediaContainer.GetSasUrl(document.FileInfoId.ToString());
+                    return treatmentPlanDocuments;
+                }
 
-                        if (sasUrl != null)
-                        {
-                            treatmentPlanDocuments.Add(
-                                TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, TreatmentPlanId)
-                            );
-                        }
-                        else
-                        {
-                            throw new Exceptions.BlobStorageException($"Treatment plan not found in blob:{TreatmentPlanId}");
-                        }
+                foreach (var document in treatmentPlan.UploadedDocuments)
+                {
+                    var sasUrl = await mediaContainer.GetSasUrl(document.FileInfoId.ToString());
+
+                    if (sasUrl != null)
+                    {
+                        treatmentPlanDocuments.Add(
+                            TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString())
+                        );
+                    }
+                    else
+                    {
+                        throw new Exceptions.BlobStorageException($"Treatment plan not found in blob:{treatmentPlan.TreatmentPlanId.ToString()}");
                     }
                 }
 
@@ -157,7 +162,29 @@ namespace MiddleWare.Services
             using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:SetTreatmentPlanDocument"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
-                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.TreatmentPlanId, IdType.TreatmentPlan);
+                //Validations
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.OrganisationId, IdType.Organisation);
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.ServiceProviderId, IdType.ServiceProvider);
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.CustomerId, IdType.Customer);
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.ServiceRequestId,
+                    IdType.ServiceRequest);
+
+                var existingTreatmentPlan =
+                    await treatmentPlanRepository.GetTreatmentPlanByServiceRequestId(treatmentPlanDocumentIncoming.Appointment.ServiceRequestId);
+
+                var treatmentPlanIdToWriteTo = "";
+
+                if (existingTreatmentPlan == null)
+                {
+                    //Create new treatment plan with appointment details
+                    treatmentPlanIdToWriteTo = await CreateNewBlankTreatmentPlan(treatmentPlanDocumentIncoming.Appointment);
+
+                    logger.LogInformation($"Created new treatment plan with id: {treatmentPlanIdToWriteTo}");
+                }
+                else
+                {
+                    treatmentPlanIdToWriteTo = existingTreatmentPlan.TreatmentPlanId.ToString();
+                }
 
                 var treatmentPlanDocument = TreatmentPlanConverter.ConvertToMongoTreatmentPlanDocument(treatmentPlanDocumentIncoming);
                 
@@ -165,9 +192,9 @@ namespace MiddleWare.Services
                 //Upload to blob
                 var uploaded = await mediaContainer.UploadFileToStorage(ByteHandler.Base64DecodeFileString(treatmentPlanDocumentIncoming.File), treatmentPlanDocument.FileInfoId.ToString(), mimeType);
 
-                await treatmentPlanRepository.AddTreatmentPlanDocument(treatmentPlanDocument, treatmentPlanDocumentIncoming.TreatmentPlanId);
+                await treatmentPlanRepository.AddTreatmentPlanDocument(treatmentPlanDocument, treatmentPlanIdToWriteTo);
 
-                logger.LogInformation($"Successfully Uploaded TreatmentPlanDocument with ID: {treatmentPlanDocumentIncoming.TreatmentPlanId}");
+                logger.LogInformation($"Successfully Uploaded TreatmentPlanDocument with ID: {treatmentPlanIdToWriteTo}");
 
             }
         }
@@ -240,6 +267,30 @@ namespace MiddleWare.Services
 
                 logger.LogInformation($"Updated treatment plan with id:{treatmentPlanIncoming.TreatmentPlanId} successfully");
             }
+        }
+
+        private async Task<string> CreateNewBlankTreatmentPlan(AppointmentIncoming appointmentIncoming)
+        {
+            //Create new treatment plan with appointment details
+            var customerProfile = await customerRepository.GetCustomerProfile(appointmentIncoming.CustomerId, appointmentIncoming.OrganisationId);
+            DataValidation.ValidateObject(customerProfile);
+
+            var serviceProviderProfile = await serviceProviderRepository.GetServiceProviderProfile(appointmentIncoming.ServiceProviderId, appointmentIncoming.OrganisationId);
+            DataValidation.ValidateObject(serviceProviderProfile);
+                    
+            var mongoTreatmentPlan = TreatmentPlanConverter.GetNewMongoTreatmentPlanWithBlankData(
+                appointmentIncoming,
+                $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}",
+                $"{customerProfile.FirstName} {customerProfile.LastName}"
+            );
+                    
+            logger.LogInformation("Constructed mongo treatment plan obj");
+
+            await treatmentPlanRepository.Add(mongoTreatmentPlan);
+
+            logger.LogInformation($"Created new treatment plan with id: {mongoTreatmentPlan.TreatmentPlanId}");
+            
+            return mongoTreatmentPlan.TreatmentPlanId.ToString();
         }
 
         private void FilterTreatmentPlans(ref List<ProviderClientOutgoing.TreatmentOutgoing> treatments)

@@ -213,9 +213,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
         
-        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocs(string TreatmentPlanId)
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocs(string ServiceRequestId)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/{TreatmentPlanId}"))
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/{ServiceRequestId}"))
             {
                 var response = await httpClient.SendAsync(request);
                 var value = await response.Content.ReadAsStringAsync();

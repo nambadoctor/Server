@@ -198,6 +198,37 @@ namespace MiddleWare.Converters
 
             return mongoTreatmentPlan;
         }
+        
+        public static Mongo.TreatmentPlan GetNewMongoTreatmentPlanWithBlankData(ProviderClientIncoming.AppointmentIncoming appointment, string? ServiceProviderName, string? CustomerName)
+        {
+            var mongoTreatmentPlan = new Mongo.TreatmentPlan();
+
+            mongoTreatmentPlan.TreatmentPlanId = ObjectId.GenerateNewId();
+
+            mongoTreatmentPlan.Treatments = new List<Mongo.Treatment>();
+
+            mongoTreatmentPlan.CreatedDateTime = DateTime.UtcNow;
+
+            mongoTreatmentPlan.CustomerId = appointment.CustomerId;
+
+            mongoTreatmentPlan.OrganisationId = appointment.OrganisationId;
+
+            mongoTreatmentPlan.ServiceProviderId = appointment.ServiceProviderId;
+
+            mongoTreatmentPlan.ServiceProviderName = ServiceProviderName;
+
+            mongoTreatmentPlan.CustomerName = CustomerName;
+
+            mongoTreatmentPlan.SourceServiceRequestId = appointment.ServiceRequestId;
+
+            mongoTreatmentPlan.TreatmentPlanName = "";
+
+            mongoTreatmentPlan.TreatmentPlanStatus  = "NotStarted";
+
+            mongoTreatmentPlan.UploadedDocuments = new List<Mongo.FileInfo>();
+
+            return mongoTreatmentPlan;
+        }
 
         public static ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing ConvertToClientOutgoingTreatmentPlanDocument(Mongo.FileInfo document, string sasUrl, string treatmentPlanId)
         {
