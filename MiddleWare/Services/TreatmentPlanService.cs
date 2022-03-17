@@ -18,13 +18,15 @@ namespace MiddleWare.Services
     {
         private ILogger logger;
         private ITreatmentPlanRepository treatmentPlanRepository;
+        private IAppointmentRepository appointmentRepository;
         private IServiceProviderRepository serviceProviderRepository;
         private ICustomerRepository customerRepository;
         private IMediaContainer mediaContainer;
 
-        public TreatmentPlanService(ITreatmentPlanRepository treatmentPlanRepository, ILogger<TreatmentPlanService> logger, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IMediaContainer mediaContainer)
+        public TreatmentPlanService(ITreatmentPlanRepository treatmentPlanRepository, IAppointmentRepository appointmentRepository, ILogger<TreatmentPlanService> logger, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IMediaContainer mediaContainer)
         {
             this.treatmentPlanRepository = treatmentPlanRepository;
+            this.appointmentRepository = appointmentRepository;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.mediaContainer = mediaContainer;
@@ -163,21 +165,23 @@ namespace MiddleWare.Services
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
                 //Validations
-                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.OrganisationId, IdType.Organisation);
-                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.ServiceProviderId, IdType.ServiceProvider);
-                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.CustomerId, IdType.Customer);
-                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.Appointment.ServiceRequestId,
+                
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.AppointmentId,
+                    IdType.Appointment);
+                DataValidation.ValidateObjectId(treatmentPlanDocumentIncoming.ServiceRequestId,
                     IdType.ServiceRequest);
 
                 var existingTreatmentPlan =
-                    await treatmentPlanRepository.GetTreatmentPlanByServiceRequestId(treatmentPlanDocumentIncoming.Appointment.ServiceRequestId);
+                    await treatmentPlanRepository.GetTreatmentPlanByServiceRequestId(treatmentPlanDocumentIncoming.ServiceRequestId);
 
                 var treatmentPlanIdToWriteTo = "";
 
                 if (existingTreatmentPlan == null)
                 {
+                    var appointment =
+                        await appointmentRepository.GetAppointment(treatmentPlanDocumentIncoming.AppointmentId);
                     //Create new treatment plan with appointment details
-                    treatmentPlanIdToWriteTo = await CreateNewBlankTreatmentPlan(treatmentPlanDocumentIncoming.Appointment);
+                    treatmentPlanIdToWriteTo = await CreateNewBlankTreatmentPlan(appointment);
 
                     logger.LogInformation($"Created new treatment plan with id: {treatmentPlanIdToWriteTo}");
                 }
@@ -269,19 +273,12 @@ namespace MiddleWare.Services
             }
         }
 
-        private async Task<string> CreateNewBlankTreatmentPlan(AppointmentIncoming appointmentIncoming)
+        private async Task<string> CreateNewBlankTreatmentPlan(Mongo.Appointment appointment)
         {
             //Create new treatment plan with appointment details
-            var customerProfile = await customerRepository.GetCustomerProfile(appointmentIncoming.CustomerId, appointmentIncoming.OrganisationId);
-            DataValidation.ValidateObject(customerProfile);
-
-            var serviceProviderProfile = await serviceProviderRepository.GetServiceProviderProfile(appointmentIncoming.ServiceProviderId, appointmentIncoming.OrganisationId);
-            DataValidation.ValidateObject(serviceProviderProfile);
-                    
+            
             var mongoTreatmentPlan = TreatmentPlanConverter.GetNewMongoTreatmentPlanWithBlankData(
-                appointmentIncoming,
-                $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}",
-                $"{customerProfile.FirstName} {customerProfile.LastName}"
+                appointment
             );
                     
             logger.LogInformation("Constructed mongo treatment plan obj");

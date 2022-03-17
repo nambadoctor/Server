@@ -199,7 +199,7 @@ namespace MiddleWare.Converters
             return mongoTreatmentPlan;
         }
         
-        public static Mongo.TreatmentPlan GetNewMongoTreatmentPlanWithBlankData(ProviderClientIncoming.AppointmentIncoming appointment, string? ServiceProviderName, string? CustomerName)
+        public static Mongo.TreatmentPlan GetNewMongoTreatmentPlanWithBlankData(Mongo.Appointment appointment)
         {
             var mongoTreatmentPlan = new Mongo.TreatmentPlan();
 
@@ -215,9 +215,9 @@ namespace MiddleWare.Converters
 
             mongoTreatmentPlan.ServiceProviderId = appointment.ServiceProviderId;
 
-            mongoTreatmentPlan.ServiceProviderName = ServiceProviderName;
+            mongoTreatmentPlan.ServiceProviderName = appointment.ServiceProviderName;
 
-            mongoTreatmentPlan.CustomerName = CustomerName;
+            mongoTreatmentPlan.CustomerName = appointment.CustomerName;
 
             mongoTreatmentPlan.SourceServiceRequestId = appointment.ServiceRequestId;
 
