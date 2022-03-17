@@ -114,7 +114,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             tpDocument.FileType = "bs";
             tpDocument.FileName = $"report{rnd.Next(100)}";
             tpDocument.File = $"bs,cmVwb3J0";
-            tpDocument.Appointment = appointmentIncoming;
+            tpDocument.AppointmentId = appointmentIncoming.AppointmentId;
+            tpDocument.ServiceRequestId = appointmentIncoming.ServiceRequestId;
 
             return tpDocument;
         }
