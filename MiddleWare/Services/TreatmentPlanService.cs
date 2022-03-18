@@ -121,6 +121,7 @@ namespace MiddleWare.Services
 
         public async Task<List<TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocuments(string ServiceRequestId)
         {
+            
             using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetTreatmentPlanDocuments"))
             using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
             {
@@ -151,6 +152,49 @@ namespace MiddleWare.Services
                     else
                     {
                         throw new Exceptions.BlobStorageException($"Treatment plan not found in blob:{treatmentPlan.TreatmentPlanId.ToString()}");
+                    }
+                }
+
+                return treatmentPlanDocuments;
+
+            }
+        }
+
+        public async Task<List<TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocumentsOfCustomer(string CustomerId)
+        {
+            using (logger.BeginScope("Method: {Method}", "TreatmentPlanService:GetTreatmentPlanDocuments"))
+            using (logger.BeginScope(NambaDoctorContext.TraceContextValues))
+            {
+                DataValidation.ValidateObjectId(CustomerId, IdType.Customer);
+
+                var treatmentPlans = await treatmentPlanRepository.GetTreatmentPlansByCustomerId(CustomerId);
+
+                var treatmentPlanDocuments = new List<TreatmentPlanDocumentsOutgoing>();
+
+                if (treatmentPlans == null || treatmentPlans.Count == 0)
+                    return treatmentPlanDocuments;
+
+                foreach (var treatmentPlan in treatmentPlans)
+                {
+                    if (treatmentPlan.UploadedDocuments == null || treatmentPlan.UploadedDocuments.Count == 0)
+                    {
+                        continue;
+                    }
+                    
+                    foreach (var document in treatmentPlan.UploadedDocuments)
+                    {
+                        var sasUrl = await mediaContainer.GetSasUrl(document.FileInfoId.ToString());
+
+                        if (sasUrl != null)
+                        {
+                            treatmentPlanDocuments.Add(
+                                TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString())
+                            );
+                        }
+                        else
+                        {
+                            throw new Exceptions.BlobStorageException($"Treatment plan not found in blob:{treatmentPlan.TreatmentPlanId.ToString()}");
+                        }
                     }
                 }
 

@@ -112,6 +112,17 @@ namespace RestApi.Controllers.Provider
             return treatmentDocuments;
 
         }
+        
+        [HttpGet("document/customer/{CustomerId}")]
+        [Authorize]
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocumentsOfCustomer(string CustomerId)
+        {
+
+            var treatmentDocuments = await treatmentPlanService.GetTreatmentPlanDocumentsOfCustomer(CustomerId);
+
+            return treatmentDocuments;
+
+        }
 
     }
 }
