@@ -194,7 +194,67 @@ namespace MiddleWare.Converters
 
             mongoTreatmentPlan.TreatmentPlanStatus = treatmentPlan.TreatmentPlanStatus;
 
+            mongoTreatmentPlan.UploadedDocuments = new List<Mongo.FileInfo>();
+
             return mongoTreatmentPlan;
+        }
+        
+        public static Mongo.TreatmentPlan GetNewMongoTreatmentPlanWithBlankData(Mongo.Appointment appointment)
+        {
+            var mongoTreatmentPlan = new Mongo.TreatmentPlan();
+
+            mongoTreatmentPlan.TreatmentPlanId = ObjectId.GenerateNewId();
+
+            mongoTreatmentPlan.Treatments = new List<Mongo.Treatment>();
+
+            mongoTreatmentPlan.CreatedDateTime = DateTime.UtcNow;
+
+            mongoTreatmentPlan.CustomerId = appointment.CustomerId;
+
+            mongoTreatmentPlan.OrganisationId = appointment.OrganisationId;
+
+            mongoTreatmentPlan.ServiceProviderId = appointment.ServiceProviderId;
+
+            mongoTreatmentPlan.ServiceProviderName = appointment.ServiceProviderName;
+
+            mongoTreatmentPlan.CustomerName = appointment.CustomerName;
+
+            mongoTreatmentPlan.SourceServiceRequestId = appointment.ServiceRequestId;
+
+            mongoTreatmentPlan.TreatmentPlanName = "";
+
+            mongoTreatmentPlan.TreatmentPlanStatus  = "NotStarted";
+
+            mongoTreatmentPlan.UploadedDocuments = new List<Mongo.FileInfo>();
+
+            return mongoTreatmentPlan;
+        }
+
+        public static ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing ConvertToClientOutgoingTreatmentPlanDocument(Mongo.FileInfo document, string sasUrl, string treatmentPlanId, string ServiceRequestId)
+        {
+            var treatmentPlanDocumentOutgoing = new ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing();
+
+            treatmentPlanDocumentOutgoing.TreatmentPlanId = treatmentPlanId;
+
+            treatmentPlanDocumentOutgoing.FileName = document.FileName;
+            treatmentPlanDocumentOutgoing.FileType = document.FileType;
+
+            treatmentPlanDocumentOutgoing.SasUrl = sasUrl;
+            treatmentPlanDocumentOutgoing.TreatmentPlanDocumentId = document.FileInfoId.ToString();
+            treatmentPlanDocumentOutgoing.ServiceRequestId = ServiceRequestId;
+
+            return treatmentPlanDocumentOutgoing;
+        }
+
+        public static Mongo.FileInfo ConvertToMongoTreatmentPlanDocument(ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentPlanDocumentIncoming)
+        {
+            var fileInfo = new Mongo.FileInfo();
+            {
+                fileInfo.FileInfoId = ObjectId.GenerateNewId();
+                fileInfo.FileName = treatmentPlanDocumentIncoming.FileName;
+                fileInfo.FileType = treatmentPlanDocumentIncoming.FileType;
+            }
+            return fileInfo;
         }
     }
 }

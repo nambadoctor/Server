@@ -7,5 +7,6 @@ namespace MiddleWare.Interfaces
     {
         public Task<ProviderClientOutgoing.ServiceProviderBasic> GetServiceProviderOrganisationMemberships();
         public Task<ProviderClientOutgoing.ServiceProvider> GetServiceProviderAsync(string ServiceProviderId, string OrganisationId);
+        public Task<List<ProviderClientOutgoing.ServiceProvider>> GetServiceProvidersAsync(string OrganisationId);
     }
 }

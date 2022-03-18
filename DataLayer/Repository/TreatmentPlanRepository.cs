@@ -30,6 +30,24 @@ namespace MongoDB.GenericRepository.Repository
             await this.Upsert(filter, update);
         }
 
+        public async Task<TreatmentPlan> GetTreatmentPlanByServiceRequestId(string ServiceRequestId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.SourceServiceRequestId, ServiceRequestId);
+
+            var result = await this.GetSingleByFilter(filter);
+
+            return result;
+        }
+
+        public async Task<List<TreatmentPlan>> GetTreatmentPlansByCustomerId(string CustomerId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.CustomerId, CustomerId);
+
+            var result = await this.GetListByFilter(filter);
+
+            return result.ToList();
+        }
+
         public async Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string? ServiceProviderId, string? CustomerId = null)
         {
             var organisationFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.OrganisationId, OrganisationId);
@@ -67,6 +85,27 @@ namespace MongoDB.GenericRepository.Repository
             var filter = Builders<TreatmentPlan>.Filter.Eq(sp => sp.TreatmentPlanId, new ObjectId(TreatmentPlanId));
 
             var update = Builders<TreatmentPlan>.Update.PullFilter(sp => sp.Treatments, treatment => treatment.TreatmentId == new ObjectId(TreatmentId));
+
+            await this.RemoveFromSet(filter, update);
+        }
+
+        public async Task AddTreatmentPlanDocument(FileInfo fileInfo, string TreatmentPlanId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(sr => sr.TreatmentPlanId, new ObjectId(TreatmentPlanId));
+
+            var update = Builders<TreatmentPlan>.Update.AddToSet(sr => sr.UploadedDocuments, fileInfo);
+
+            await this.AddToSet(filter, update);
+        }
+
+        public async Task DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.ElemMatch(sr => sr.UploadedDocuments, doc => doc.FileInfoId.Equals(new ObjectId(TreatmentPlanDocumentId)));
+
+            var update = Builders<TreatmentPlan>.Update.PullFilter(
+                sr => sr.UploadedDocuments,
+                doc => doc.FileInfoId == new ObjectId(TreatmentPlanDocumentId)
+            );
 
             await this.RemoveFromSet(filter, update);
         }

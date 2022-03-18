@@ -46,6 +46,12 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         {
             var sp = await apiCalls.GetServiceProvider(ChosenServiceProviderId, ChosenOrganisationId);
             Assert.IsNotNull(sp);
+
+            var sps = await apiCalls.GetServiceProviders(ChosenOrganisationId);
+            Assert.IsNotNull(sps);
+
+            var config = await apiCalls.GetUserConfig("61f395acee2b9622eaad5303", "61f3957eee2b9622eaad52fe");
+            Assert.IsNotNull(config);
         }
 
         [TestMethod]
@@ -127,8 +133,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var existingCustomer = customers.ElementAt(rnd.Next(customers.Count));
             var modifiedCustomer = dataGeneration.GenerateSampleCustomer(ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
 
-            var updatCustomereResult = await apiCalls.UpdateCustomerProfile(modifiedCustomer);
-            Assert.IsTrue(updatCustomereResult);
+            var updateCustomerResult = await apiCalls.UpdateCustomerProfile(modifiedCustomer);
+            Assert.IsTrue(updateCustomerResult);
 
             var appointmentWithExistingCustomer = dataGeneration.GenerateSampleCustomerWithAppointment(ChosenServiceProviderId, ChosenOrganisationId, existingCustomer.CustomerId, existingCustomer.CustomerProfileId, existingCustomer.PhoneNumbers);
             var postAppointmentWithExistingCustomertResult = await apiCalls.AddCustomerWithAppointment(appointmentWithExistingCustomer); // Should throw error response
@@ -251,6 +257,22 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var upcomingTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
                 chosenAppointment.CustomerId, true);
             Assert.IsNotNull(upcomingTreatments);
+            
+            var existingAppointment = dataGeneration.GenerateSampleAppointmentFromExistingAppointment(chosenAppointment);
+
+            var docToUpload = dataGeneration.GenerateSampleTreatmentPlanDocument(chosenTreatmentPlan.TreatmentPlanId, existingAppointment);
+            var uploadDocResult = await apiCalls.AddTreatmentPlanDocument(docToUpload);
+            Assert.IsTrue(uploadDocResult);
+
+            var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(existingAppointment.ServiceRequestId);
+            Assert.IsNotNull(treatmentPlanDocs);
+            
+            var treatmentPlanDocsOfCustomer = await apiCalls.GetTreatmentPlanDocsOfCustomer(existingAppointment.CustomerId);
+            Assert.IsNotNull(treatmentPlanDocsOfCustomer);
+
+            var deleteDocId = treatmentPlanDocs.First().TreatmentPlanDocumentId;
+            var deleteDocumentResult = await apiCalls.DeleteTreatmentPlanDocument(deleteDocId);
+            Assert.IsTrue(deleteDocumentResult);
 
         }
 

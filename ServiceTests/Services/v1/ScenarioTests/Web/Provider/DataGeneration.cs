@@ -27,6 +27,23 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             return appointment;
         }
+        
+        public ProviderClientIncoming.AppointmentIncoming GenerateSampleAppointmentFromExistingAppointment(ProviderClientOutgoing.OutgoingAppointment appointmentOutgoing)
+        {
+            var appointment = new ProviderClientIncoming.AppointmentIncoming();
+
+            appointment.ServiceProviderId = appointmentOutgoing.ServiceProviderId;
+            appointment.OrganisationId = appointmentOutgoing.OrganisationId;
+            appointment.CustomerId = appointmentOutgoing.CustomerId;
+            appointment.AppointmentId = appointmentOutgoing.AppointmentId;
+            appointment.ServiceRequestId = appointmentOutgoing.ServiceRequestId;
+            appointment.Status = appointmentOutgoing.Status;
+            appointment.AppointmentType = appointmentOutgoing.AppointmentType;
+            appointment.ScheduledAppointmentStartTime = appointmentOutgoing.ScheduledAppointmentStartTime;
+            appointment.ScheduledAppointmentEndTime = appointmentOutgoing.ScheduledAppointmentEndTime;
+
+            return appointment;
+        }
 
         public ProviderClientIncoming.CustomerProfileIncoming GenerateSampleCustomer(string OrganisationId, string CustomerId, string CustomerProfileId, List<ProviderClientCommon.PhoneNumber> custPhoneNumbers)
         {
@@ -87,6 +104,20 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             report.File = $"bs,cmVwb3J0";
 
             return report;
+        }
+        
+        public ProviderClientIncoming.TreatmentPlanDocumentIncoming GenerateSampleTreatmentPlanDocument(string treatmentPlanId, ProviderClientIncoming.AppointmentIncoming appointmentIncoming)
+        {
+            var rnd = new Random();
+            var tpDocument = new ProviderClientIncoming.TreatmentPlanDocumentIncoming();
+
+            tpDocument.FileType = "bs";
+            tpDocument.FileName = $"report{rnd.Next(100)}";
+            tpDocument.File = $"bs,cmVwb3J0";
+            tpDocument.AppointmentId = appointmentIncoming.AppointmentId;
+            tpDocument.ServiceRequestId = appointmentIncoming.ServiceRequestId;
+
+            return tpDocument;
         }
 
         public ProviderClientIncoming.PrescriptionDocumentIncoming GenerateSamplePrescription(string? ServiceRequestId, string? AppointmentId)
