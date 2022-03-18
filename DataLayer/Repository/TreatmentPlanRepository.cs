@@ -39,6 +39,15 @@ namespace MongoDB.GenericRepository.Repository
             return result;
         }
 
+        public async Task<List<TreatmentPlan>> GetTreatmentPlansByCustomerId(string CustomerId)
+        {
+            var filter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.CustomerId, CustomerId);
+
+            var result = await this.GetListByFilter(filter);
+
+            return result.ToList();
+        }
+
         public async Task<List<TreatmentPlan>> GetAllTreatmentPlans(string OrganisationId, string? ServiceProviderId, string? CustomerId = null)
         {
             var organisationFilter = Builders<TreatmentPlan>.Filter.Eq(tp => tp.OrganisationId, OrganisationId);
