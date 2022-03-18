@@ -266,6 +266,9 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(existingAppointment.ServiceRequestId);
             Assert.IsNotNull(treatmentPlanDocs);
+            
+            var treatmentPlanDocsOfCustomer = await apiCalls.GetTreatmentPlanDocsOfCustomer(existingAppointment.CustomerId);
+            Assert.IsNotNull(treatmentPlanDocsOfCustomer);
 
             var deleteDocId = treatmentPlanDocs.First().TreatmentPlanDocumentId;
             var deleteDocumentResult = await apiCalls.DeleteTreatmentPlanDocument(deleteDocId);
