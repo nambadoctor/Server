@@ -224,6 +224,17 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
         }
         
+        public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocsOfCustomer(string CustomerId)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/customer/{CustomerId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var value = await response.Content.ReadAsStringAsync();
+                var tps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>>(value);
+                return tps;
+            }
+        }
+        
         public async Task<ProviderClientOutgoing.SettingsConfigurationOutgoing> GetUserConfig(string ServiceProviderId, string OrganisationId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/settings_configuration/{OrganisationId}/{ServiceProviderId}"))
