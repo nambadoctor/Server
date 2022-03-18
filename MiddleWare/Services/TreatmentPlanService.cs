@@ -146,7 +146,7 @@ namespace MiddleWare.Services
                     if (sasUrl != null)
                     {
                         treatmentPlanDocuments.Add(
-                            TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString())
+                            TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString(), treatmentPlan.SourceServiceRequestId)
                         );
                     }
                     else
@@ -188,7 +188,7 @@ namespace MiddleWare.Services
                         if (sasUrl != null)
                         {
                             treatmentPlanDocuments.Add(
-                                TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString())
+                                TreatmentPlanConverter.ConvertToClientOutgoingTreatmentPlanDocument(document, sasUrl, treatmentPlan.TreatmentPlanId.ToString(), treatmentPlan.SourceServiceRequestId)
                             );
                         }
                         else

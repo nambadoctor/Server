@@ -230,7 +230,7 @@ namespace MiddleWare.Converters
             return mongoTreatmentPlan;
         }
 
-        public static ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing ConvertToClientOutgoingTreatmentPlanDocument(Mongo.FileInfo document, string sasUrl, string treatmentPlanId)
+        public static ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing ConvertToClientOutgoingTreatmentPlanDocument(Mongo.FileInfo document, string sasUrl, string treatmentPlanId, string ServiceRequestId)
         {
             var treatmentPlanDocumentOutgoing = new ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing();
 
@@ -241,6 +241,7 @@ namespace MiddleWare.Converters
 
             treatmentPlanDocumentOutgoing.SasUrl = sasUrl;
             treatmentPlanDocumentOutgoing.TreatmentPlanDocumentId = document.FileInfoId.ToString();
+            treatmentPlanDocumentOutgoing.ServiceRequestId = ServiceRequestId;
 
             return treatmentPlanDocumentOutgoing;
         }
