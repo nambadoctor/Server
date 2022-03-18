@@ -8,4 +8,6 @@ public class TreatmentPlanDocumentsOutgoing
     public string FileName { get; set; }
     public string FileType { get; set; } //Pdf, Img
     public string SasUrl { get; set; }
+    
+    public string ServiceRequestId { get; set; }
 }
