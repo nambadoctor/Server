@@ -6,18 +6,29 @@ namespace NotificationUtil.Mode.SMS;
 public class SmsBuilder : ISmsBuilder
 {
     private readonly TimeZoneInfo INDIAN_ZONE = TimeZoneInfo.FindSystemTimeZoneById("India Standard Time");
-    public NotificationQueue GetAppointmentReminderSMS(string phoneNumber, DateTime time, string user, DateTime toBeNotifiedTime, string appointmentId)
+    public NotificationQueue GetAppointmentReminderSMS(string phoneNumber, DateTime time, string user, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
-        var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd, HH:mm").Trim().Replace(" ", "");
-        String message = Uri.EscapeDataString($"Upcoming appointment. \nYour appointment with {user.Trim().Replace(" ", "")} is in {timeString}. Please be ready for the call.\n-Namba Doctor");
-        return GetNotificationQueue(message, phoneNumber, toBeNotifiedTime, "NMBADR", NotificationType.Reminder, appointmentId);
+        var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
+        String message = Uri.EscapeDataString($"Reminder.\nYour appointment with {user.Substring(0, Math.Min(user.Length, 10))} at {orgName.Substring(0, Math.Min(orgName.Length, 10))} is on {timeString}. \n-Powered by Namba Doctor");
+        String formattedStr = message.Replace("%0A", "%n");
+        return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.Reminder, appointmentId);
     }
 
-    public NotificationQueue GetAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId)
+    public NotificationQueue GetAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
-        var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd, HH:mm").Trim().Replace(" ", "");
-        String message = Uri.EscapeDataString($"Appointment {status}.\nYour appointment on {timeString}(IST) with {user.Substring(0, Math.Min(user.Length, 10))} is {status}.\n-Namba Doctor");
-        return GetNotificationQueue(message, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
+        var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
+        var strMsg = $"Appointment {status}.\nYour appointment on {timeString} with {user.Substring(0, Math.Min(user.Length, 20))} at {orgName} has been {status.ToLower()}. \n-Powered by Namba Doctor";
+        String msg = Uri.EscapeDataString(strMsg);
+        String formattedStr = msg.Replace("%0A", "%n");
+        return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
+    }
+
+    public NotificationQueue GetFutureAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId, string orgName)
+    {
+        var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
+        String msg = Uri.EscapeDataString($"Appointment {status}.\nYou are due for your appointment with {user.Substring(0, Math.Min(user.Length, 10))} on {timeString} at {orgName.Substring(0, Math.Min(orgName.Length, 10))}. \n-Powered by Namba Doctor");
+        String formattedStr = msg.Replace("%0A", "%n");
+        return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
     }
 
     public NotificationQueue GetPrescriptionSMS(string phoneNumber, string user, DateTime toBeNotifiedTime, string appointmentId)

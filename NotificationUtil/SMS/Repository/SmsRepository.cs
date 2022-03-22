@@ -28,9 +28,8 @@ public class SmsRepository : ISmsRepository
     {
         nameValueCollection = new NameValueCollection()
         {
-            {"num_parts", "1"},
             {"apikey", $"{APIKey}"},
-            {"test", $"{isTest}"},
+            {"test", $"{isTest}"}
         };
     }
 
@@ -56,6 +55,5 @@ public class SmsRepository : ISmsRepository
                 return false;
             }
         }
-        return true;
     }
 }
