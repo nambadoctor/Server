@@ -9,7 +9,7 @@ public class SmsBuilder : ISmsBuilder
     public NotificationQueue GetAppointmentReminderSMS(string phoneNumber, DateTime time, string user, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
         var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
-        String message = Uri.EscapeDataString($"Reminder.\nYour appointment with {user.Substring(0, Math.Min(user.Length, 10))} at {orgName.Substring(0, Math.Min(orgName.Length, 10))} is on {timeString}. \n-Powered by Namba Doctor");
+        String message = Uri.EscapeDataString($"Reminder.\nYour appointment with {user.Substring(0, Math.Min(user.Length, 20))} at {orgName} is on {timeString}.\n-Powered by Namba Doctor");
         String formattedStr = message.Replace("%0A", "%n");
         return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.Reminder, appointmentId);
     }
