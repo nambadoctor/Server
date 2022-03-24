@@ -73,7 +73,7 @@ namespace MiddleWare.Converters
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
 
-            appointmentData.ServiceProviderName = $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
