@@ -13,7 +13,6 @@ namespace NotificationUtil.NotificationPublish
         private IServiceProviderRepository serviceProviderRepository;
         private ICustomerRepository customerRepository;
         private IAppointmentRepository appointmentRepository;
-        private IOrganisationRepository organisationRepository;
 
         private readonly INotificationUserConfigurationRepository notificationUserConfigurationRepository;
         private readonly INotificationQueueRepository notificationQueueRepository;
@@ -21,9 +20,8 @@ namespace NotificationUtil.NotificationPublish
         private ISmsBuilder smsBuilder;
 
         private ILogger logger;
-        public NotificationPublisher(ISmsBuilder smsBuilder, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmentRepository, ILogger<NotificationPublisher> logger, INotificationQueueRepository notificationQueueRepository, INotificationUserConfigurationRepository notificationUserConfigurationRepository, IOrganisationRepository organisationRepository)
+        public NotificationPublisher(ISmsBuilder smsBuilder, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmentRepository, ILogger<NotificationPublisher> logger, INotificationQueueRepository notificationQueueRepository, INotificationUserConfigurationRepository notificationUserConfigurationRepository)
         {
-            this.organisationRepository = organisationRepository;
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.appointmentRepository = appointmentRepository;
@@ -65,6 +63,10 @@ namespace NotificationUtil.NotificationPublish
             else if (eventQueue.EventType == EventType.Referred)
             {
                 var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, eventQueue.ServiceProviderId, eventQueue.OrganisationId);
+                
+            if (subscriptions.Item1.Count > 0)
+            {
+                var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1,subscriptions.Item2, eventQueue);
 
                 if (subscriptions.Count > 0)
                 {
@@ -86,9 +88,9 @@ namespace NotificationUtil.NotificationPublish
             }
         }
 
-        private async Task<List<NotificationQueue>> AddNotificationsToQueueForSubscriptions(List<NotificationSubscription> subscriptions, EventQueue eventQueue)
+        private async Task<List<NotificationQueue>> AddNotificationsToQueueForSubscriptions(List<NotificationSubscription> subscriptions, NotificationUserConfiguration config, EventQueue eventQueue)
         {
-            var notificationsNeedToBeQueued = await GetNotificationForSubscriptionList(subscriptions, eventQueue);
+            var notificationsNeedToBeQueued = await GetNotificationForSubscriptionList(subscriptions, config, eventQueue);
 
             //Delete first directive
             if (eventQueue.EventType == EventType.AppointmentCancelled || eventQueue.EventType == EventType.AppointmentRescheduled)
@@ -109,30 +111,28 @@ namespace NotificationUtil.NotificationPublish
         /// <param name="serviceProviderId"></param>
         /// <param name="organisationId"></param>
         /// <returns></returns>
-        private async Task<List<NotificationSubscription>> GetUserNotificationSubscriptionsForEvent(EventQueue eventQueue, string serviceProviderId, string organisationId)
+        private async Task<(List<NotificationSubscription>, NotificationUserConfiguration?)> GetUserNotificationSubscriptionsForEvent(EventQueue eventQueue, string serviceProviderId, string organisationId)
         {
             var subscriptions = new List<NotificationSubscription>();
 
-            var userConfigurations = await notificationUserConfigurationRepository.GetByServiceProvider(serviceProviderId, organisationId);
+            var userConfiguration = await notificationUserConfigurationRepository.GetByServiceProvider(serviceProviderId, organisationId);
 
-            logger.LogInformation($"Received {userConfigurations.Count} userConfigurations for userid {serviceProviderId}");
+            logger.LogInformation($"Received userConfiguration for userid {serviceProviderId}");
 
-            if (userConfigurations == null || userConfigurations.Count == 0)
+            if (userConfiguration == null || userConfiguration.SubscribedNotifications == null)
             {
-                logger.LogInformation($"No Notification configuration exists for service provider:{serviceProviderId} organisation: {organisationId}");
+                logger.LogInformation($"No Notification subscription exists for service provider:{serviceProviderId} organisation: {organisationId}");
+                return (subscriptions, null);
             }
             else
             {
-                foreach (var configuration in userConfigurations)
+                if (userConfiguration.SubscribedNotifications.Count > 0)
                 {
-                    if (configuration.SubscribedNotifications != null && configuration.SubscribedNotifications.Count > 0)
+                    foreach (var sub in userConfiguration.SubscribedNotifications)
                     {
-                        foreach (var sub in configuration.SubscribedNotifications)
+                        if (IsSubscriptionOfEventType(eventQueue, sub.SubscriptionType))
                         {
-                            if (IsSubscriptionOfEventType(eventQueue, sub.SubscriptionType))
-                            {
-                                subscriptions.Add(sub);
-                            }
+                            subscriptions.Add(sub);
                         }
                     }
                 }
@@ -140,7 +140,7 @@ namespace NotificationUtil.NotificationPublish
 
             logger.LogInformation($"Found {subscriptions.Count} subscriptions for Event {eventQueue.EventType}");
 
-            return subscriptions;
+            return (subscriptions, userConfiguration);
         }
 
         private bool IsSubscriptionOfEventType(EventQueue eventQueue, SubscriptionType subscriptionType)
@@ -162,7 +162,7 @@ namespace NotificationUtil.NotificationPublish
             return isMatch;
         }
 
-        private async Task<List<NotificationQueue>> GetNotificationForSubscriptionList(List<NotificationSubscription> subscriptionList, EventQueue eventQueue)
+        private async Task<List<NotificationQueue>> GetNotificationForSubscriptionList(List<NotificationSubscription> subscriptionList, NotificationUserConfiguration config, EventQueue eventQueue)
         {
             var notifications = new List<NotificationQueue>();
 
@@ -212,6 +212,7 @@ namespace NotificationUtil.NotificationPublish
             if (notificationSubscription.IsEnabledForCustomers)
             {
                 //todo new template if needed
+                notifications.AddRange(GetNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
             }
 
             return notifications;
@@ -278,17 +279,12 @@ namespace NotificationUtil.NotificationPublish
             return notifications;
         }
 
-        private async Task<(Appointment, string, string, string)> GetAppointmentData(string appointmentId)
+        private async Task<(Appointment, string, string)> GetAppointmentData(string appointmentId)
         {
             var appointment = await appointmentRepository.GetAppointment(appointmentId);
 
             if (appointment == null)
                 throw new FileNotFoundException($"Not found Appointment with id:{appointmentId}");
-
-            var chosenOrg = await organisationRepository.GetById(appointment.OrganisationId);
-
-            if (chosenOrg == null)
-                throw new FileNotFoundException($"Not found Organisation with id:{appointment.OrganisationId}");
 
             var customerProfile = await customerRepository.GetCustomerProfile(appointment.CustomerId, appointment.OrganisationId);
 
@@ -312,7 +308,7 @@ namespace NotificationUtil.NotificationPublish
                 throw new FileNotFoundException($"Not found spPhoneNumber for {spProfile.ServiceProviderId}");
             }
 
-            return (appointment, custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number, spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number, chosenOrg.Name);
+            return (appointment, custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number, spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number);
         }
     }
 }

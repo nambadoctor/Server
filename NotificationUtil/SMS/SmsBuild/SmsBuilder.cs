@@ -9,7 +9,7 @@ public class SmsBuilder : ISmsBuilder
     public NotificationQueue GetAppointmentReminderSMS(string phoneNumber, DateTime time, string user, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
         var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
-        String message = Uri.EscapeDataString($"Reminder.\nYour appointment with {user.Substring(0, Math.Min(user.Length, 20))} at {orgName} is on {timeString}.\n-Powered by Namba Doctor");
+        String message = Uri.EscapeDataString($"Reminder.\nYour appointment with {user.Substring(0, Math.Min(user.Length, 19))} at {orgName.Substring(0, Math.Min(orgName.Length, 14))} is on {timeString}.\n-Powered by Namba Doctor");
         String formattedStr = message.Replace("%0A", "%n");
         return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.Reminder, appointmentId);
     }
@@ -17,7 +17,7 @@ public class SmsBuilder : ISmsBuilder
     public NotificationQueue GetAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
         var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
-        var strMsg = $"Appointment {status}.\nYour appointment on {timeString} with {user.Substring(0, Math.Min(user.Length, 20))} at {orgName} has been {status.ToLower()}. \n-Powered by Namba Doctor";
+        var strMsg = $"Appointment {status}.\nYour appointment on {timeString} with {user.Substring(0, Math.Min(user.Length, 19))} at {orgName.Substring(0, Math.Min(orgName.Length, 14))} has been {status.ToLower()}. \n-Powered by Namba Doctor";
         String msg = Uri.EscapeDataString(strMsg);
         String formattedStr = msg.Replace("%0A", "%n");
         return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
@@ -26,7 +26,7 @@ public class SmsBuilder : ISmsBuilder
     public NotificationQueue GetFutureAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId, string orgName)
     {
         var timeString = TimeZoneInfo.ConvertTimeFromUtc(time, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
-        String msg = Uri.EscapeDataString($"Appointment {status}.\nYou are due for your appointment with {user.Substring(0, Math.Min(user.Length, 10))} on {timeString} at {orgName.Substring(0, Math.Min(orgName.Length, 10))}. \n-Powered by Namba Doctor");
+        String msg = Uri.EscapeDataString($"Appointment {status}.\nYou are due for your appointment with {user.Substring(0, Math.Min(user.Length, 19))} on {timeString} at {orgName.Substring(0, Math.Min(orgName.Length, 10))}. \n-Powered by Namba Doctor");
         String formattedStr = msg.Replace("%0A", "%n");
         return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
     }

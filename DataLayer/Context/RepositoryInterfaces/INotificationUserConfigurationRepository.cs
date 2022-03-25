@@ -9,6 +9,6 @@ namespace MongoDB.GenericRepository.Interfaces
 {
     public interface INotificationUserConfigurationRepository : IRepository<NotificationUserConfiguration>
     {
-        public Task<List<NotificationUserConfiguration>> GetByServiceProvider(string serviceProviderId, string organisationId);
+        public Task<NotificationUserConfiguration> GetByServiceProvider(string serviceProviderId, string organisationId);
     }
 }

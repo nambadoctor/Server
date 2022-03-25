@@ -17,7 +17,7 @@ namespace MongoDB.GenericRepository.Repository
         {
         }
 
-        public async Task<List<NotificationUserConfiguration>> GetByServiceProvider(string serviceProviderId, string organisationId)
+        public async Task<NotificationUserConfiguration> GetByServiceProvider(string serviceProviderId, string organisationId)
         {
             var organisationFilter = Builders<NotificationUserConfiguration>.Filter.Eq(sr => sr.OrganisationId, organisationId);
 
@@ -25,9 +25,9 @@ namespace MongoDB.GenericRepository.Repository
 
             var combinedFilter = organisationFilter & spFilter;
 
-            var result = await this.GetListByFilter(filter: combinedFilter);
+            var result = await this.GetSingleByFilter(filter: combinedFilter);
 
-            return result.ToList();
+            return result;
         }
     }
 }
