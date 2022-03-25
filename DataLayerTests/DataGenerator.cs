@@ -11,7 +11,7 @@ namespace LayerTests
 {
     public static class DataGenerator
     {
-        
+
         const string globalDrId = "61f395acee2b9622eaad5303";
         const string globalOrgId = "61f3957eee2b9622eaad52fe";
         public static NotificationUserConfiguration GenerateNotificationConfigForGlobalUser()
@@ -22,6 +22,7 @@ namespace LayerTests
             notificationUserConfiguration.UserConfigurationId = ObjectId.GenerateNewId();
             notificationUserConfiguration.ServiceProviderId = globalDrId;
             notificationUserConfiguration.OrganisationId = globalOrgId;
+            notificationUserConfiguration.OrganisationName = "GlobalOrg";
             notificationUserConfiguration.Name = "Global doctor";
             notificationUserConfiguration.CreatedDateTime = DateTime.UtcNow;
 
@@ -47,9 +48,18 @@ namespace LayerTests
             subscriptions.Add(
                 new NotificationSubscription
                 {
-                    IsEnabledForCustomers = false,
+                    IsEnabledForCustomers = true,
                     IsEnabledForSelf = true,
                     SubscriptionType = SubscriptionType.AppointmentStatus
+                }
+            );
+
+            subscriptions.Add(
+                new NotificationSubscription
+                {
+                    IsEnabledForCustomers = false,
+                    IsEnabledForSelf = true,
+                    SubscriptionType = SubscriptionType.Referral
                 }
             );
 

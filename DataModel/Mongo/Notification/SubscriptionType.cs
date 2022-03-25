@@ -9,6 +9,7 @@ namespace DataModel.Mongo.Notification
     public enum SubscriptionType
     {
         AppointmentStatus,
-        AppointmentReminder
+        AppointmentReminder,
+        Referral
     }
 }

@@ -31,6 +31,13 @@ public class SmsBuilder : ISmsBuilder
         return GetNotificationQueue(formattedStr, phoneNumber, toBeNotifiedTime, "NmbaDr", NotificationType.AppointmentStatus, appointmentId);
     }
 
+    public NotificationQueue GetReferralSms(string phoneNumber, string patientName, string patientPhoneNumber, string drName, string orgName, string reason, DateTime dateTime)
+    {
+        String msg = Uri.EscapeDataString($"New Referral.\n {patientName.Substring(0, Math.Min(patientName.Length, 17))}.\nPh: {patientPhoneNumber}.\nReason: {reason.Substring(0, Math.Min(reason.Length, 24))}\nReferred by: {drName.Substring(0, Math.Min(drName.Length, 14))} from {orgName.Substring(0, Math.Min(orgName.Length, 9))}.\n- Powered by Namba Doctor.");
+        String formattedStr = msg.Replace("%0A", "%n");
+        return GetNotificationQueue(formattedStr, phoneNumber, dateTime, "NmbaDr", NotificationType.Referral, "");
+    }
+
     public NotificationQueue GetPrescriptionSMS(string phoneNumber, string user, DateTime toBeNotifiedTime, string appointmentId)
     {
         String message = Uri.EscapeDataString($"Prescription added\nCheck out your prescription sent by {user}.\n-Namba Doctor ");

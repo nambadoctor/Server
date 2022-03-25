@@ -137,7 +137,7 @@ namespace MiddleWare.Services
                     await treatmentPlanRepository.UpdateTreatment(appointment.TreatmentPlanId, mongoTreatment);
                 }
                 //END
-                await notificationEventListener.TriggerEvent(appointmentId.ToString(), Mongo.Notification.EventType.AppointmentBooked);
+                await notificationEventListener.TriggerAppointmentEvent(appointmentId.ToString(), Mongo.Notification.EventType.AppointmentBooked);
 
             }
         }
@@ -214,7 +214,7 @@ namespace MiddleWare.Services
 
                 await appointmenRepository.CancelAppointment(mongoAppointment);
 
-                await notificationEventListener.TriggerEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentCancelled);
+                await notificationEventListener.TriggerAppointmentEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentCancelled);
             }
         }
 
@@ -232,7 +232,7 @@ namespace MiddleWare.Services
 
             await appointmenRepository.RescheduleAppointment(mongoAppointment);
 
-            await notificationEventListener.TriggerEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentRescheduled);
+            await notificationEventListener.TriggerAppointmentEvent(appointment.AppointmentId!, Mongo.Notification.EventType.AppointmentRescheduled);
         }
 
         public async Task EndAppointment(ProviderClientIncoming.AppointmentIncoming appointment)

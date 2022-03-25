@@ -9,7 +9,8 @@ namespace NotificationUtil.EventListener
 {
     public interface INotificationEventListener
     {
-        public Task TriggerEvent(string appointmentId, EventType eventType);
+        public Task TriggerAppointmentEvent(string appointmentId, EventType eventType);
+        public Task TriggerReferEvent(string customerId, string serviceProviderId, string organisationId, string phoneNumber, string reason, EventType eventType);
 
     }
 }

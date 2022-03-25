@@ -55,6 +55,18 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         }
 
         [TestMethod]
+        public async Task ReferralTests()
+        {
+            var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
+            var chosenAppointment = ChooseRandomFromList(initialAppointments);
+
+            var referral = dataGeneration.GenerateSampleReferral(chosenAppointment.ServiceProviderId, chosenAppointment.OrganisationId, chosenAppointment.CustomerId, "+917907144815");
+
+            var referralResult = await apiCalls.AddReferral(referral);
+            Assert.IsTrue(referralResult);
+        }
+
+        [TestMethod]
         public async Task AppointmentsReadTest()
         {
             var OrgAppointmentsWithDateFilter = await apiCalls.GetOrgAppointments(ChosenOrganisationId, DateTime.UtcNow.AddDays(-2), DateTime.UtcNow.AddDays(1));
@@ -233,8 +245,8 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             var allTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId, "", false);
             Assert.IsNotNull(allTreatments);
-            
-            var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId,"");
+
+            var treatmentPlans = await apiCalls.GetAllTreatmentPlans(ChosenOrganisationId, ChosenServiceProviderId, "");
             var chosenTreatmentPlan = ChooseRandomFromList(treatmentPlans);
             var chosenTreatment = ChooseRandomFromList(chosenTreatmentPlan.Treatments);
 
@@ -249,15 +261,15 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var updatedTreatmentPlan = dataGeneration.GenerateTreatmentPlan(chosenAppointment.CustomerId, ChosenServiceProviderId, ChosenOrganisationId, chosenAppointment.ServiceRequestId, chosenTreatmentPlan.TreatmentPlanId);
             var putTreatmentPlanResult = await apiCalls.UpdateTreatmentPlan(updatedTreatmentPlan);
             Assert.IsTrue(putTreatmentPlanResult);
-            
+
             var customerTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
                 chosenAppointment.CustomerId, false);
             Assert.IsNotNull(customerTreatments);
-            
+
             var upcomingTreatments = await apiCalls.GetAllTreatments(ChosenServiceProviderId, ChosenOrganisationId,
                 chosenAppointment.CustomerId, true);
             Assert.IsNotNull(upcomingTreatments);
-            
+
             var existingAppointment = dataGeneration.GenerateSampleAppointmentFromExistingAppointment(chosenAppointment);
 
             var docToUpload = dataGeneration.GenerateSampleTreatmentPlanDocument(chosenTreatmentPlan.TreatmentPlanId, existingAppointment);
@@ -266,7 +278,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             var treatmentPlanDocs = await apiCalls.GetTreatmentPlanDocs(existingAppointment.ServiceRequestId);
             Assert.IsNotNull(treatmentPlanDocs);
-            
+
             var treatmentPlanDocsOfCustomer = await apiCalls.GetTreatmentPlanDocsOfCustomer(existingAppointment.CustomerId);
             Assert.IsNotNull(treatmentPlanDocsOfCustomer);
 

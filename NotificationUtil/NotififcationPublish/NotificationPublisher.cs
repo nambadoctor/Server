@@ -35,26 +35,51 @@ namespace NotificationUtil.NotificationPublish
         }
         public async Task<bool> BuildAndPublishNotifications(EventQueue eventQueue)
         {
-            var appointment = await appointmentRepository.GetAppointment(eventQueue.AppointmentId);
-            if (appointment == null)
+            if (eventQueue.EventType == EventType.AppointmentBooked || eventQueue.EventType == EventType.AppointmentRescheduled || eventQueue.EventType == EventType.AppointmentCancelled)
             {
-                logger.LogError($"NotificationPublisher: No appointment found with ID {eventQueue.AppointmentId}");
-                return false;
+                var appointment = await appointmentRepository.GetAppointment(eventQueue.AppointmentId);
+                if (appointment == null)
+                {
+                    logger.LogError($"NotificationPublisher: No appointment found with ID {eventQueue.AppointmentId}");
+                    return false;
+                }
+
+                var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, appointment.ServiceProviderId, appointment.OrganisationId);
+
+                if (subscriptions.Item1.Count > 0)
+                {
+                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1, subscriptions.Item2!, eventQueue);
+
+                    logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
+
+                    return true;
+                }
+                else
+                {
+                    logger.LogError($"NotificationPublisher: User not configured to send notification for appointment id: {eventQueue.AppointmentId}");
+                    return false;
+                }
             }
-
-            var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, appointment.ServiceProviderId, appointment.OrganisationId);
-
-            if (subscriptions.Item1.Count > 0)
+            else if (eventQueue.EventType == EventType.Referred)
             {
-                var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1,subscriptions.Item2, eventQueue);
+                var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, eventQueue.ServiceProviderId, eventQueue.OrganisationId);
 
-                logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
+                if (subscriptions.Item1.Count > 0)
+                {
+                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1, subscriptions.Item2!, eventQueue);
 
-                return true;
+                    logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
+
+                    return true;
+                }
+                else
+                {
+                    logger.LogError($"NotificationPublisher: User not configured to send notification for appointment id: {eventQueue.AppointmentId}");
+                    return false;
+                }
             }
             else
             {
-                logger.LogError($"NotificationPublisher: User not configured to send notification for appointment id: {eventQueue.AppointmentId}");
                 return false;
             }
         }
@@ -125,6 +150,10 @@ namespace NotificationUtil.NotificationPublish
                     isMatch = true;
                 }
             }
+            else if (eventQueue.EventType == EventType.Referred && subscriptionType == SubscriptionType.Referral)
+            {
+                isMatch = true;
+            }
 
             return isMatch;
         }
@@ -133,17 +162,57 @@ namespace NotificationUtil.NotificationPublish
         {
             var notifications = new List<NotificationQueue>();
 
-            var appointmentData = await GetAppointmentData(eventQueue.AppointmentId);
-
-            foreach (var sub in subscriptionList)
+            if (eventQueue.EventType == EventType.AppointmentBooked || eventQueue.EventType == EventType.AppointmentCancelled || eventQueue.EventType == EventType.AppointmentRescheduled)
             {
-                notifications.AddRange(GetNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
+                var appointmentData = await GetAppointmentData(eventQueue.AppointmentId);
+
+                foreach (var sub in subscriptionList)
+                {
+                    notifications.AddRange(GetAppointmentNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
+                }
+            }
+            else if (eventQueue.EventType == EventType.Referred)
+            {
+                var customer = await customerRepository.GetCustomerProfile(eventQueue.CustomerId, eventQueue.OrganisationId);
+                var sp = await serviceProviderRepository.GetServiceProviderProfile(eventQueue.ServiceProviderId, eventQueue.OrganisationId);
+                var custPhoneNumber = customer.PhoneNumbers.First();
+                foreach (var sub in subscriptionList)
+                {
+                    notifications.AddRange(
+                        GetReferralNotificationsForSubscription(
+                            sub,
+                            customer.FirstName + " " + customer.LastName,
+                            custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number,
+                            "Dr. " + sp.FirstName + " " + sp.LastName,
+                            config.OrganisationName,
+                            eventQueue.RecieverNumber,
+                            eventQueue.CustomMessage
+                        )
+                    );
+                }
             }
 
             return notifications;
         }
 
-        private List<NotificationQueue> GetNotificationsForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber, string organisationName)
+        private List<NotificationQueue> GetReferralNotificationsForSubscription(NotificationSubscription notificationSubscription, string custName, string custPhoneNumber, string spName, string organisationName, string recieverPhone, string reason)
+        {
+
+            var notifications = new List<NotificationQueue>();
+
+            if (notificationSubscription.IsEnabledForSelf)
+            {
+                notifications.Add(smsBuilder.GetReferralSms(recieverPhone, custName, custPhoneNumber, spName, organisationName, reason, DateTime.UtcNow));
+            }
+            if (notificationSubscription.IsEnabledForCustomers)
+            {
+                //todo new template if needed
+            }
+
+            return notifications;
+        }
+
+        private List<NotificationQueue> GetAppointmentNotificationsForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber, string organisationName)
         {
 
             var notifications = new List<NotificationQueue>();

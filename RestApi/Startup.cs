@@ -96,6 +96,7 @@ namespace NambaDoctorWebApi
             services.AddScoped<ITreatmentPlanRepository, TreatmentPlanRepository>();
             services.AddScoped<INotificationQueueRepository, NotificationQueueRepository>();
             services.AddScoped<ISettingsConfigurationService, SettingsConfigurationService>();
+            services.AddScoped<IReferralService, ReferralService>();
 
             services.AddControllers();
             services.AddSwaggerGen(c =>

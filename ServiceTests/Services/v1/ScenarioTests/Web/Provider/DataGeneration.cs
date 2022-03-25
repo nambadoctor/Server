@@ -27,7 +27,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             return appointment;
         }
-        
+
         public ProviderClientIncoming.AppointmentIncoming GenerateSampleAppointmentFromExistingAppointment(ProviderClientOutgoing.OutgoingAppointment appointmentOutgoing)
         {
             var appointment = new ProviderClientIncoming.AppointmentIncoming();
@@ -105,7 +105,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             return report;
         }
-        
+
         public ProviderClientIncoming.TreatmentPlanDocumentIncoming GenerateSampleTreatmentPlanDocument(string treatmentPlanId, ProviderClientIncoming.AppointmentIncoming appointmentIncoming)
         {
             var rnd = new Random();
@@ -207,6 +207,19 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             }
 
             return treatment;
+        }
+
+        public ProviderClientIncoming.ReferralIncoming GenerateSampleReferral(string ServiceProviderId, string OrganisationId, string CustomerId, string Phone)
+        {
+            var referralIncoming = new ProviderClientIncoming.ReferralIncoming();
+
+            referralIncoming.SenderServiceProviderId = ServiceProviderId;
+            referralIncoming.OrganisationId = OrganisationId;
+            referralIncoming.CustomerId = CustomerId;
+            referralIncoming.PhoneNumber = Phone;
+            referralIncoming.Reason = "Test reason abc";
+
+            return referralIncoming;
         }
     }
 }
