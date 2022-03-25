@@ -4,6 +4,7 @@
     {
         AppointmentBooked,
         AppointmentCancelled,
-        AppointmentRescheduled
+        AppointmentRescheduled,
+        Referred
     }
 }

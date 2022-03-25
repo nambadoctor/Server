@@ -12,13 +12,34 @@ namespace NotificationUtil.EventListener
 {
     public static class EventUtility
     {
-        public static EventQueue GetQueueObject(string appointmentId, EventType eventType)
+        public static EventQueue GetAppointmentQueueObject(string appointmentId, EventType eventType)
         {
             var notificationQueue = new EventQueue();
 
             notificationQueue.AppointmentId = appointmentId;
 
             notificationQueue.EventType = eventType;
+
+            notificationQueue.CreatedDateTime = DateTime.UtcNow;
+
+            return notificationQueue;
+        }
+
+        public static EventQueue GetReferQueueObject(string customerId, string serviceProviderId, string recieverPhone, string customMessage, string OrganisationId, EventType eventType)
+        {
+            var notificationQueue = new EventQueue();
+
+            notificationQueue.CustomerId = customerId;
+
+            notificationQueue.ServiceProviderId = serviceProviderId;
+
+            notificationQueue.OrganisationId = OrganisationId;
+
+            notificationQueue.RecieverNumber = recieverPhone;
+
+            notificationQueue.EventType = eventType;
+
+            notificationQueue.CustomMessage = customMessage;
 
             notificationQueue.CreatedDateTime = DateTime.UtcNow;
 

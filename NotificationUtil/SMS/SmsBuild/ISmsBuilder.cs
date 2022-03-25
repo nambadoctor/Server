@@ -10,6 +10,8 @@ public interface ISmsBuilder
 
     public NotificationQueue GetFutureAppointmentStatusSMS(string phoneNumber, DateTime time, string user, string status, DateTime toBeNotifiedTime, string appointmentId, string orgName);
 
+    public NotificationQueue GetReferralSms(string phoneNumber, string patientName, string patientPhoneNumber, string drName, string orgName, string reason, DateTime dateTime);
+    //Deprecated
     public NotificationQueue GetPrescriptionSMS(string phoneNumber, string user, DateTime toBeNotifiedTime, string appointmentId);
 
     public NotificationQueue GetNewCustomerRegistrationSMS(string phoneNumber, DateTime toBeNotifiedTime);

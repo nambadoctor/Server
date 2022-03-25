@@ -47,16 +47,16 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return sp;
             }
         }
-        
+
         public async Task<List<ProviderClientOutgoing.ServiceProvider>> GetServiceProviders(string OrganisationId)
-                {
-                    using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/serviceprovider/organisation/{OrganisationId}"))
-                    {
-                        var response = await httpClient.SendAsync(request);
-                        var sps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.ServiceProvider>>(await response.Content.ReadAsStringAsync());
-                        return sps;
-                    }
-                }
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/serviceprovider/organisation/{OrganisationId}"))
+            {
+                var response = await httpClient.SendAsync(request);
+                var sps = JsonConvert.DeserializeObject<List<ProviderClientOutgoing.ServiceProvider>>(await response.Content.ReadAsStringAsync());
+                return sps;
+            }
+        }
 
         public async Task<List<ProviderClientOutgoing.OutgoingAppointment>> GetOrgAppointments(string OrganisationId, DateTime? StartDate = null, DateTime? EndDate = null)
         {
@@ -201,7 +201,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
-        
+
         public async Task<List<ProviderClientOutgoing.TreatmentOutgoing>> GetAllTreatments(string ServiceproviderId, string OrganisationId, string CustomerId, bool isUpcoming)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/treatments/{OrganisationId}/{ServiceproviderId}?CustomerId={CustomerId}&IsUpcoming={isUpcoming}"))
@@ -212,7 +212,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
-        
+
         public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocs(string ServiceRequestId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/{ServiceRequestId}"))
@@ -223,7 +223,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
-        
+
         public async Task<List<ProviderClientOutgoing.TreatmentPlanDocumentsOutgoing>> GetTreatmentPlanDocsOfCustomer(string CustomerId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/treatmentplan/document/customer/{CustomerId}"))
@@ -234,7 +234,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return tps;
             }
         }
-        
+
         public async Task<ProviderClientOutgoing.SettingsConfigurationOutgoing> GetUserConfig(string ServiceProviderId, string OrganisationId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Get, BaseUrl + $"/settings_configuration/{OrganisationId}/{ServiceProviderId}"))
@@ -245,7 +245,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 return config;
             }
         }
-        
+
         #endregion GET
 
         #region POST
@@ -468,12 +468,32 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 }
             }
         }
-        
+
         public async Task<bool> AddTreatmentPlanDocument(ProviderClientIncoming.TreatmentPlanDocumentIncoming treatmentPlanDocument)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/treatmentplan/document/"))
             {
                 var jsonData = JsonConvert.SerializeObject(treatmentPlanDocument);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+
+        public async Task<bool> AddReferral(ProviderClientIncoming.ReferralIncoming referralIncoming)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/referral"))
+            {
+                var jsonData = JsonConvert.SerializeObject(referralIncoming);
                 var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
                 request.Content = contentData;
                 var response = await httpClient.SendAsync(request);
@@ -630,7 +650,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
                 }
             }
         }
-        
+
         public async Task<bool> DeleteTreatmentPlanDocument(string TreatmentPlanDocumentId)
         {
             using (var request = new HttpRequestMessage(HttpMethod.Delete, BaseUrl + $"/treatmentplan/document/{TreatmentPlanDocumentId}"))
