@@ -22,6 +22,7 @@ namespace LayerTests
             notificationUserConfiguration.UserConfigurationId = ObjectId.GenerateNewId();
             notificationUserConfiguration.ServiceProviderId = globalDrId;
             notificationUserConfiguration.OrganisationId = globalOrgId;
+            notificationUserConfiguration.OrganisationName = "GlobalOrg";
             notificationUserConfiguration.Name = "Global doctor";
             notificationUserConfiguration.CreatedDateTime = DateTime.UtcNow;
 

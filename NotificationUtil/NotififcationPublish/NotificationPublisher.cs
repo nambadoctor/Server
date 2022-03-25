@@ -46,9 +46,9 @@ namespace NotificationUtil.NotificationPublish
 
                 var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, appointment.ServiceProviderId, appointment.OrganisationId);
 
-                if (subscriptions.Count > 0)
+                if (subscriptions.Item1.Count > 0)
                 {
-                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions, eventQueue);
+                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1, subscriptions.Item2!, eventQueue);
 
                     logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
 
@@ -63,14 +63,10 @@ namespace NotificationUtil.NotificationPublish
             else if (eventQueue.EventType == EventType.Referred)
             {
                 var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, eventQueue.ServiceProviderId, eventQueue.OrganisationId);
-                
-            if (subscriptions.Item1.Count > 0)
-            {
-                var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1,subscriptions.Item2, eventQueue);
 
-                if (subscriptions.Count > 0)
+                if (subscriptions.Item1.Count > 0)
                 {
-                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions, eventQueue);
+                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1, subscriptions.Item2!, eventQueue);
 
                     logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
 
@@ -172,7 +168,7 @@ namespace NotificationUtil.NotificationPublish
 
                 foreach (var sub in subscriptionList)
                 {
-                    notifications.AddRange(GetAppointmentNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, appointmentData.Item4));
+                    notifications.AddRange(GetAppointmentNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
                 }
             }
             else if (eventQueue.EventType == EventType.Referred)
@@ -180,7 +176,6 @@ namespace NotificationUtil.NotificationPublish
                 var customer = await customerRepository.GetCustomerProfile(eventQueue.CustomerId, eventQueue.OrganisationId);
                 var sp = await serviceProviderRepository.GetServiceProviderProfile(eventQueue.ServiceProviderId, eventQueue.OrganisationId);
                 var custPhoneNumber = customer.PhoneNumbers.First();
-                var organisation = await organisationRepository.GetById(eventQueue.OrganisationId);
                 foreach (var sub in subscriptionList)
                 {
                     notifications.AddRange(
@@ -189,7 +184,7 @@ namespace NotificationUtil.NotificationPublish
                             customer.FirstName + " " + customer.LastName,
                             custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number,
                             "Dr. " + sp.FirstName + " " + sp.LastName,
-                            organisation.Name,
+                            config.OrganisationName,
                             eventQueue.RecieverNumber,
                             eventQueue.CustomMessage
                         )
@@ -212,7 +207,6 @@ namespace NotificationUtil.NotificationPublish
             if (notificationSubscription.IsEnabledForCustomers)
             {
                 //todo new template if needed
-                notifications.AddRange(GetNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
             }
 
             return notifications;
