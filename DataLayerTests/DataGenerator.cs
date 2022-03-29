@@ -73,6 +73,14 @@ namespace LayerTests
             settings.ServiceProviderId = globalDrId;
             settings.AppointmentSettings = new AppointmentSettings();
             settings.AppointmentSettings.AppointmentReasons = new List<string> { "Fever", "Pregnancy", "STDs" };
+            settings.ReferralWhitelist = new ReferralWhitelist();
+            settings.ReferralWhitelist.IsEnabled = true;
+            settings.ReferralWhitelist.ReferralContacts = new List<ReferralContact>();
+            settings.ReferralWhitelist.ReferralContacts.Add(new ReferralContact
+            {
+                ContactName = "Dr. Jacob",
+                PhoneNumber = "+917907144815"
+            });
 
             return settings;
         }

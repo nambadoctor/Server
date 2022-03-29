@@ -18,12 +18,6 @@ namespace LayerTests
         }
 
         [TestMethod]
-        public void TestMethod1()
-        {
-            Assert.IsTrue(true);
-        }
-
-        [TestMethod]
         public async Task AddUserConfig()
         {
             var globalUserConfig = DataGenerator.GetSampleSettingsConfiguration();
