@@ -48,7 +48,23 @@ public class SettingsConfigurationService: ISettingsConfigurationService
         if(mongoConfig.AppointmentSettings!=null)
             appointmentSettingsOutgoing.AppointmentReasons = mongoConfig.AppointmentSettings.AppointmentReasons;
 
+        var referralWhitelist = new ProviderClientOutgoing.ReferralWhitelistOutgoing();
+        if (mongoConfig.ReferralWhitelist != null)
+        {
+            referralWhitelist.IsEnabled = mongoConfig.ReferralWhitelist.IsEnabled;
+            referralWhitelist.ReferralContacts = new List<ProviderClientOutgoing.ReferralContactOutgoing>();
+            if(mongoConfig.ReferralWhitelist.ReferralContacts != null)
+                foreach (var contact in mongoConfig.ReferralWhitelist.ReferralContacts)
+                {
+                    var contactOutgoing = new ProviderClientOutgoing.ReferralContactOutgoing();
+                    contactOutgoing.ContactName = contact.ContactName;
+                    contactOutgoing.PhoneNumber = contact.PhoneNumber;
+                    referralWhitelist.ReferralContacts.Add(contactOutgoing);
+                }
+        }
+
         config.AppointmentSettings = appointmentSettingsOutgoing;
+        config.ReferralWhitelist = referralWhitelist;
 
         return config;
     }
