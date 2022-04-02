@@ -178,7 +178,8 @@ namespace NotificationUtil.NotificationPublish
                 var custPhoneNumber = customer.PhoneNumbers.First();
                 foreach (var sub in subscriptionList)
                 {
-                    notifications.AddRange(
+                    if(sub.SubscriptionType == SubscriptionType.Referral)
+                        notifications.AddRange(
                         GetReferralNotificationsForSubscription(
                             sub,
                             customer.FirstName + " " + customer.LastName,
@@ -187,6 +188,29 @@ namespace NotificationUtil.NotificationPublish
                             config.OrganisationName,
                             eventQueue.RecieverNumber,
                             eventQueue.CustomMessage
+                        )
+                    );
+                }
+            }
+            else if (eventQueue.EventType == EventType.Followup)
+            {
+                var customer = await customerRepository.GetCustomerProfile(eventQueue.CustomerId, eventQueue.OrganisationId);
+                var sp = await serviceProviderRepository.GetServiceProviderProfile(eventQueue.ServiceProviderId, eventQueue.OrganisationId);
+                var custPhoneNumber = customer.PhoneNumbers.First();
+                var spPhoneNumber = sp.PhoneNumbers.First();
+                foreach (var sub in subscriptionList)
+                {
+                    if(sub.SubscriptionType == SubscriptionType.Referral)
+                        notifications.AddRange(
+                        GetFollowupNotificationsForSubscription(
+                            sub,
+                            customer.FirstName + " " + customer.LastName,
+                            custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number,
+                            "Dr. " + sp.FirstName + " " + sp.LastName,
+                            spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number,
+                            config.OrganisationName,
+                            eventQueue.CustomMessage,
+                            eventQueue.ScheduledDateTime
                         )
                     );
                 }
@@ -207,6 +231,23 @@ namespace NotificationUtil.NotificationPublish
             if (notificationSubscription.IsEnabledForCustomers)
             {
                 //todo new template if needed
+            }
+
+            return notifications;
+        }
+        
+        private List<NotificationQueue> GetFollowupNotificationsForSubscription(NotificationSubscription notificationSubscription, string custName, string custPhoneNumber, string spName, string spPhoneNumber, string organisationName, string reason, DateTime scheduledDate)
+        {
+
+            var notifications = new List<NotificationQueue>();
+
+            if (notificationSubscription.IsEnabledForSelf)
+            {
+                notifications.Add(smsBuilder.GetFollowupSms(spPhoneNumber, custName, custPhoneNumber, organisationName, reason, scheduledDate));
+            }
+            if (notificationSubscription.IsEnabledForCustomers)
+            {
+                notifications.Add(smsBuilder.GetFollowupSms(custPhoneNumber, spName, spPhoneNumber, organisationName, reason, scheduledDate));
             }
 
             return notifications;

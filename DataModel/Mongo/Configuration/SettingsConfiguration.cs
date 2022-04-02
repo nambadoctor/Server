@@ -13,6 +13,7 @@ public class SettingsConfiguration
     public string OrganisationId { get; set; }
     public string ServiceProviderId { get; set; }
     public AppointmentSettings AppointmentSettings { get; set; }
-    
     public ReferralWhitelist ReferralWhitelist { get; set; }
+    
+    public FollowupSettings FollowupSettings { get; set; }
 }

@@ -10,6 +10,7 @@ namespace DataModel.Mongo.Notification
     {
         AppointmentStatus,
         AppointmentReminder,
-        Referral
+        Referral,
+        Followup
     }
 }

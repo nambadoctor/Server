@@ -19,6 +19,6 @@ namespace DataModel.Mongo.Notification
         public string RecieverNumber { get; set; }
         public string CustomMessage { get; set; }
         public DateTime CreatedDateTime { get; set; }
-
+        public DateTime ScheduledDateTime { get; set; }
     }
 }

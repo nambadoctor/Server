@@ -12,6 +12,7 @@ namespace DataModel.Mongo.Notification
         AppointmentStatus,
         NewCustomer,
         Referral,
+        Followup,
         PrescriptionUploaded
     }
 }

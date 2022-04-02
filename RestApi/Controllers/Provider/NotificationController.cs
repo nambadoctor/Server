@@ -9,20 +9,29 @@ using System.Collections.Generic;
 
 namespace RestApi.Controllers.Provider;
 
-[Route("api/provider/referral")]
+[Route("api/provider/notification")]
 [ApiController]
-public class ReferralController : ControllerBase
+public class NotificationController : ControllerBase
 {
     private readonly IReferralService referralService;
-    public ReferralController(IReferralService referralService)
+    private readonly IFollowupService followupService;
+    public NotificationController(IReferralService referralService, IFollowupService followupService)
     {
         this.referralService = referralService;
+        this.followupService = followupService;
     }
 
-    [HttpPost]
+    [HttpPost("referral")]
     [Authorize]
     public async Task SetNewReferral(ProviderClientIncoming.ReferralIncoming referralIncoming)
     {
         await referralService.SetReferral(referralIncoming);
+    }
+    
+    [HttpPost("followup")]
+    [Authorize]
+    public async Task SetNewFollowup(ProviderClientIncoming.FollowupIncoming followupIncoming)
+    {
+        await followupService.SetFollowup(followupIncoming);
     }
 }

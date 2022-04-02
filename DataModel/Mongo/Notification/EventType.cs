@@ -5,6 +5,7 @@
         AppointmentBooked,
         AppointmentCancelled,
         AppointmentRescheduled,
-        Referred
+        Referred,
+        Followup
     }
 }

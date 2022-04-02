@@ -33,9 +33,19 @@ public class SmsBuilder : ISmsBuilder
 
     public NotificationQueue GetReferralSms(string phoneNumber, string patientName, string patientPhoneNumber, string drName, string orgName, string reason, DateTime dateTime)
     {
+        //TODO Update with right template
         String msg = Uri.EscapeDataString($"New Referral.\n {patientName.Substring(0, Math.Min(patientName.Length, 17))}.\nPh: {patientPhoneNumber}.\nReason: {reason.Substring(0, Math.Min(reason.Length, 24))}\nReferred by: {drName.Substring(0, Math.Min(drName.Length, 14))} from {orgName.Substring(0, Math.Min(orgName.Length, 9))}.\n- Powered by Namba Doctor.");
         String formattedStr = msg.Replace("%0A", "%n");
         return GetNotificationQueue(formattedStr, phoneNumber, dateTime, "NmbaDr", NotificationType.Referral, "");
+    }
+
+    public NotificationQueue GetFollowupSms(string receiverPhoneNumber, string userName, string userPhoneNumber, string orgName,
+        string reason, DateTime dateTime)
+    {
+        var timeString = TimeZoneInfo.ConvertTimeFromUtc(dateTime, INDIAN_ZONE).ToString("MMM dd,HH:mm").Trim();
+        String msg = Uri.EscapeDataString($"Appointment scheduled.\nYou are due for your appointment with {userName.Substring(0, Math.Min(userName.Length, 19))} on {timeString} at {orgName.Substring(0, Math.Min(orgName.Length, 10))}. \n-Powered by Namba Doctor");
+        String formattedStr = msg.Replace("%0A", "%n");
+        return GetNotificationQueue(formattedStr, receiverPhoneNumber, dateTime, "NmbaDr", NotificationType.Followup, "");
     }
 
     public NotificationQueue GetPrescriptionSMS(string phoneNumber, string user, DateTime toBeNotifiedTime, string appointmentId)

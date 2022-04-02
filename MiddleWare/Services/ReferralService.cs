@@ -24,24 +24,9 @@ namespace MiddleWare.Services
                 DataValidation.ValidateObjectId(referralIncoming.CustomerId, IdType.Customer);
                 DataValidation.ValidateObjectId(referralIncoming.SenderServiceProviderId, IdType.ServiceProvider);
 
-                var phone = referralIncoming.PhoneNumber;
-                if (string.IsNullOrWhiteSpace(phone))
-                {
-                    throw new Exception("Phone number is empty");
-                }
-                else
-                {
-                    if (phone.Length == 10)
-                    {
-                        phone = "91" + phone;
-                    }
-                    else
-                    {
-                        phone = phone.Replace("+", "");
-                    }
-                }
+                var phone = DataValidation.ExtractPhoneNumber(referralIncoming.PhoneNumber);
 
-                await notificationEventListener.TriggerReferEvent(referralIncoming.CustomerId, referralIncoming.SenderServiceProviderId, referralIncoming.OrganisationId, phone, referralIncoming.Reason, DataModel.Mongo.Notification.EventType.Referred);
+                await notificationEventListener.TriggerManualNotificationEvent(referralIncoming.CustomerId, referralIncoming.SenderServiceProviderId, referralIncoming.OrganisationId, phone, referralIncoming.Reason, DataModel.Mongo.Notification.EventType.Referred, DateTime.UtcNow);
 
                 logger.LogInformation($"Referral event triggered to {phone} by {referralIncoming.SenderServiceProviderId}");
             }
