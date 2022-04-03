@@ -62,7 +62,17 @@ public class SettingsConfigurationService: ISettingsConfigurationService
                     referralWhitelist.ReferralContacts.Add(contactOutgoing);
                 }
         }
+        
+        var followupSettings = new ProviderClientOutgoing.FollowupSettingsOutgoing();
+        if (mongoConfig.FollowupSettings != null)
+        {
+            followupSettings.IsEnabled = mongoConfig.ReferralWhitelist.IsEnabled;
+            followupSettings.Reasons = new List<string>();
+            if(mongoConfig.FollowupSettings.Reasons != null)
+                followupSettings.Reasons.AddRange(mongoConfig.FollowupSettings.Reasons);
+        }
 
+        config.FollowupSettings = followupSettings;
         config.AppointmentSettings = appointmentSettingsOutgoing;
         config.ReferralWhitelist = referralWhitelist;
 
