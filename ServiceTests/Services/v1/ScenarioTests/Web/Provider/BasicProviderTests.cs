@@ -64,7 +64,7 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
             var referralResult = await apiCalls.AddReferral(referral);
             Assert.IsTrue(referralResult);
             
-            var followup = dataGeneration.GenerateSampleFollowup(chosenAppointment.ServiceProviderId, chosenAppointment.OrganisationId, chosenAppointment.CustomerId, "+917907144815");
+            var followup = dataGeneration.GenerateSampleFollowup(chosenAppointment.ServiceProviderId, chosenAppointment.OrganisationId, chosenAppointment.CustomerId);
             var followupResult = await apiCalls.AddFollowup(followup);
             Assert.IsTrue(followupResult);
         }
