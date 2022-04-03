@@ -25,18 +25,16 @@ public class FollowupService: IFollowupService
             DataValidation.ValidateObjectId(followupIncoming.CustomerId, IdType.Customer);
             DataValidation.ValidateObjectId(followupIncoming.SenderServiceProviderId, IdType.ServiceProvider);
 
-            var phone = DataValidation.ExtractPhoneNumber(followupIncoming.PhoneNumber);
-
             await notificationEventListener.TriggerManualNotificationEvent(
                 followupIncoming.CustomerId,
                 followupIncoming.SenderServiceProviderId,
                 followupIncoming.OrganisationId,
-                phone,
+                "",
                 followupIncoming.Reason,
                 DataModel.Mongo.Notification.EventType.Followup,
                 followupIncoming.ScheduledDateTime);
 
-            logger.LogInformation($"Followup event triggered to {phone} by {followupIncoming.SenderServiceProviderId}");
+            logger.LogInformation($"Followup event triggered by {followupIncoming.SenderServiceProviderId}");
         }
     }
 }
