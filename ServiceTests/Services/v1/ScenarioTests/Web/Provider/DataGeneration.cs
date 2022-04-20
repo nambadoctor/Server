@@ -221,5 +221,18 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
             return referralIncoming;
         }
+        
+        public ProviderClientIncoming.FollowupIncoming GenerateSampleFollowup(string ServiceProviderId, string OrganisationId, string CustomerId)
+        {
+            var followupIncoming = new ProviderClientIncoming.FollowupIncoming();
+
+            followupIncoming.SenderServiceProviderId = ServiceProviderId;
+            followupIncoming.OrganisationId = OrganisationId;
+            followupIncoming.CustomerId = CustomerId;
+            followupIncoming.Reason = "Test reason abc";
+            followupIncoming.ScheduledDateTime = DateTime.UtcNow.AddSeconds(1);
+
+            return followupIncoming;
+        }
     }
 }

@@ -25,7 +25,7 @@ namespace NotificationUtil.EventListener
             return notificationQueue;
         }
 
-        public static EventQueue GetReferQueueObject(string customerId, string serviceProviderId, string recieverPhone, string customMessage, string OrganisationId, EventType eventType)
+        public static EventQueue GetQueueObject(string customerId, string serviceProviderId, string recieverPhone, string customMessage, string OrganisationId, EventType eventType, DateTime ScheduledDateTime)
         {
             var notificationQueue = new EventQueue();
 
@@ -42,6 +42,8 @@ namespace NotificationUtil.EventListener
             notificationQueue.CustomMessage = customMessage;
 
             notificationQueue.CreatedDateTime = DateTime.UtcNow;
+
+            notificationQueue.ScheduledDateTime = ScheduledDateTime;
 
             return notificationQueue;
         }

@@ -62,6 +62,15 @@ namespace LayerTests
                     SubscriptionType = SubscriptionType.Referral
                 }
             );
+            
+            subscriptions.Add(
+                new NotificationSubscription
+                {
+                    IsEnabledForCustomers = true,
+                    IsEnabledForSelf = true,
+                    SubscriptionType = SubscriptionType.Followup
+                }
+            );
 
             return subscriptions;
         }
@@ -71,8 +80,10 @@ namespace LayerTests
             var settings = new SettingsConfiguration();
             settings.OrganisationId = globalOrgId;
             settings.ServiceProviderId = globalDrId;
+            
             settings.AppointmentSettings = new AppointmentSettings();
-            settings.AppointmentSettings.AppointmentReasons = new List<string> { "Fever", "Pregnancy", "STDs" };
+            settings.AppointmentSettings.AppointmentReasons = new List<string> { "Fever", "Pregnancy"};
+            
             settings.ReferralWhitelist = new ReferralWhitelist();
             settings.ReferralWhitelist.IsEnabled = true;
             settings.ReferralWhitelist.ReferralContacts = new List<ReferralContact>();
@@ -81,6 +92,10 @@ namespace LayerTests
                 ContactName = "Dr. Jacob",
                 PhoneNumber = "+917907144815"
             });
+
+            settings.FollowupSettings = new FollowupSettings();
+            settings.FollowupSettings.IsEnabled = true;
+            settings.FollowupSettings.Reasons = new List<string>{ "Fever", "Pregnancy" };
 
             return settings;
         }

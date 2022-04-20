@@ -491,9 +491,29 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
 
         public async Task<bool> AddReferral(ProviderClientIncoming.ReferralIncoming referralIncoming)
         {
-            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/referral"))
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/notification/referral"))
             {
                 var jsonData = JsonConvert.SerializeObject(referralIncoming);
+                var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
+                request.Content = contentData;
+                var response = await httpClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var value = await response.Content.ReadAsStringAsync();
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+        }
+        
+        public async Task<bool> AddFollowup(ProviderClientIncoming.FollowupIncoming followupIncoming)
+        {
+            using (var request = new HttpRequestMessage(HttpMethod.Post, BaseUrl + $"/notification/followup"))
+            {
+                var jsonData = JsonConvert.SerializeObject(followupIncoming);
                 var contentData = new StringContent(jsonData, Encoding.UTF8, "application/json");
                 request.Content = contentData;
                 var response = await httpClient.SendAsync(request);

@@ -32,13 +32,13 @@ namespace NotificationUtil.EventListener
             }
         }
 
-        public async Task TriggerReferEvent(string customerId, string serviceProviderId, string organisationId, string phoneNumber, string reason, EventType eventType)
+        public async Task TriggerManualNotificationEvent(string customerId, string serviceProviderId, string organisationId, string phoneNumber, string reason, EventType eventType, DateTime scheduledDateTime)
         {
             logger.LogInformation($"Started {eventType} Publish notification for refer type CustomerId:{customerId} SenderPhone:{phoneNumber}");
 
             try
             {
-                var newEvent = EventUtility.GetReferQueueObject(customerId, serviceProviderId, phoneNumber, reason, organisationId, eventType);
+                var newEvent = EventUtility.GetQueueObject(customerId, serviceProviderId, phoneNumber, reason, organisationId, eventType, scheduledDateTime);
 
                 var isPublished = await notificationPublisher.BuildAndPublishNotifications(newEvent);
 

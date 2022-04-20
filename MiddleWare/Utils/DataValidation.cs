@@ -30,6 +30,28 @@ namespace MiddleWare.Utils
         {
             return typeof(T);
         }
+
+        public static string ExtractPhoneNumber(string ph)
+        {
+            var phone = ph.Replace(" ","");
+            if (string.IsNullOrWhiteSpace(phone))
+            {
+                throw new Exception("Phone number is empty");
+            }
+            else
+            {
+                if (phone.Length == 10)
+                {
+                    phone = "91" + phone;
+                }
+                else
+                {
+                    phone = phone.Replace("+", "");
+                }
+            }
+
+            return phone;
+        }
     }
 
     public enum IdType

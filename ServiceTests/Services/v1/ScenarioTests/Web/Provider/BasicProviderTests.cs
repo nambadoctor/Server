@@ -55,15 +55,18 @@ namespace ServiceTests.Services.v1.ScenarioTests.Web.Provider
         }
 
         [TestMethod]
-        public async Task ReferralTests()
+        public async Task NotificationTests()
         {
             var initialAppointments = await apiCalls.GetOrgAppointments(ChosenOrganisationId);
             var chosenAppointment = ChooseRandomFromList(initialAppointments);
 
             var referral = dataGeneration.GenerateSampleReferral(chosenAppointment.ServiceProviderId, chosenAppointment.OrganisationId, chosenAppointment.CustomerId, "+917907144815");
-
             var referralResult = await apiCalls.AddReferral(referral);
             Assert.IsTrue(referralResult);
+            
+            var followup = dataGeneration.GenerateSampleFollowup(chosenAppointment.ServiceProviderId, chosenAppointment.OrganisationId, chosenAppointment.CustomerId);
+            var followupResult = await apiCalls.AddFollowup(followup);
+            Assert.IsTrue(followupResult);
         }
 
         [TestMethod]
