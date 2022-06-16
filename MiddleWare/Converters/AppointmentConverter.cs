@@ -73,7 +73,7 @@ namespace MiddleWare.Converters
 
             appointmentData.ServiceRequestId = appointment.ServiceRequestId;
 
-            appointmentData.ServiceProviderName = $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
+            appointmentData.ServiceProviderName = serviceProviderProfile.ServiceProviderType == "Doctor" ? $"Dr. {serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}" : $"{serviceProviderProfile.FirstName} {serviceProviderProfile.LastName}";
 
             appointmentData.CustomerName = $"{customerProfile.FirstName} {customerProfile.LastName}";
 
@@ -87,7 +87,7 @@ namespace MiddleWare.Converters
             appointmentData.ScheduledAppointmentEndTime = appointment.ScheduledAppointmentEndTime;
             appointmentData.ActualAppointmentStartTime = appointment.ActualAppointmentStartTime;
             appointmentData.ActualAppointmentEndTime = appointment.ActualAppointmentEndTime;
-            
+
             appointmentData.AppointmentReason = appointment.AppointmentReason;
 
             return appointmentData;
