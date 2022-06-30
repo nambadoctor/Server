@@ -78,6 +78,24 @@ namespace NotificationUtil.NotificationPublish
                     return false;
                 }
             }
+            else if (eventQueue.EventType == EventType.Followup)
+            {
+                var subscriptions = await GetUserNotificationSubscriptionsForEvent(eventQueue, eventQueue.ServiceProviderId, eventQueue.OrganisationId);
+
+                if (subscriptions.Item1.Count > 0)
+                {
+                    var queuedNotifications = await AddNotificationsToQueueForSubscriptions(subscriptions.Item1, subscriptions.Item2!, eventQueue);
+
+                    logger.LogInformation($"Added {queuedNotifications.Count} notifications to QUEUE");
+
+                    return true;
+                }
+                else
+                {
+                    logger.LogError($"NotificationPublisher: User not configured to send notification for appointment id: {eventQueue.AppointmentId}");
+                    return false;
+                }
+            }
             else
             {
                 return false;
@@ -155,6 +173,11 @@ namespace NotificationUtil.NotificationPublish
                 isMatch = true;
             }
 
+            else if (eventQueue.EventType == EventType.Followup && subscriptionType == SubscriptionType.Followup)
+            {
+                isMatch = true;
+            }
+
             return isMatch;
         }
 
@@ -178,7 +201,7 @@ namespace NotificationUtil.NotificationPublish
                 var custPhoneNumber = customer.PhoneNumbers.First();
                 foreach (var sub in subscriptionList)
                 {
-                    if(sub.SubscriptionType == SubscriptionType.Referral)
+                    if (sub.SubscriptionType == SubscriptionType.Referral)
                         notifications.AddRange(
                         GetReferralNotificationsForSubscription(
                             sub,
@@ -200,7 +223,7 @@ namespace NotificationUtil.NotificationPublish
                 var spPhoneNumber = sp.PhoneNumbers.First();
                 foreach (var sub in subscriptionList)
                 {
-                    if(sub.SubscriptionType == SubscriptionType.Referral)
+                    if (sub.SubscriptionType == SubscriptionType.Followup)
                         notifications.AddRange(
                         GetFollowupNotificationsForSubscription(
                             sub,
@@ -235,7 +258,7 @@ namespace NotificationUtil.NotificationPublish
 
             return notifications;
         }
-        
+
         private List<NotificationQueue> GetFollowupNotificationsForSubscription(NotificationSubscription notificationSubscription, string custName, string custPhoneNumber, string spName, string spPhoneNumber, string organisationName, string reason, DateTime scheduledDate)
         {
 
