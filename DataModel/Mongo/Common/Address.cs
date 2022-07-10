@@ -11,6 +11,10 @@ namespace DataModel.Mongo
 
         public string StreetAddress { get; set; }
 
+        public string Door { get; set; }
+
+        public string City { get; set; }
+
         public string State { get; set; }
 
         public string Country { get; set; }

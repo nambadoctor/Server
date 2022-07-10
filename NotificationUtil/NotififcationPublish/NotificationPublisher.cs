@@ -13,6 +13,7 @@ namespace NotificationUtil.NotificationPublish
         private IServiceProviderRepository serviceProviderRepository;
         private ICustomerRepository customerRepository;
         private IAppointmentRepository appointmentRepository;
+        private IOrganisationRepository organisationRepository;
 
         private readonly INotificationUserConfigurationRepository notificationUserConfigurationRepository;
         private readonly INotificationQueueRepository notificationQueueRepository;
@@ -20,11 +21,12 @@ namespace NotificationUtil.NotificationPublish
         private ISmsBuilder smsBuilder;
 
         private ILogger logger;
-        public NotificationPublisher(ISmsBuilder smsBuilder, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmentRepository, ILogger<NotificationPublisher> logger, INotificationQueueRepository notificationQueueRepository, INotificationUserConfigurationRepository notificationUserConfigurationRepository)
+        public NotificationPublisher(ISmsBuilder smsBuilder, IServiceProviderRepository serviceProviderRepository, ICustomerRepository customerRepository, IAppointmentRepository appointmentRepository, IOrganisationRepository organisationRepository, ILogger<NotificationPublisher> logger, INotificationQueueRepository notificationQueueRepository, INotificationUserConfigurationRepository notificationUserConfigurationRepository)
         {
             this.serviceProviderRepository = serviceProviderRepository;
             this.customerRepository = customerRepository;
             this.appointmentRepository = appointmentRepository;
+            this.organisationRepository = organisationRepository;
 
             this.notificationQueueRepository = notificationQueueRepository;
             this.notificationUserConfigurationRepository = notificationUserConfigurationRepository;
@@ -191,7 +193,7 @@ namespace NotificationUtil.NotificationPublish
 
                 foreach (var sub in subscriptionList)
                 {
-                    notifications.AddRange(GetAppointmentNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName));
+                    notifications.AddRange(GetAppointmentNotificationsForSubscription(sub, appointmentData.Item1, appointmentData.Item2, appointmentData.Item3, config.OrganisationName, config.IsAddressEnabled, config.IsIndividualNameUnavailable, appointmentData.Item4));
                 }
             }
             else if (eventQueue.EventType == EventType.Referred)
@@ -276,7 +278,7 @@ namespace NotificationUtil.NotificationPublish
             return notifications;
         }
 
-        private List<NotificationQueue> GetAppointmentNotificationsForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber, string organisationName)
+        private List<NotificationQueue> GetAppointmentNotificationsForSubscription(NotificationSubscription notificationSubscription, Appointment appointment, string custPhoneNumber, string spPhoneNumber, string organisationName, bool toIncludeAddress, bool isIndividualNameUnavailable, Address? address)
         {
 
             var notifications = new List<NotificationQueue>();
@@ -285,20 +287,21 @@ namespace NotificationUtil.NotificationPublish
             {
                 if (notificationSubscription.IsEnabledForSelf)
                 {
-                    if (appointment.ScheduledAppointmentStartTime > DateTime.UtcNow)
-                    {
-                        notifications.Add(smsBuilder.GetFutureAppointmentStatusSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName));
-                    }
-                    else
-                    {
-                        notifications.Add(smsBuilder.GetAppointmentStatusSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName));
-                    }
+                    notifications.Add(smsBuilder.GetAppointmentStatusSMS(spPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.CustomerName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName));
                 }
                 if (notificationSubscription.IsEnabledForCustomers)
                 {
-                    if (appointment.ScheduledAppointmentStartTime > DateTime.UtcNow)
+                    //Assume the address notification is only for customers
+                    if (toIncludeAddress)
                     {
-                        notifications.Add(smsBuilder.GetFutureAppointmentStatusSMS(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName));
+                        if (isIndividualNameUnavailable)
+                        {
+                            notifications.Add(smsBuilder.GetAppointmentStatusSMSWithAdd(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName, address));
+                        }
+                        else
+                        {
+                            notifications.Add(smsBuilder.GetAppointmentStatusSMSWithAddName(custPhoneNumber, appointment.ScheduledAppointmentStartTime!.Value, appointment.ServiceProviderName, appointment.Status.ToString(), DateTime.UtcNow, appointment.AppointmentId.ToString(), organisationName, address));
+                        }
                     }
                     else
                     {
@@ -337,9 +340,11 @@ namespace NotificationUtil.NotificationPublish
             return notifications;
         }
 
-        private async Task<(Appointment, string, string)> GetAppointmentData(string appointmentId)
+        private async Task<(Appointment, string, string, Address?)> GetAppointmentData(string appointmentId)
         {
             var appointment = await appointmentRepository.GetAppointment(appointmentId);
+
+            var organisation = await organisationRepository.GetById(appointment.OrganisationId);
 
             if (appointment == null)
                 throw new FileNotFoundException($"Not found Appointment with id:{appointmentId}");
@@ -366,7 +371,14 @@ namespace NotificationUtil.NotificationPublish
                 throw new FileNotFoundException($"Not found spPhoneNumber for {spProfile.ServiceProviderId}");
             }
 
-            return (appointment, custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number, spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number);
+            Address? address = null;
+
+            if (organisation.Addresses != null && organisation.Addresses.Count > 0)
+            {
+                address = organisation.Addresses[0];
+            }
+
+            return (appointment, custPhoneNumber.CountryCode.Replace("+", "") + custPhoneNumber.Number, spPhoneNumber.CountryCode.Replace("+", "") + spPhoneNumber.Number, address);
         }
     }
 }
